@@ -5,9 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 export default function LoadingAuthorDashboardPage() {
-  // For simplicity, this skeleton shows a combined view.
-  // You can make this conditional based on a query param or route segment if needed.
-
   return (
     <div className="flex flex-col min-h-screen bg-muted">
       <Header />
@@ -31,53 +28,55 @@ export default function LoadingAuthorDashboardPage() {
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
           <Card className="w-full">
             <CardHeader>
-              <Skeleton className="h-8 w-3/4 md:w-1/2 mx-auto mb-2" /> {/* Title: Submit New Manuscript */}
-              {/* Step Indicators Skeleton */}
-              <div className="flex justify-center space-x-2 md:space-x-4 my-6">
-                <Skeleton className="h-10 md:h-12 w-1/3 md:w-1/4 rounded-md" /> {/* Step 1 (could be active) */}
-                <Skeleton className="h-10 md:h-12 w-1/3 md:w-1/4 rounded-md bg-muted/50" /> {/* Step 2 */}
-                <Skeleton className="h-10 md:h-12 w-1/3 md:w-1/4 rounded-md bg-muted/50" /> {/* Step 3 */}
+              <Skeleton className="h-8 w-3/4 md:w-1/2 mx-auto mb-6" /> {/* Title: Submit New Manuscript */}
+              {/* Stepper Skeleton */}
+              <div className="flex items-start w-full mb-10 px-2 sm:px-4 md:px-8">
+                {/* Step 1 Skeleton */}
+                <div className="flex flex-col items-center text-center">
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2" />
+                  <Skeleton className="mt-2 h-4 w-20 md:w-28" />
+                </div>
+                {/* Line Skeleton */}
+                <Skeleton className="flex-1 h-1 mt-[18px] md:mt-[22px]" />
+                {/* Step 2 Skeleton */}
+                <div className="flex flex-col items-center text-center">
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2" />
+                  <Skeleton className="mt-2 h-4 w-20 md:w-28" />
+                </div>
+                {/* Line Skeleton */}
+                <Skeleton className="flex-1 h-1 mt-[18px] md:mt-[22px]" />
+                {/* Step 3 Skeleton */}
+                <div className="flex flex-col items-center text-center">
+                  <Skeleton className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2" />
+                  <Skeleton className="mt-2 h-4 w-20 md:w-28" />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
-              {/* Generic Skeleton for any active step's content */}
-              {/* Example for Step 1 / Step 2 like fields */}
-              {/* <Skeleton className="h-6 w-1/3 mb-4" /> 
+              {/* Generic Skeleton for active step's content (e.g., Step 1 shown) */}
+              <Skeleton className="h-6 w-1/3 mb-4" /> 
               <div className="space-y-6">
                 <div>
                   <Skeleton className="h-4 w-1/4 mb-2" /> 
                   <Skeleton className="h-10 w-full" />    
                 </div>
-                 <div className="flex items-center space-x-3 p-4 border rounded-md">
+                <div className="flex items-center space-x-3 p-4 border rounded-md">
                   <Skeleton className="h-5 w-5" />        
                   <Skeleton className="h-4 w-1/3" />     
                 </div>
-                ... more fields ...
-              </div> */}
-
-              {/* More specific for Step 3: Upload Files */}
-              <Skeleton className="h-6 w-1/3 mb-6" /> {/* Step 3 Title */}
-              <div className="space-y-5">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="flex items-center justify-between border-b border-border/30 pb-4">
-                    <Skeleton className="h-5 w-1/4" /> {/* Label: Cover Letter, etc. */}
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-8 w-24" /> {/* Choose File button */}
-                      <Skeleton className="h-5 w-32" /> {/* No File Chosen / filename */}
-                    </div>
-                  </div>
-                ))}
-                <Skeleton className="h-px w-full bg-border my-6" /> {/* Separator */}
-                <div className="flex items-center justify-center space-x-3 p-4">
-                  <Skeleton className="h-5 w-5" /> {/* Checkbox */}
-                  <Skeleton className="h-4 w-3/4" /> {/* Checkbox Label */}
+                 <div>
+                  <Skeleton className="h-4 w-1/4 mb-2" /> 
+                  <Skeleton className="h-24 w-full" /> {/* Textarea skeleton */}   
+                </div>
+                 <div>
+                  <Skeleton className="h-4 w-1/4 mb-2" /> 
+                  <Skeleton className="h-10 w-full" />    
                 </div>
               </div>
-
-
+              
               {/* Navigation Buttons Skeleton */}
               <div className="mt-8 flex justify-between">
-                <Skeleton className="h-10 w-24 rounded-md bg-muted/70" /> {/* Previous */}
+                <Skeleton className="h-10 w-24 rounded-md bg-muted/70" /> {/* Previous (might be disabled) */}
                 <Skeleton className="h-10 w-24 rounded-md" />             {/* Next / Finish */}
               </div>
                <Skeleton className="h-4 w-1/3 mx-auto mt-10" /> {/* 2025 Academic Journal */}
