@@ -12,7 +12,7 @@ interface JournalPublicationCardProps {
 const JournalPublicationCard = ({ category, universityName }: JournalPublicationCardProps) => {
   return (
     <Link href={`/category/${category.slug}`} className="group block h-full">
-      <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card border border-border hover:border-primary/50">
+      <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card border border-border hover:border-primary/50 rounded-none">
         <div className="relative w-full aspect-[4/3]"> {/* Image and text container */}
           <Image
             src={category.imagePath}
