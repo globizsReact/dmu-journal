@@ -113,7 +113,7 @@ export const journalEntries: JournalEntry[] = [
     excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
     imagePath: '/images/j2.jpeg',
-    imageHint: 'science experiment',
+    imageHint: 'scientific research',
   },
   {
     id: 'CF00B3673111',
@@ -145,8 +145,8 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '4',
     excerpt: 'The doctrine of stare decisis, or adherence to precedent, is a cornerstone of common law legal systems. This article examines the theoretical underpinnings and practical application of precedent...',
     authors: ['Justice (Ret.) Edward Black', 'Prof. Laura Grey'],
-    imagePath: 'https://placehold.co/200x150.png',
-    imageHint: 'legal documents',
+    imagePath: '/images/j4.jpeg',
+    imageHint: 'legal documents law',
   },
   // Add more entries for "Journal Of Sciences" to have a list
   {
