@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManuscriptDetailsForm, { type ManuscriptDetailsData } from '@/components/author/forms/ManuscriptDetailsForm';
-import AuthorDetailsForm, { type AuthorDetailsData } from '@/components/author/forms/AuthorDetailsForm'; // New import
+import AuthorDetailsForm, { type AuthorDetailsData } from '@/components/author/forms/AuthorDetailsForm';
+import UploadFilesForm, { type UploadFilesData } from '@/components/author/forms/UploadFilesForm'; // New import
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 const steps = [
   { id: 1, title: 'Manuscript Information' },
@@ -14,14 +16,13 @@ const steps = [
   { id: 3, title: 'Upload Files' },
 ];
 
-// Placeholder form data types for other steps
-export type UploadFilesData = { manuscriptFile: File | null }; // Example
-
 export default function SubmitManuscriptStepper() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formDataStep1, setFormDataStep1] = useState<ManuscriptDetailsData | null>(null);
   const [formDataStep2, setFormDataStep2] = useState<AuthorDetailsData | null>(null);
-  const [formDataStep3, setFormDataStep3] = useState<UploadFilesData | null>(null);
+  // formDataStep3 is managed within UploadFilesForm for its local state (like file names)
+  // but its validated data will be passed to handleFinish.
+  const { toast } = useToast();
 
   const handleNextFromStep1 = (data: ManuscriptDetailsData) => {
     setFormDataStep1(data);
@@ -33,16 +34,31 @@ export default function SubmitManuscriptStepper() {
     setCurrentStep(3);
   };
   
-  const handleFinish = (data: UploadFilesData) => {
-    setFormDataStep3(data);
+  const handleFinish = (dataStep3: UploadFilesData) => {
     // Combine all data and submit
-    console.log('Submitting manuscript:', { ...formDataStep1, ...formDataStep2, ...data });
-    // Here you would typically make an API call
-    alert('Manuscript Submitted (Simulated)! Check console for data.');
-    setCurrentStep(1); // Reset to first step or navigate away
+    const finalSubmissionData = {
+      manuscriptDetails: formDataStep1,
+      authorDetails: formDataStep2,
+      files: {
+        coverLetter: dataStep3.coverLetterFile?.name || 'Not provided',
+        manuscriptFile: dataStep3.manuscriptFile.name,
+        supplementaryFiles: dataStep3.supplementaryFiles?.name || 'Not provided',
+        agreedToTerms: dataStep3.authorAgreement,
+      }
+    };
+    console.log('Submitting manuscript:', finalSubmissionData);
+    
+    toast({
+      title: "Submission Successful (Simulated)",
+      description: "Your manuscript data has been logged to the console.",
+      variant: "default", // Or "success" if you have such a variant
+    });
+
+    // Reset to first step and clear data after successful "submission"
+    setCurrentStep(1); 
     setFormDataStep1(null);
     setFormDataStep2(null);
-    setFormDataStep3(null);
+    // formDataStep3 state is within UploadFilesForm, it will reset when re-rendered or on its own.
   };
 
   const handlePrevious = () => {
@@ -50,10 +66,9 @@ export default function SubmitManuscriptStepper() {
   };
 
   const canNavigateToStep = (stepId: number) => {
-    if (stepId < currentStep) return true; // Allow navigation to previous, completed steps
-    if (stepId === 1 && formDataStep1) return true;
-    if (stepId === 2 && formDataStep1 && formDataStep2) return true; 
-    // Add similar checks if forms for step 3 are implemented
+    if (stepId < currentStep) return true; 
+    if (stepId === 1 && formDataStep1) return true; // Already completed step 1
+    if (stepId === 2 && formDataStep1 && formDataStep2) return true; // Completed step 1 & 2
     return false;
   };
 
@@ -65,7 +80,7 @@ export default function SubmitManuscriptStepper() {
         </CardTitle>
         {/* Step Indicators */}
         <div className="flex justify-center space-x-2 md:space-x-4 my-6">
-          {steps.map((step, index) => (
+          {steps.map((step) => (
             <Button
               key={step.id}
               variant={currentStep === step.id ? 'default' : 'outline'}
@@ -73,9 +88,8 @@ export default function SubmitManuscriptStepper() {
                 "px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm rounded-md transition-all duration-300",
                 currentStep === step.id ? "bg-green-600 hover:bg-green-700 text-white" : 
                                         "bg-gray-200 text-gray-700 hover:bg-gray-300",
-                // Mark as completed if step.id < currentStep and corresponding form data exists
                 (step.id < currentStep && 
-                  ( (step.id === 1 && formDataStep1) || (step.id === 2 && formDataStep2) )
+                  ( (step.id === 1 && formDataStep1) || (step.id === 2 && formDataStep1 && formDataStep2) ) // Check previous steps are complete
                 ) ? "bg-green-600 text-white" : "" 
               )}
               onClick={() => {
@@ -83,15 +97,9 @@ export default function SubmitManuscriptStepper() {
                    setCurrentStep(step.id);
                 }
               }}
-              // Disable if trying to go to a future step that isn't the immediate next one,
-              // or if data for previous steps isn't filled.
-              disabled={step.id > currentStep && !(
-                step.id === currentStep + 1 && 
-                (
-                  (currentStep === 1 && formDataStep1) ||
-                  (currentStep === 2 && formDataStep2) ||
-                  currentStep > 2 // If beyond implemented forms, allow next (for placeholder steps)
-                )
+              disabled={step.id > currentStep && !( // Disable future steps if current isn't complete
+                (step.id === currentStep + 1) &&
+                ( (currentStep === 1 && formDataStep1) || (currentStep === 2 && formDataStep1 && formDataStep2) )
               )}
             >
               {step.id}. {step.title}
@@ -106,43 +114,22 @@ export default function SubmitManuscriptStepper() {
             initialData={formDataStep1} 
           />
         )}
-        {currentStep === 2 && (
+        {currentStep === 2 && formDataStep1 && ( // Ensure step 1 data exists before rendering step 2
            <AuthorDetailsForm 
             onValidatedNext={handleNextFromStep2} 
             initialData={formDataStep2} 
             onPrevious={handlePrevious}
           />
         )}
-        {currentStep === 3 && (
-          <div className="py-8 text-center">
-            <h3 className="text-xl font-semibold mb-2">Step 3: Upload Files</h3>
-            <p className="text-muted-foreground">File upload form will be here.</p>
-             <p className="text-muted-foreground mt-2">For now, click "Finish" to simulate submission or "Previous" to go back.</p>
-            {/* Navigation Buttons for Step 3 */}
-            <div className="mt-8 flex justify-between">
-                <Button
-                    onClick={handlePrevious}
-                    variant="outline"
-                    className="bg-gray-300 hover:bg-gray-400 text-gray-800"
-                >
-                    Previous
-                </Button>
-                <Button 
-                    onClick={() => handleFinish({manuscriptFile: null})}  // Simulate data for now
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                    Finish
-                </Button>
-            </div>
-          </div>
+        {currentStep === 3 && formDataStep1 && formDataStep2 && ( // Ensure step 1 & 2 data exists
+          <UploadFilesForm
+            onFinish={handleFinish}
+            onPrevious={handlePrevious}
+            // No initialData needed for files in this simple setup,
+            // but you could pass it if you stored file references/names
+          />
         )}
         
-        {/* Common Navigation buttons are now mostly handled within each form or specific step content */}
-        {/* Step 1 (ManuscriptDetailsForm) has its own Next button */}
-        {/* Step 2 (AuthorDetailsForm) has its own Next and Previous buttons */}
-        {/* Step 3 (Placeholder) has its own Previous and Finish buttons */}
-
         <div className="text-center mt-10 text-sm text-muted-foreground">
             2025 Academic Journal
         </div>
