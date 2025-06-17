@@ -1,3 +1,4 @@
+
 import type { JournalCategory, JournalEntry } from './types';
 import { FlaskConical, Library, Briefcase, Scale, Globe2, TrendingUp, PenLine, BookOpenText } from 'lucide-react';
 
@@ -26,7 +27,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://storage.googleapis.com/otoroshi-dev-public-assets/image-gen-test/dda8c9e5-7f30-49f6-a375-a162e13c6334.png',
     imageHint: 'graphs business'
   },
   {
