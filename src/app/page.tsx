@@ -29,19 +29,19 @@ export default function HomePage() {
         <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-              <Button 
-                asChild 
-                size="lg" 
+              <Button
+                asChild
+                size="lg"
                 className="bg-[#1A8A6D] hover:bg-[#166F57] text-white px-8"
               >
                 <Link href="/journals">View All Journals</Link>
               </Button>
               <div className="relative w-full md:w-auto md:max-w-sm">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input 
-                  type="search" 
-                  placeholder="Search By Article" 
-                  className="pl-10 pr-4 py-2 w-full" 
+                <Input
+                  type="search"
+                  placeholder="Search By Article"
+                  className="pl-10 pr-4 py-2 w-full"
                 />
               </div>
             </div>
@@ -55,12 +55,12 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-3xl lg:mx-auto">
               {journalCategories.map((category) => (
-                <JournalPublicationCard 
-                  key={category.id} 
-                  category={category} 
-                  universityName={universityName} 
+                <JournalPublicationCard
+                  key={category.id}
+                  category={category}
+                  universityName={universityName}
                 />
               ))}
             </div>
