@@ -19,7 +19,7 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
             alt={category.name}
             layout="fill"
             objectFit="cover"
-            className="transition-transform duration-300 group-hover:scale-105"
+            className="transition-transform duration-500 ease-in-out group-hover:scale-110"
             data-ai-hint={category.imageHint}
           />
           {/* Gradient overlay for text visibility */}
