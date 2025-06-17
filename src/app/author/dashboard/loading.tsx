@@ -9,7 +9,7 @@ export default function LoadingAuthorDashboardPage() {
       <Header />
       <div className="flex flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
         {/* Sidebar Skeleton */}
-        <aside className="w-64 hidden lg:block bg-card p-6 rounded-lg shadow-sm">
+        <aside className="w-64 hidden lg:block bg-card p-6 rounded-lg shadow-sm self-start">
           <Skeleton className="h-6 w-1/3 mb-1" />
           <Skeleton className="h-4 w-1/2 mb-6" />
           <div className="space-y-3">
@@ -17,10 +17,11 @@ export default function LoadingAuthorDashboardPage() {
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />
+            <Skeleton className="h-8 w-full bg-destructive/50" /> {/* Logout button skeleton */}
           </div>
         </aside>
 
-        {/* Main Content Skeleton */}
+        {/* Main Content Skeleton - Default Dashboard View */}
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
           <Skeleton className="h-10 w-1/2 mb-8" /> {/* Dashboard Title */}
           
@@ -31,7 +32,8 @@ export default function LoadingAuthorDashboardPage() {
                 <Skeleton className="h-10 w-1/3 mb-4" />
                 <div className="flex justify-between">
                   <Skeleton className="h-6 w-1/4" />
-                  {i === 3 && <Skeleton className="h-8 w-1/3" /> /* Pay Now button skeleton */}
+                  {/* Simulating the "Pay Now" button for one of the cards */}
+                  {i === 3 && <Skeleton className="h-8 w-1/3" />}
                 </div>
               </div>
             ))}
@@ -40,6 +42,15 @@ export default function LoadingAuthorDashboardPage() {
           <div className="text-center mt-12">
             <Skeleton className="h-4 w-1/4 mx-auto" /> {/* 2025 Academic Journal */}
           </div>
+
+          {/* Placeholder for other tab views (could be a generic card skeleton) */}
+          {/* 
+          <div className="mt-8 bg-card p-6 rounded-lg shadow-sm">
+            <Skeleton className="h-8 w-1/3 mb-4" />
+            <Skeleton className="h-5 w-full mb-2" />
+            <Skeleton className="h-5 w-5/6" />
+          </div>
+          */}
         </main>
       </div>
       <Footer />
