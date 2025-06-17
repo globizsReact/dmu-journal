@@ -9,10 +9,12 @@ export default function LoadingAuthorDashboardPage() {
       <Header />
       <div className="flex flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
         {/* Sidebar Skeleton */}
-        <aside className="w-full lg:w-64 hidden lg:block p-6 self-start">
-          <Skeleton className="h-6 w-1/3 mb-1" />
-          <Skeleton className="h-4 w-1/2 mb-6" />
-          <div className="space-y-3">
+        <aside className="w-full lg:w-64 hidden lg:block self-start">
+          <div className="mb-6 px-3 pt-3">
+            <Skeleton className="h-6 w-1/3 mb-1" />
+            <Skeleton className="h-4 w-1/2 mb-6" />
+          </div>
+          <div className="space-y-3 px-3 pb-3">
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />

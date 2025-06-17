@@ -46,12 +46,12 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
   };
 
   return (
-    <aside className="w-full lg:w-64 p-6 self-start">
-      <div className="mb-6">
+    <aside className="w-full lg:w-64 self-start">
+      <div className="mb-6 px-3 pt-3"> {/* Added some padding here for the header only */}
         <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
         <p className="text-sm text-muted-foreground">{authorName}</p>
       </div>
-      <nav className="space-y-2">
+      <nav className="space-y-2 px-3 pb-3"> {/* Added some padding here for nav items */}
         {navItems.map((item) => {
           const isActive = item.tabKey === activeTab && !item.isLogout;
 
