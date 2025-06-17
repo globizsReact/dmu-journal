@@ -27,7 +27,7 @@ export default function HomePage() {
 
         <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8">
+            <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8 lg:max-w-3xl lg:mx-auto md:justify-center">
               {/* Search Input on the left */}
               <div className="w-full md:flex-1">
                 <GlobalSearchInput />
