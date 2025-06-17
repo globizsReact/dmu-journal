@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FilePlus, BookUser, UserCog } from 'lucide-react';
+import { LayoutDashboard, FilePlus, BookUser, UserCog, LogOut } from 'lucide-react';
 
 interface DashboardSidebarProps {
   authorName: string;
@@ -15,6 +15,7 @@ const navItems = [
   { href: '#', label: 'Submit Manuscript', icon: FilePlus }, // Placeholder href
   { href: '#', label: 'My Manuscript', icon: BookUser },     // Placeholder href
   { href: '#', label: 'View/Edit Profile', icon: UserCog },// Placeholder href
+  { href: '/submit', label: 'Logout', icon: LogOut }, // Logout button
 ];
 
 export default function DashboardSidebar({ authorName }: DashboardSidebarProps) {
@@ -28,7 +29,8 @@ export default function DashboardSidebar({ authorName }: DashboardSidebarProps) 
       </div>
       <nav className="space-y-2">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href && item.label !== 'Logout'; // Logout shouldn't stay active
+          const isLogoutButton = item.label === 'Logout';
           return (
             <Link
               key={item.label}
@@ -38,7 +40,8 @@ export default function DashboardSidebar({ authorName }: DashboardSidebarProps) 
                 "hover:bg-muted hover:text-primary",
                 isActive 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" 
-                  : "text-foreground"
+                  : "text-foreground",
+                isLogoutButton && "text-destructive-foreground bg-destructive hover:bg-destructive/90 hover:text-destructive-foreground" // Specific styling for logout
               )}
             >
               <item.icon className="w-4 h-4" />
