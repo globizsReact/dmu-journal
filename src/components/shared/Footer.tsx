@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 
 const FooterLink = ({ href, children, target }: { href: string; children: React.ReactNode, target?: string }) => (
   <Link href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined} className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">
@@ -12,21 +11,8 @@ const Footer = () => {
     <>
       <footer className="py-10 md:py-16 px-4 md:px-8 bg-primary text-primary-foreground">
         <div className="container mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             
-            <div className="flex flex-col items-center sm:items-start">
-               <Link href="/" className="mb-4 hover:opacity-90 transition-opacity">
-                <Image 
-                  src="https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=1" 
-                  alt="University Crest" 
-                  width={40} 
-                  height={40} 
-                  data-ai-hint="university crest"
-                  className="rounded-full"
-                />
-              </Link>
-            </div>
-
             <div>
               <h4 className="font-headline text-lg text-accent mb-3">AUTHOR</h4>
               <ul className="space-y-2">
