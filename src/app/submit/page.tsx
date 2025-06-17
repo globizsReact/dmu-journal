@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 type ActiveTab = 'author' | 'editor' | 'reviewer';
 
@@ -40,6 +41,8 @@ export default function SubmitPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('author');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
+
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -57,28 +60,61 @@ export default function SubmitPage() {
       if (!rememberMe) {
         localStorage.removeItem('isAuthorLoggedIn');
       }
+      // Optionally, pre-fill username if remembered
+      const rememberedUsername = localStorage.getItem('rememberedUsername');
+      if (rememberMe && rememberedUsername) {
+        form.setValue('username', rememberedUsername);
+        form.setValue('rememberMe', true);
+      }
     }
-  }, []);
+  }, [form]);
 
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-    console.log('Author login attempt:', values);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
 
-    // For prototype, any valid submission navigates
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isAuthorLoggedIn', 'true');
-      if (values.rememberMe) {
-        localStorage.setItem('rememberAuthorLogin', 'true');
+      const data = await response.json();
+
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('isAuthorLoggedIn', 'true');
+          localStorage.setItem('authorName', data.user.name); // Store author's name
+          if (values.rememberMe) {
+            localStorage.setItem('rememberAuthorLogin', 'true');
+            localStorage.setItem('rememberedUsername', values.username); // Remember username
+          } else {
+            localStorage.removeItem('rememberAuthorLogin');
+            localStorage.removeItem('rememberedUsername');
+          }
+        }
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${data.user.name}!`,
+        });
+        router.push('/author/dashboard');
       } else {
-        localStorage.removeItem('rememberAuthorLogin');
+        toast({
+          title: "Login Failed",
+          description: data.error || "Invalid credentials.",
+          variant: "destructive",
+        });
       }
+    } catch (error) {
+        console.error("Login API error:", error);
+        toast({
+          title: "Login Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+    } finally {
+      setIsSubmitting(false);
     }
-    router.push('/author/dashboard');
-    // setIsSubmitting(false); // Not strictly necessary as component will unmount
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
@@ -178,8 +214,8 @@ export default function SubmitPage() {
                       Forgot Password?
                     </Link>
                   </div>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
                     disabled={isSubmitting}
                   >
@@ -194,7 +230,7 @@ export default function SubmitPage() {
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
                     Don&apos;t have an account?{' '}
-                    <Link href="#" className={`font-medium text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
+                    <Link href="/signup" className={`font-medium text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
                       Sign Up
                     </Link>
                   </p>
