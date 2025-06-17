@@ -54,12 +54,12 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Default to light logo
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
 
   useEffect(() => {
     const updateLogo = () => {
       const isDarkMode = document.documentElement.classList.contains('dark');
-      setLogoSrc(isDarkMode ? '/images/logo_black.png' : '/images/logo.png');
+      setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
     };
 
     updateLogo(); // Set initial logo
@@ -98,15 +98,18 @@ export default function SignupPage() {
         email: values.email,
     });
 
+    // Simulate API call for signup
+    // In a real app, you would make a POST request to your signup API endpoint here.
+    // For now, we'll just simulate success and redirect.
     setTimeout(() => {
       toast({
         title: 'Account Created Successfully (Mock)!',
         description: 'You can now sign in with your new credentials.',
-        variant: 'default',
+        variant: 'default', // Or 'success' if you have a success variant for toast
       });
-      router.push('/submit'); 
+      router.push('/submit'); // Redirect to login page after successful signup
       setIsSubmitting(false);
-    }, 1000);
+    }, 1000); // Simulate network delay
   };
 
   return (

@@ -39,20 +39,19 @@ type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export default function SubmitPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('author');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Kept for potential future use if auth logic returns
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Default to light logo
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
 
   useEffect(() => {
     const updateLogo = () => {
       const isDarkMode = document.documentElement.classList.contains('dark');
-      setLogoSrc(isDarkMode ? '/images/logo_black.png' : '/images/logo.png');
+      setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
     };
 
     updateLogo(); // Set initial logo based on current theme
 
-    // Observe changes to the class attribute of the html element
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
@@ -63,7 +62,6 @@ export default function SubmitPage() {
 
     observer.observe(document.documentElement, { attributes: true });
 
-    // Cleanup observer on component unmount
     return () => {
       observer.disconnect();
     };
@@ -80,7 +78,6 @@ export default function SubmitPage() {
   });
 
   useEffect(() => {
-    // This effect still makes sense for remembering username
     if (typeof window !== 'undefined') {
       const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
       const rememberedUsername = localStorage.getItem('rememberedUsername');
@@ -93,12 +90,10 @@ export default function SubmitPage() {
 
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
-    setIsSubmitting(true); // Visually indicate submission start
+    setIsSubmitting(true);
 
-    // Simulate login persistence
     if (typeof window !== 'undefined') {
       localStorage.setItem('isAuthorLoggedIn', 'true');
-      // Use entered username or a default if none entered (though form validates for username)
       localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); 
       
       if (values.rememberMe && values.username) {
@@ -108,7 +103,6 @@ export default function SubmitPage() {
         localStorage.removeItem('rememberAuthorLogin');
         localStorage.removeItem('rememberedUsername');
       }
-      // Dispatch a custom event to notify other components (like Header) about auth change
       window.dispatchEvent(new CustomEvent('authChange'));
     }
 
@@ -117,11 +111,8 @@ export default function SubmitPage() {
       description: "You are being redirected.",
     });
     
-    // Simulate a short delay before navigation, as if an API call happened
-    setTimeout(() => {
-      router.push('/author/dashboard');
-      // setIsSubmitting(false); // Potentially reset if staying on page
-    }, 500); 
+    router.push('/author/dashboard');
+    // setIsSubmitting(false); // No need if navigating away immediately
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
