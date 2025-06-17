@@ -46,7 +46,7 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
   };
 
   return (
-    <aside className="w-full lg:w-64 bg-card p-6 rounded-lg shadow-sm self-start">
+    <aside className="w-full lg:w-64 p-6 self-start">
       <div className="mb-6">
         <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
         <p className="text-sm text-muted-foreground">{authorName}</p>
@@ -96,9 +96,10 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
                 "hover:bg-muted hover:text-primary",
                 isActive 
                   ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" 
-                  : "text-foreground"
+                  : "text-foreground",
+                 "hover:bg-card/50" // Adding a subtle hover for items on muted background
               )}
-              disabled={!item.tabKey} // Disable if no tabKey (should not happen for non-logout items)
+              disabled={!item.tabKey} 
             >
               <item.icon className="w-4 h-4" />
               {item.label}
