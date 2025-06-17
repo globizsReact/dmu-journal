@@ -28,7 +28,7 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
           {/* Text content positioned over the image */}
           <CardContent className="absolute inset-0 p-3 flex flex-col justify-center items-center text-center text-primary-foreground">
             <p className="text-xs opacity-90 mb-0.5">{universityName}</p>
-            <h3 className="text-xl font-poltawski group-hover:underline leading-tight">
+            <h3 className="text-xl font-poltawski leading-tight">
               {category.name}
             </h3>
           </CardContent>
