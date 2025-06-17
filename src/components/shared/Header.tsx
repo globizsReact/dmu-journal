@@ -12,7 +12,7 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default for light mode
+  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Always use logo.png
   const router = useRouter(); // For potential refresh if needed
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const Header = () => {
       const authorSession = localStorage.getItem('isAuthorLoggedIn');
       setIsLoggedIn(authorSession === 'true');
 
-      const updateThemeAndLogo = () => {
+      const updateThemeState = () => { // Renamed from updateThemeAndLogo
         const storedTheme = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         let newTheme = 'light';
@@ -35,17 +35,15 @@ const Header = () => {
         setCurrentTheme(newTheme);
         if (newTheme === 'dark') {
           document.documentElement.classList.add('dark');
-          setLogoSrc('/images/logo.png'); // Dark mode uses logo.png
         } else {
           document.documentElement.classList.remove('dark');
-          setLogoSrc('/images/logo_black.png'); // Light mode uses logo_black.png
         }
         if (!storedTheme && newTheme !== 'light') { // Store if based on prefersDark initially
             localStorage.setItem('theme', newTheme);
         }
       };
 
-      updateThemeAndLogo(); // Initial call
+      updateThemeState(); // Initial call
 
       // Listen for custom event to update header on login/logout
       const handleAuthChange = () => {
@@ -55,7 +53,7 @@ const Header = () => {
       window.addEventListener('authChange', handleAuthChange);
 
       // Observe class changes on html element for theme
-      const observer = new MutationObserver(updateThemeAndLogo);
+      const observer = new MutationObserver(updateThemeState);
       observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
       return () => {
@@ -71,11 +69,10 @@ const Header = () => {
     localStorage.setItem('theme', newTheme);
     if (newTheme === 'dark') {
       document.documentElement.classList.add('dark');
-      setLogoSrc('/images/logo.png');
     } else {
       document.documentElement.classList.remove('dark');
-      setLogoSrc('/images/logo_black.png');
     }
+    // No longer setting logoSrc here
   };
 
   const handleLinkClick = () => {
@@ -88,7 +85,7 @@ const Header = () => {
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Image
-              src={logoSrc} // Use dynamic logoSrc
+              src={logoSrc} // Will always be /images/logo.png
               alt="Dhanamanjuri University Logo"
               width={40}
               height={40}
@@ -172,7 +169,7 @@ const Header = () => {
         <div className="flex items-center justify-between mb-6">
             <Link href="/" onClick={handleLinkClick} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
               <Image
-                src={logoSrc} // Use dynamic logoSrc for mobile drawer
+                src={logoSrc} // Will always be /images/logo.png
                 alt="Dhanamanjuri University Logo"
                 width={32}
                 height={32}
