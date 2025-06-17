@@ -16,12 +16,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      {
+      { // Keep placehold.co for article list items or other placeholders
         protocol: 'https',
-        hostname: 'storage.googleapis.com',
+        hostname: 'placehold.co',
         port: '',
         pathname: '/**',
-      },
+      }
     ],
   },
 };

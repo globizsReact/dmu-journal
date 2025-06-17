@@ -1,80 +1,176 @@
 
 import type { JournalCategory, JournalEntry } from './types';
-import { FlaskConical, Library, Briefcase, Scale, Globe2, TrendingUp, PenLine, BookOpenText } from 'lucide-react';
+import { FlaskConical, Library, Briefcase, Scale } from 'lucide-react';
 
 export const journalCategories: JournalCategory[] = [
   {
     id: '1',
     name: 'Journal Of Sciences',
-    description: 'Exploring scientific discoveries and innovations.',
+    description: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges.',
     icon: FlaskConical,
     slug: 'journal-of-sciences',
     imagePath: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
-    imageHint: 'molecules science'
+    imageHint: 'molecules science',
+    abbreviation: 'J. Biophys. Struct. Biol.',
+    language: 'English',
+    issn: '2141-2200',
+    doiBase: '10.5897/JBSB',
+    startYear: 2009,
+    publishedArticlesCount: 25,
+    scope: {
+      introduction: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges. Our scope spans across a broad range of disciplines including, but not limited to:',
+      topics: [
+        'Physics',
+        'Chemistry',
+        'Biology',
+        'Environmental Science',
+        'Mathematics',
+        'Earth Sciences',
+        'Biotechnology',
+        'Computational Science',
+        'and Allied Interdisciplinary Fields'
+      ],
+      conclusion: 'The journal encourages submissions that are theoretically sound, methodologically rigorous, and innovative in approach—works that push the boundaries of current scientific understanding. We particularly welcome research that fosters interdisciplinary dialogue, promotes sustainable development, and offers practical solutions to contemporary scientific problems. By fostering academic excellence and nurturing collaborative inquiry, the Dhanamanjuri University Journal of Sciences strives to become a leading source of scholarly communication in the national and global research landscape.',
+    },
+    displayIssn: 'ISSN NO. E: 0973-9262',
+    copyrightYear: 2018,
   },
   {
     id: '2',
     name: 'Journal Of Humanities And Social Sciences',
-    description: 'Insights into culture, society, and human behavior.',
+    description: 'Insights into culture, society, and human behavior, fostering critical discourse and interdisciplinary approaches to understanding the human experience.',
     icon: Library,
     slug: 'journal-of-humanities-and-social-sciences',
     imagePath: 'https://images.pexels.com/photos/12064/pexels-photo-12064.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
-    imageHint: 'library books'
+    imageHint: 'library books',
+    abbreviation: 'J. Hum. Soc. Sci.',
+    language: 'English',
+    issn: '2315-5154',
+    doiBase: '10.5897/JHSS',
+    startYear: 2010,
+    publishedArticlesCount: 18,
+    scope: {
+      introduction: 'This journal provides a platform for scholarly work that explores the complexities of human cultures, social structures, and historical narratives. We encourage submissions that offer fresh perspectives and rigorous analysis.',
+      topics: ['History', 'Literature', 'Sociology', 'Anthropology', 'Philosophy', 'Cultural Studies'],
+      conclusion: 'We aim to be a leading voice in the humanities and social sciences, promoting research that is both intellectually stimulating and socially relevant.',
+    },
+    displayIssn: 'ISSN NO. E: 0973-1122',
+    copyrightYear: 2018,
   },
   {
     id: '3',
     name: 'Journal Of Business & Applied Research',
-    description: 'Advancing business practices and applied research.',
+    description: 'Advancing business practices and applied research through empirical studies, case analyses, and theoretical contributions that address contemporary business challenges.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
     imagePath: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
-    imageHint: 'graphs business'
+    imageHint: 'graphs business',
+    abbreviation: 'J. Bus. Appl. Res.',
+    language: 'English',
+    issn: '2006-9807',
+    doiBase: '10.5897/JBAR',
+    startYear: 2011,
+    publishedArticlesCount: 32,
+     scope: {
+      introduction: 'Dedicated to the dissemination of research in business, management, and applied economics. We welcome papers that offer practical insights and theoretical advancements.',
+      topics: ['Marketing', 'Management', 'Finance', 'Entrepreneurship', 'Supply Chain', 'Applied Economics'],
+      conclusion: 'Our goal is to bridge the gap between theory and practice, providing valuable knowledge for academics, practitioners, and policymakers.',
+    },
+    displayIssn: 'ISSN NO. E: 0974-5678',
+    copyrightYear: 2018,
   },
   {
     id: '4',
     name: 'Journal Of Legal Studies',
-    description: 'Critical analysis of law and legal systems.',
+    description: 'Critical analysis of law and legal systems, promoting scholarly debate on a wide range of legal issues, both domestic and international.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
     imagePath: 'https://images.pexels.com/photos/813269/pexels-photo-813269.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
-    imageHint: 'gavel law'
+    imageHint: 'gavel law',
+    abbreviation: 'J. Legal Stud.',
+    language: 'English',
+    issn: '1996-0840',
+    doiBase: '10.5897/JLS',
+    startYear: 2012,
+    publishedArticlesCount: 15,
+    scope: {
+      introduction: 'This journal offers a forum for in-depth examination of legal theories, doctrines, and reforms. We publish articles that are jurisprudentially significant and contribute to the understanding of law in society.',
+      topics: ['Constitutional Law', 'Criminal Law', 'International Law', 'Human Rights', 'Corporate Law', 'Legal Theory'],
+      conclusion: 'We aspire to enhance legal scholarship and inform legal practice through rigorous peer-reviewed research.',
+    },
+    displayIssn: 'ISSN NO. E: 0975-4321',
+    copyrightYear: 2018,
   },
 ];
 
-// Keeping existing example entries, they might need re-categorization or removal later
 export const journalEntries: JournalEntry[] = [
   {
-    id: 'j1',
-    title: 'Alpine Adventures',
-    content: 'The air was crisp and the view from the summit was breathtaking. Mountains stretched as far as the eye could see, their peaks dusted with fresh snow. We spent an hour just soaking it all in, feeling small against the vastness of nature. The descent was challenging but rewarding, filled with laughter and shared stories.',
+    id: 'CF00B3673110',
+    title: 'Stored Products And Postharvest Research',
+    content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest losses are mainly due to insect infestation, fragmentation, contamination by foreign matter such as sand, stones and animal droppings. This study aimed at determining the effect of improved postharvest handling practices on the quality and shelf life of Omena. The improved practices included use of raised drying racks, sorting, washing, salting and packaging in UV-treated polythene bags. The results showed that Omena dried on raised racks had significantly lower microbial counts compared to that dried on the ground. Salting significantly reduced microbial growth and extended the shelf life of Omena. Packaging in UV-treated polythene bags further extended the shelf life by preventing re-infestation by insects and reducing moisture uptake. It was concluded that improved postharvest handling practices significantly improve the quality and extend the shelf life of Omena.',
     date: '2023-07-15T10:00:00Z',
-    categoryId: '1', // Example: mapping to new "Journal of Sciences" if appropriate, or a general category
-    excerpt: 'The air was crisp and the view from the summit was breathtaking...'
+    categoryId: '1',
+    excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
+    authors: ['Dr. Jane Doe', 'Dr. John Smith'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'scientific research',
   },
   {
-    id: 'j2',
-    title: 'Coastal Charms',
-    content: 'The scent of salt and sea filled our lungs as we strolled along the picturesque coastline. Quaint fishing villages dotted the landscape, their colorful boats bobbing gently in the harbor. We discovered a hidden cove with crystal-clear water, perfect for an afternoon swim.',
+    id: 'CF00B3673111',
+    title: 'Impact of Social Media on Political Discourse',
+    content: 'This paper explores the multifaceted impact of social media platforms on contemporary political discourse. It examines how platforms like Twitter, Facebook, and Instagram have reshaped political campaigning, citizen engagement, and the spread of information (and misinformation). The study employs a mixed-methods approach, combining content analysis of social media data with surveys and interviews of political actors and citizens. Findings indicate that while social media offers unprecedented opportunities for direct communication and mobilization, it also contributes to political polarization, the proliferation of "echo chambers," and challenges to traditional media gatekeepers. The paper concludes with a discussion of policy implications and recommendations for fostering a healthier online political environment.',
     date: '2023-08-22T14:30:00Z',
-    categoryId: '2', // Example: mapping to "Journal of Humanities"
-    excerpt: 'The scent of salt and sea filled our lungs as we strolled along...'
-  },
-  {
-    id: 'j3',
-    title: 'Learning a New Language',
-    content: 'Embarking on the journey of learning Spanish has been both challenging and incredibly rewarding. Each new word and grammatical rule unlocked feels like a small victory. Conversations, however broken, are starting to flow, opening up a new world of connection.',
-    date: '2023-09-05T09:15:00Z',
     categoryId: '2',
-    excerpt: 'Embarking on the journey of learning Spanish has been both challenging...'
+    excerpt: 'This paper explores the multifaceted impact of social media platforms on contemporary political discourse. It examines how platforms like Twitter, Facebook, and Instagram have reshaped political campaigning...',
+    authors: ['Dr. Alice Brown'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'social media analysis',
   },
   {
-    id: 'j4',
-    title: 'Mastering Mindfulness',
-    content: 'Practicing mindfulness daily has transformed my perspective. Taking just ten minutes to focus on my breath and be present in the moment has reduced stress and increased my appreciation for the small things in life. It\'s an ongoing practice, but the benefits are undeniable.',
-    date: '2023-10-11T17:00:00Z',
-    categoryId: '3', // Example: mapping to "Journal of Business & Applied Research" if it's about productivity
-    excerpt: 'Practicing mindfulness daily has transformed my perspective...'
+    id: 'CF00B3673112',
+    title: 'Sustainable Business Models in Emerging Economies',
+    content: 'Emerging economies present unique challenges and opportunities for sustainable business development. This research investigates the characteristics of successful sustainable business models in these contexts, focusing on how companies integrate social, environmental, and economic considerations into their core strategies. Through a series of case studies across different sectors and countries, the study identifies key factors such as local community engagement, innovative use of technology, and adaptive supply chain management. The findings offer valuable insights for businesses seeking to achieve long-term viability and positive societal impact in emerging markets, highlighting the importance of context-specific approaches and stakeholder collaboration.',
+    date: '2023-09-05T09:15:00Z',
+    categoryId: '3',
+    excerpt: 'Emerging economies present unique challenges and opportunities for sustainable business development. This research investigates the characteristics of successful sustainable business models...',
+    authors: ['Prof. Charles Green', 'Dr. Diana White'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'business strategy',
   },
+   {
+    id: 'CF00B3673113',
+    title: 'The Role of Precedent in Judicial Decision-Making',
+    content: 'The doctrine of stare decisis, or adherence to precedent, is a cornerstone of common law legal systems. This article examines the theoretical underpinnings and practical application of precedent in judicial decision-making. It analyzes how judges interpret and apply past rulings, the circumstances under which they may deviate from precedent, and the impact of evolving social norms on established legal principles. Drawing on a comparative analysis of case law from various jurisdictions, the paper argues that while precedent provides stability and predictability, its application is a dynamic process that allows for legal evolution. The study also considers the challenges posed by novel legal questions and the increasing complexity of modern litigation.',
+    date: '2023-10-11T17:00:00Z',
+    categoryId: '4',
+    excerpt: 'The doctrine of stare decisis, or adherence to precedent, is a cornerstone of common law legal systems. This article examines the theoretical underpinnings and practical application of precedent...',
+    authors: ['Justice (Ret.) Edward Black', 'Prof. Laura Grey'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'legal documents',
+  },
+  // Add more entries for "Journal Of Sciences" to have a list
+  {
+    id: 'SCI002',
+    title: 'Quantum Entanglement and Its Applications',
+    content: 'A deep dive into the phenomenon of quantum entanglement and its potential applications in computing and communication. This paper reviews current experimental setups and theoretical models.',
+    date: '2023-11-01T11:00:00Z',
+    categoryId: '1',
+    excerpt: 'A deep dive into the phenomenon of quantum entanglement and its potential applications...',
+    authors: ['Dr. Quantum Physicist'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'quantum physics',
+  },
+  {
+    id: 'SCI003',
+    title: 'Advances in Renewable Energy Storage',
+    content: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy, critical for the transition to a sustainable energy future.',
+    date: '2023-11-15T15:30:00Z',
+    categoryId: '1',
+    excerpt: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy...',
+    authors: ['Dr. Energy Expert'],
+    imagePath: 'https://placehold.co/200x150.png',
+    imageHint: 'renewable energy',
+  }
 ];
 
 export const getCategoryBySlug = (slug: string): JournalCategory | undefined => {
