@@ -9,7 +9,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges.',
     icon: FlaskConical,
     slug: 'journal-of-sciences',
-    imagePath: '/images/journal-of-sciences.jpeg', // Updated path
+    imagePath: '/images/journal-of-sciences.jpeg', 
     imageHint: 'molecules science',
     abbreviation: 'J. Biophys. Struct. Biol.',
     language: 'English',
@@ -41,7 +41,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Insights into culture, society, and human behavior, fostering critical discourse and interdisciplinary approaches to understanding the human experience.',
     icon: Library,
     slug: 'journal-of-humanities-and-social-sciences',
-    imagePath: '/images/journal-of-humanities-and-social-sciences.jpeg', // Updated path
+    imagePath: '/images/journal-of-humanities-and-social-sciences.jpeg', 
     imageHint: 'library books',
     abbreviation: 'J. Hum. Soc. Sci.',
     language: 'English',
@@ -63,7 +63,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research through empirical studies, case analyses, and theoretical contributions that address contemporary business challenges.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: '/images/journal-of-business-and-applied-research.jpeg', // Updated path
+    imagePath: '/images/journal-of-business-and-applied-research.jpeg', 
     imageHint: 'graphs business',
     abbreviation: 'J. Bus. Appl. Res.',
     language: 'English',
@@ -85,7 +85,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems, promoting scholarly debate on a wide range of legal issues, both domestic and international.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: '/images/journal-of-legal-studies.jpeg', // Updated path
+    imagePath: '/images/journal-of-legal-studies.jpeg', 
     imageHint: 'gavel law',
     abbreviation: 'J. Legal Stud.',
     language: 'English',
@@ -112,8 +112,8 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '1',
     excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
-    imagePath: 'https://placehold.co/200x150.png',
-    imageHint: 'scientific research',
+    imagePath: '/images/j2.jpeg',
+    imageHint: 'science experiment',
   },
   {
     id: 'CF00B3673111',
@@ -123,8 +123,8 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '2',
     excerpt: 'This paper explores the multifaceted impact of social media platforms on contemporary political discourse. It examines how platforms like Twitter, Facebook, and Instagram have reshaped political campaigning...',
     authors: ['Dr. Alice Brown'],
-    imagePath: 'https://placehold.co/200x150.png',
-    imageHint: 'social media analysis',
+    imagePath: '/images/j3.jpeg',
+    imageHint: 'social analysis',
   },
   {
     id: 'CF00B3673112',
@@ -134,8 +134,8 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '3',
     excerpt: 'Emerging economies present unique challenges and opportunities for sustainable business development. This research investigates the characteristics of successful sustainable business models...',
     authors: ['Prof. Charles Green', 'Dr. Diana White'],
-    imagePath: 'https://placehold.co/200x150.png',
-    imageHint: 'business strategy',
+    imagePath: '/images/j1.jpeg',
+    imageHint: 'business report',
   },
    {
     id: 'CF00B3673113',
