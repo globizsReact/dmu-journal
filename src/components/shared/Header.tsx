@@ -97,9 +97,11 @@ const Header = () => {
             <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
               ABOUT US
             </Link>
-            <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
-              CALL FOR PAPER SUBMISSION
-            </Link>
+            {!isLoggedIn && (
+              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
+                CALL FOR PAPER SUBMISSION
+              </Link>
+            )}
             {isLoggedIn && (
               <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
                 DASHBOARD
@@ -178,13 +180,15 @@ const Header = () => {
         >
           ABOUT US
         </Link>
-        <Link
-          href="/submit"
-          onClick={handleLinkClick}
-          className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
-        >
-          CALL FOR PAPER SUBMISSION
-        </Link>
+        {!isLoggedIn && (
+          <Link
+            href="/submit"
+            onClick={handleLinkClick}
+            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          >
+            CALL FOR PAPER SUBMISSION
+          </Link>
+        )}
         {isLoggedIn && (
           <Link
             href="/author/dashboard"
