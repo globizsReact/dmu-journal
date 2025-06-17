@@ -150,7 +150,7 @@ const Header = () => {
       {/* Mobile Navigation Menu */}
       <nav
         className={`
-          fixed inset-y-0 right-0 w-3/4 max-w-xs bg-primary p-4 z-50 shadow-lg md:hidden
+          fixed inset-y-0 right-0 w-3/4 max-w-xs bg-black p-4 z-50 shadow-lg md:hidden
           transform transition-transform duration-300 ease-in-out
           ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
         `}
