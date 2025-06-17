@@ -27,15 +27,21 @@ export default function HomePage() {
 
         <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-              <Button
-                asChild
-                size="lg"
-                className="bg-[#1A8A6D] hover:bg-[#166F57] text-white px-8"
-              >
-                <Link href="/journals">View All Journals</Link>
-              </Button>
-              <GlobalSearchInput />
+            <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8">
+              {/* Search Input on the left */}
+              <div className="w-full md:flex-1">
+                <GlobalSearchInput />
+              </div>
+              {/* View All Journals Button on the right */}
+              <div className="w-full md:w-auto mt-4 md:mt-0">
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-[#1A8A6D] hover:bg-[#166F57] text-white px-8 w-full md:w-auto"
+                >
+                  <Link href="/journals">View All Journals</Link>
+                </Button>
+              </div>
             </div>
 
             <div className="text-center mb-12">
