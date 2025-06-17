@@ -1,6 +1,7 @@
 
 "use client"; 
 
+import type { ReactNode } from 'react';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
@@ -9,15 +10,222 @@ import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
 import { getCategoryBySlug, getJournalsByCategoryId } from '@/lib/data';
 import type { JournalCategory, JournalEntry } from '@/lib/types';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide-react';
+import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const SubNavItem = ({ href, icon: Icon, label }: { href: string; icon: React.ElementType; label: string }) => (
-  <Link href={href} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-md transition-colors">
+type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY' | 'AUTHORS_SECTION' | 'JOURNAL_ISSUES';
+
+const TabButton = ({ onClick, isActive, label, icon: Icon }: { onClick: () => void; isActive: boolean; label: string; icon: React.ElementType }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-muted",
+      isActive ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-foreground"
+    )}
+    aria-pressed={isActive}
+  >
     <Icon className="w-4 h-4" />
     {label}
-  </Link>
+  </button>
+);
+
+// Content Components for Tabs
+const AboutDMUJContent = () => (
+  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4 py-8">
+    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+      About DMUJ
+    </h2>
+    <p>
+      Welcome to the Dhanamanjuri University Journals (DMUJ) portal. This section provides comprehensive
+      information about DMUJ, our mission, vision, and the overarching objectives that guide our commitment
+      to fostering scholarly research and academic publishing excellence.
+    </p>
+    <p>
+      DMUJ is dedicated to the dissemination of high-quality, peer-reviewed research across a diverse
+      range of academic disciplines. We strive to support the academic community by providing a platform
+      for researchers to share their findings, innovations, and insights with a global audience.
+    </p>
+    <p>
+      Our core values include academic integrity, rigorous peer review, open access principles (where applicable),
+      and the promotion of interdisciplinary collaboration. We aim to contribute significantly to the body of
+      knowledge and support the intellectual development of scholars at all stages of their careers.
+    </p>
+    <p>
+      Explore further to learn about our specific journals, editorial policies, and submission guidelines.
+    </p>
+  </div>
+);
+
+const PublicationPolicyContent = () => (
+  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
+    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+      Publication Policy
+    </h2>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Peer Review Process</h3>
+      <p>
+        All manuscripts submitted to Dhanamanjuri University Journals undergo a rigorous double-blind peer review
+        process. Submissions are first assessed by the editorial team for suitability and adherence to journal
+        guidelines. Manuscripts that pass this initial screening are then sent to at least two independent
+        reviewers who are experts in the field. Reviewers provide detailed feedback and recommendations,
+        which form the basis for the editorial decision (accept, minor revisions, major revisions, or reject).
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Open Access</h3>
+      <p>
+        Dhanamanjuri University Journals are committed to promoting the widest possible dissemination of research.
+        Many of our journals operate on an open access model, ensuring that published articles are freely available
+        to the global academic community and the public. Specific open access policies, including any applicable
+        Article Processing Charges (APCs), are detailed on individual journal pages.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Copyright and Licensing</h3>
+      <p>
+        Authors retain copyright of their work published in DMUJ. Articles are typically published under a
+        Creative Commons license (e.g., CC BY), which allows for broad reuse with proper attribution.
+        Specific licensing terms are outlined during the submission process and on the article's publication page.
+      </p>
+    </section>
+     <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Archiving</h3>
+      <p>
+        To ensure long-term access and preservation of scholarly content, DMUJ utilizes digital archiving solutions.
+        Published articles are deposited in recognized academic repositories and digital archives.
+      </p>
+    </section>
+  </div>
+);
+
+const EthicsPolicyContent = () => (
+  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
+    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+      Ethics Policy
+    </h2>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Commitment to Integrity</h3>
+      <p>
+        Dhanamanjuri University Journals (DMUJ) are committed to upholding the highest standards of publication ethics.
+        We adhere to the principles outlined by organizations such as the Committee on Publication Ethics (COPE).
+        Integrity, honesty, and transparency are paramount in all aspects of our publishing process.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Authorship and Contributions</h3>
+      <p>
+        All listed authors must have made a significant intellectual contribution to the research and manuscript preparation.
+        The corresponding author is responsible for ensuring all co-authors have approved the final manuscript and agree
+        to its submission. Any changes to authorship post-submission must be approved by all authors.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Plagiarism and Originality</h3>
+      <p>
+        Submissions must be original work and not previously published elsewhere, nor under consideration by another
+        journal. DMUJ employs plagiarism detection software to screen all submissions. Manuscripts found to contain
+        plagiarized content will be rejected. Proper citation and attribution of sources are mandatory.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Data Sharing and Reproducibility</h3>
+      <p>
+        Authors are encouraged to share their data and make their research methods transparent to facilitate reproducibility.
+        Specific data sharing policies may vary by journal and discipline.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Conflicts of Interest</h3>
+      <p>
+        Authors, reviewers, and editors must disclose any potential conflicts of interest that could influence their
+        judgment or the integrity of the publication process. This includes financial, personal, or professional relationships.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Corrections and Retractions</h3>
+      <p>
+        DMUJ will issue corrections or retractions if significant errors or misconduct are identified post-publication,
+        following COPE guidelines.
+      </p>
+    </section>
+  </div>
+);
+
+const AuthorsSectionContent = () => (
+  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
+    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+      Authors Section
+    </h2>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Submission Guidelines</h3>
+      <p>
+        Authors wishing to submit their manuscripts to Dhanamanjuri University Journals (DMUJ) should carefully
+        review the specific guidelines for the target journal. General guidelines include manuscript formatting,
+        word limits, citation styles (e.g., APA, MLA, Chicago), and requirements for figures and tables.
+        Submissions are typically made through our online submission portal.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Manuscript Preparation</h3>
+      <p>
+        Manuscripts should be well-structured, clearly written in English, and free of grammatical errors.
+        Ensure that the research methodology is sound and the findings are presented logically.
+        Include an abstract, keywords, introduction, methods, results, discussion, and conclusion, as appropriate
+        for the article type. Anonymize the manuscript for double-blind peer review by removing author-identifying
+        information from the main text and properties.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Copyright and Permissions</h3>
+      <p>
+        Authors are responsible for obtaining necessary permissions for any copyrighted material (e.g., figures, tables)
+        reproduced from other sources. Upon acceptance, authors will typically be asked to sign a copyright agreement
+        or a license-to-publish form.
+      </p>
+    </section>
+    <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Review Process</h3>
+      <p>
+        Familiarize yourself with our peer review process. Authors will receive feedback from reviewers and the
+        editorial team. Prompt and thorough responses to reviewer comments are crucial for timely publication.
+      </p>
+    </section>
+     <section>
+      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Contact Information</h3>
+      <p>
+        For any queries regarding submissions or the publication process, please contact the editorial office
+        of the respective journal. Contact details can be found on each journal's dedicated page.
+      </p>
+    </section>
+  </div>
+);
+
+const CategoryIssuesContent = ({ category }: { category: JournalCategory | null }) => (
+  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4 py-8">
+    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+      Journal Issues for {category?.name || 'this category'}
+    </h2>
+    <p>
+      This page will list all the past and current journal issues for <strong>{category?.name || 'this category'}</strong>.
+      Each issue could be presented with its volume number, issue number, publication date, and a link to view
+      the articles contained within that specific issue.
+    </p>
+    <p>
+      Currently, detailed issue listings are under development. Please check back later for updates.
+    </p>
+    <p>
+      Future enhancements could include:
+    </p>
+    <ul className="list-disc pl-5 space-y-1">
+      <li>A searchable and filterable list of issues.</li>
+      <li>Table of contents for each issue.</li>
+      <li>Links to download full issues if available.</li>
+      <li>Details of special issues or thematic collections.</li>
+    </ul>
+  </div>
 );
 
 
@@ -29,6 +237,7 @@ export default function CategoryPage() {
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedView, setSelectedView] = useState<string | null>("Most Recent"); // Default view
+  const [activeTab, setActiveTab] = useState<TabKey>('OVERVIEW');
 
   useEffect(() => {
     if (slug) {
@@ -36,7 +245,6 @@ export default function CategoryPage() {
       if (foundCategory) {
         setCategory(foundCategory);
         const categoryJournals = getJournalsByCategoryId(foundCategory.id);
-        // Add sorting logic here based on selectedView if implementing full functionality
         setEntries(categoryJournals);
       } else {
         console.error("Category not found");
@@ -45,13 +253,25 @@ export default function CategoryPage() {
     }
   }, [slug]);
 
+  const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
+    { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
+    { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
+    { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
+    { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
+    { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
+    { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
+  ];
+
+
   if (isLoading) {
-    // You might want to create a more detailed skeleton loader matching the new layout
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        <main className="flex-1 container mx-auto px-4 py-8 text-center">
-          <p className="text-xl text-muted-foreground">Loading journal category...</p>
+        <main className="flex-1 container mx-auto px-4 py-8">
+          {/* Using the full page skeleton from loading.tsx implicitly */}
+           <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
+           <Skeleton className="h-8 w-full mb-6" />
+           <Skeleton className="h-64 w-full" />
         </main>
         <Footer />
       </div>
@@ -76,8 +296,6 @@ export default function CategoryPage() {
     );
   }
 
-  const CategoryIcon = category.icon;
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -98,57 +316,71 @@ export default function CategoryPage() {
         </div>
       </section>
 
-      {/* Sub-Navigation Bar */}
+      {/* Tab Navigation Bar */}
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center md:justify-start items-center py-2 gap-1">
-            <SubNavItem href="/" icon={Home} label="Home" />
-            <SubNavItem href="/about-dmuj" icon={Info} label="About DMUJ" />
-            <SubNavItem href="/publication-policy" icon={FileText} label="Publication Policy" />
-            <SubNavItem href="/ethics-policy" icon={Shield} label="Ethics Policy" />
-            <SubNavItem href="/authors-section" icon={Users} label="Authors Section" />
-            <SubNavItem href={`/category/${category.slug}/issues`} icon={BookOpen} label="Journal Issues" />
+          <div className="flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
+            <Link href="/" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-md transition-colors">
+              <Home className="w-4 h-4" /> Home
+            </Link>
+            {TABS_CONFIG.map(tabInfo => (
+              <TabButton
+                key={tabInfo.key}
+                label={tabInfo.label}
+                icon={tabInfo.icon}
+                isActive={activeTab === tabInfo.key}
+                onClick={() => setActiveTab(tabInfo.key)}
+              />
+            ))}
           </div>
         </div>
       </nav>
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        {/* Scope Section */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category.name}</h2>
-          {category.scope?.introduction && <p className="text-foreground/80 mb-4 font-body">{category.scope.introduction}</p>}
-          {category.scope?.topics && category.scope.topics.length > 0 && (
-            <ul className="list-disc list-inside space-y-1 mb-4 font-body text-foreground/80 pl-4">
-              {category.scope.topics.map(topic => <li key={topic}>{topic}</li>)}
-            </ul>
-          )}
-          {category.scope?.conclusion && <p className="text-foreground/80 font-body">{category.scope.conclusion}</p>}
-          {!category.scope && <p className="text-foreground/80 font-body">{category.description}</p>}
-        </section>
+        {activeTab === 'OVERVIEW' && (
+          <>
+            <section className="mb-12">
+              <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category.name}</h2>
+              {category.scope?.introduction && <p className="text-foreground/80 mb-4 font-body">{category.scope.introduction}</p>}
+              {category.scope?.topics && category.scope.topics.length > 0 && (
+                <ul className="list-disc list-inside space-y-1 mb-4 font-body text-foreground/80 pl-4">
+                  {category.scope.topics.map(topic => <li key={topic}>{topic}</li>)}
+                </ul>
+              )}
+              {category.scope?.conclusion && <p className="text-foreground/80 font-body">{category.scope.conclusion}</p>}
+              {!category.scope && <p className="text-foreground/80 font-body">{category.description}</p>}
+            </section>
 
-        <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
-        
-        <div className="space-y-8">
-          {entries.length > 0 ? (
-            entries.map((entry) => (
-              <ArticleListItemCard 
-                key={entry.id} 
-                entry={entry} 
-                categoryName={category.name}
-              />
-            ))
-          ) : (
-            <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
-          )}
-        </div>
+            <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
+            
+            <div className="space-y-8">
+              {entries.length > 0 ? (
+                entries.map((entry) => (
+                  <ArticleListItemCard 
+                    key={entry.id} 
+                    entry={entry} 
+                    categoryName={category.name}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
+              )}
+            </div>
 
-        <div className="mt-12 text-center">
-            <Button asChild variant="outline">
-                <Link href="/" className="inline-flex items-center">
-                    <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Journals
-                </Link>
-            </Button>
-        </div>
+            <div className="mt-12 text-center">
+                <Button asChild variant="outline">
+                    <Link href="/" className="inline-flex items-center">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Journals
+                    </Link>
+                </Button>
+            </div>
+          </>
+        )}
+        {activeTab === 'ABOUT_DMUJ' && <AboutDMUJContent />}
+        {activeTab === 'PUBLICATION_POLICY' && <PublicationPolicyContent />}
+        {activeTab === 'ETHICS_POLICY' && <EthicsPolicyContent />}
+        {activeTab === 'AUTHORS_SECTION' && <AuthorsSectionContent />}
+        {activeTab === 'JOURNAL_ISSUES' && <CategoryIssuesContent category={category} />}
       </main>
 
       {/* ISSN and Copyright Section */}
