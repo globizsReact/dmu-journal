@@ -4,33 +4,33 @@
 
 @layer base {
   :root {
-    --background: 276 56% 92%; /* Light lavender */
-    --foreground: 270 10% 20%; /* Darker tone for readability on lavender */
+    --background: 0 0% 100%; /* White */
+    --foreground: 210 10% 23%; /* Dark Gray for text on white */
 
-    --card: 276 50% 96%; /* Slightly off-lavender for cards */
-    --card-foreground: 270 10% 20%;
+    --card: 0 0% 100%; /* Card background - white */
+    --card-foreground: 210 10% 23%; /* Card foreground text */
 
-    --popover: 276 50% 96%;
-    --popover-foreground: 270 10% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 10% 23%;
 
-    --primary: 261 52% 48%; /* Deep purple */
-    --primary-foreground: 261 30% 95%; /* Light color for contrast on deep purple */
+    --primary: 197 70% 14%; /* Dark Blue/Teal */
+    --primary-foreground: 0 0% 98%; /* Light text for on primary */
 
-    --secondary: 280 50% 85%; /* A slightly different lavender shade for secondary elements */
-    --secondary-foreground: 261 52% 48%;
+    --secondary: 197 48% 23%; /* Lighter Blue/Teal - for banner */
+    --secondary-foreground: 0 0% 98%; /* Light text for on secondary */
 
-    --muted: 280 40% 88%;
-    --muted-foreground: 270 10% 45%;
+    --muted: 210 20% 94%; /* Lighter gray for muted elements */
+    --muted-foreground: 210 10% 45%; /* Muted text */
 
-    --accent: 340 82% 52%; /* Muted rose */
-    --accent-foreground: 340 30% 95%; /* Light color for contrast on rose */
+    --accent: 51 100% 50%; /* Yellow */
+    --accent-foreground: 210 10% 10%; /* Dark text for on accent */
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 276 30% 80%;
-    --input: 276 30% 85%;
-    --ring: 261 52% 48%; /* Primary color for rings */
+    --border: 210 10% 80%; /* Border color */
+    --input: 210 10% 85%; /* Input background */
+    --ring: 197 70% 25%; /* Ring color, slightly lighter primary */
 
     --radius: 0.5rem;
 
@@ -42,34 +42,34 @@
   }
 
   .dark {
-    /* Keeping dark mode, though not specifically requested, good practice */
-    --background: 261 30% 15%; 
-    --foreground: 276 30% 90%;
+    /* Dark mode based on the new primary color */
+    --background: 197 70% 8%; /* Very dark teal */
+    --foreground: 0 0% 95%; /* Light gray text */
 
-    --card: 261 30% 20%;
-    --card-foreground: 276 30% 90%;
+    --card: 197 70% 12%; 
+    --card-foreground: 0 0% 95%;
 
-    --popover: 261 30% 10%;
-    --popover-foreground: 276 30% 90%;
+    --popover: 197 70% 5%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 261 60% 65%;
-    --primary-foreground: 261 10% 10%;
+    --primary: 197 70% 35%; /* Lighter teal for dark mode primary */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 280 30% 25%;
-    --secondary-foreground: 276 30% 90%;
+    --secondary: 197 48% 30%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 280 30% 22%;
-    --muted-foreground: 276 30% 60%;
+    --muted: 197 30% 22%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 340 70% 60%;
-    --accent-foreground: 340 10% 10%;
+    --accent: 51 100% 60%; /* Slightly brighter yellow for dark mode */
+    --accent-foreground: 197 70% 8%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 45%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 261 30% 25%;
-    --input: 261 30% 25%;
-    --ring: 261 60% 65%;
+    --border: 197 70% 20%;
+    --input: 197 70% 20%;
+    --ring: 197 70% 40%;
   }
 }
 
@@ -82,6 +82,6 @@
     @apply antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline; /* Current font style, can be changed if user wants */
   }
 }
