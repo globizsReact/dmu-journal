@@ -8,6 +8,7 @@ import DashboardSidebar from '@/components/author/DashboardSidebar';
 import DashboardStatCard from '@/components/author/DashboardStatCard';
 import type { DashboardStatCardProps } from '@/components/author/DashboardStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; // New import
 
 const dashboardItems: DashboardStatCardProps[] = [
   { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
@@ -25,18 +26,7 @@ const dashboardItems: DashboardStatCardProps[] = [
   { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
 ];
 
-// Placeholder components for tab content
-const SubmitManuscriptView = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Submit New Manuscript</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-foreground/80">Detailed form and instructions for submitting a new manuscript will appear here. This section will guide authors through the process of uploading their research work, providing metadata, and agreeing to submission terms.</p>
-    </CardContent>
-  </Card>
-);
-
+// Placeholder components for other tab content
 const MyManuscriptView = () => (
   <Card>
     <CardHeader>
@@ -76,8 +66,7 @@ export default function AuthorDashboardPage() {
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
           {activeTab === 'dashboard' && (
             <>
-              {/* The h1 title "Author Dashboard" was removed from here */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> {/* Added mb-8 to compensate for removed title margin */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {dashboardItems.map((item) => (
                   <DashboardStatCard
                     key={item.title}
@@ -94,7 +83,7 @@ export default function AuthorDashboardPage() {
               </div>
             </>
           )}
-          {activeTab === 'submitManuscript' && <SubmitManuscriptView />}
+          {activeTab === 'submitManuscript' && <SubmitManuscriptStepper />}
           {activeTab === 'myManuscript' && <MyManuscriptView />}
           {activeTab === 'editProfile' && <EditProfileView />}
         </main>
