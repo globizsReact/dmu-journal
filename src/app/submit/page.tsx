@@ -55,12 +55,13 @@ export default function SubmitPage() {
 
   // Effect to clear login status on page load if not remembered
   useEffect(() => {
+    // This effect is kept for potential future re-integration of auth
+    // For now, it doesn't impact direct navigation.
     if (typeof window !== 'undefined') {
       const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
       if (!rememberMe) {
         localStorage.removeItem('isAuthorLoggedIn');
       }
-      // Optionally, pre-fill username if remembered
       const rememberedUsername = localStorage.getItem('rememberedUsername');
       if (rememberMe && rememberedUsername) {
         form.setValue('username', rememberedUsername);
@@ -72,49 +73,20 @@ export default function SubmitPage() {
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('isAuthorLoggedIn', 'true');
-          localStorage.setItem('authorName', data.user.name); // Store author's name
-          if (values.rememberMe) {
-            localStorage.setItem('rememberAuthorLogin', 'true');
-            localStorage.setItem('rememberedUsername', values.username); // Remember username
-          } else {
-            localStorage.removeItem('rememberAuthorLogin');
-            localStorage.removeItem('rememberedUsername');
-          }
-        }
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${data.user.name}!`,
-        });
-        router.push('/author/dashboard');
-      } else {
-        toast({
-          title: "Login Failed",
-          description: data.error || "Invalid credentials.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-        console.error("Login API error:", error);
-        toast({
-          title: "Login Error",
-          description: "An unexpected error occurred. Please try again.",
-          variant: "destructive",
-        });
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Simulate a short delay then navigate
+    // No actual authentication call is made
+    console.log('Attempting mock login with:', values);
+    toast({
+      title: "Navigating to Dashboard",
+      description: "Taking you to the author dashboard...",
+    });
+    
+    // Direct navigation to the dashboard
+    router.push('/author/dashboard');
+    
+    // No need to setIsSubmitting(false) if navigating away,
+    // but good practice if there was a chance of staying on page.
+    // For this direct navigation, it's less critical.
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
@@ -222,7 +194,7 @@ export default function SubmitPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing In...
+                        Proceeding...
                       </>
                     ) : (
                       'Sign In'
