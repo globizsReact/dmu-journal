@@ -67,7 +67,7 @@ export default function AuthorDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-muted">
       <Header />
-      <div className="flex flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
+      <div className="flex flex-col lg:flex-row flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
         <DashboardSidebar 
           authorName={authorName} 
           activeTab={activeTab}

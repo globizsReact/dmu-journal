@@ -7,9 +7,9 @@ export default function LoadingAuthorDashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-muted">
       <Header />
-      <div className="flex flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
+      <div className="flex flex-col lg:flex-row flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
         {/* Sidebar Skeleton */}
-        <aside className="w-full lg:w-64 hidden lg:block self-start">
+        <aside className="w-full lg:w-64 self-start"> {/* Removed hidden lg:block */}
           <div className="mb-6 px-3 pt-3">
             <Skeleton className="h-6 w-1/3 mb-1" />
             <Skeleton className="h-4 w-1/2 mb-6" />
