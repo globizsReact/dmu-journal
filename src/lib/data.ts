@@ -36,7 +36,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://storage.googleapis.com/otoroshi-dev-public-assets/image-gen-test/39394d64-c90b-4db9-8522-217f7a80a464.png',
     imageHint: 'gavel law'
   },
 ];
