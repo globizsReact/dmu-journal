@@ -7,11 +7,11 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <Image 
-            src="https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=50&h=50&dpr=1" 
-            alt="University Crest" 
+            src="/images/logo.png" 
+            alt="Dhanamanjuri University Logo" 
             width={40} 
             height={40} 
-            data-ai-hint="university crest"
+            data-ai-hint="university logo"
             className="rounded-full"
           />
           <div>

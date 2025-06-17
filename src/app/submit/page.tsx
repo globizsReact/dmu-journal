@@ -29,11 +29,11 @@ export default function SubmitPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-col items-center pt-8 pb-6">
             <Image
-              src="https://images.pexels.com/photos/207692/pexels-photo-207692.jpeg?auto=compress&cs=tinysrgb&w=60&h=60&dpr=1"
-              alt="University Crest"
+              src="/images/logo.png"
+              alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
-              data-ai-hint="university crest"
+              data-ai-hint="university logo"
               className="rounded-full mb-2"
             />
             <h1 className="text-xl font-headline text-primary">Dhanamanjuri University</h1>
