@@ -9,7 +9,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Exploring scientific discoveries and innovations.',
     icon: FlaskConical,
     slug: 'journal-of-sciences',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
     imageHint: 'molecules science'
   },
   {
@@ -18,7 +18,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Insights into culture, society, and human behavior.',
     icon: Library,
     slug: 'journal-of-humanities-and-social-sciences',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://images.pexels.com/photos/12064/pexels-photo-12064.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
     imageHint: 'library books'
   },
   {
@@ -27,7 +27,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
     imageHint: 'graphs business'
   },
   {
@@ -36,7 +36,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: 'https://placehold.co/400x300.png',
+    imagePath: 'https://images.pexels.com/photos/813269/pexels-photo-813269.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
     imageHint: 'gavel law'
   },
 ];
