@@ -58,8 +58,8 @@ export default function SignupPage() {
 
   useEffect(() => {
     const updateLogo = () => {
-      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-      setLogoSrc(theme === 'dark' ? '/images/logo_black.png' : '/images/logo.png');
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      setLogoSrc(isDarkMode ? '/images/logo_black.png' : '/images/logo.png');
     };
 
     updateLogo(); // Set initial logo
@@ -92,21 +92,19 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     setIsSubmitting(true);
-    // Simulate API call / User creation
     console.log('Mock Sign Up Attempt with values:', {
         fullName: values.fullName,
         username: values.username,
         email: values.email,
     });
 
-    // Simulate successful user creation after a short delay
     setTimeout(() => {
       toast({
         title: 'Account Created Successfully (Mock)!',
         description: 'You can now sign in with your new credentials.',
         variant: 'default',
       });
-      router.push('/submit'); // Redirect to login page
+      router.push('/submit'); 
       setIsSubmitting(false);
     }, 1000);
   };
