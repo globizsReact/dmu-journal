@@ -27,7 +27,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: '/assets/images/journal-business-applied-research.png', // Updated path
+    imagePath: 'https://placehold.co/400x300.png',
     imageHint: 'graphs business'
   },
   {
@@ -36,7 +36,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: '/assets/images/journal-legal-studies.png', // Updated path
+    imagePath: 'https://placehold.co/400x300.png',
     imageHint: 'gavel law'
   },
 ];
