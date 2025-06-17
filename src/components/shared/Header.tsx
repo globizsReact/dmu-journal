@@ -83,7 +83,7 @@ const Header = () => {
               data-ai-hint="university logo"
               className="rounded-full"
             />
-            <div>
+            <div className="hidden lg:block">
               <h1 className="text-xl md:text-2xl font-headline">Dhanamanjuri University</h1>
               <p className="text-xs md:text-sm font-body opacity-80">JOURNAL</p>
             </div>
