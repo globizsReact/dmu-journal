@@ -114,6 +114,8 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
     imagePath: '/images/j2.png',
     imageHint: 'scientific research',
+    views: 150,
+    shares: 30,
   },
   {
     id: 'CF00B3673111',
@@ -125,6 +127,8 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Dr. Alice Brown'],
     imagePath: '/images/j3.png',
     imageHint: 'social analysis',
+    views: 220,
+    shares: 55,
   },
   {
     id: 'CF00B3673112',
@@ -136,6 +140,8 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Prof. Charles Green', 'Dr. Diana White'],
     imagePath: '/images/j1.png',
     imageHint: 'business report',
+    views: 180,
+    shares: 40,
   },
    {
     id: 'CF00B3673113',
@@ -147,8 +153,9 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Justice (Ret.) Edward Black', 'Prof. Laura Grey'],
     imagePath: '/images/j4.png',
     imageHint: 'legal documents law',
+    views: 95,
+    shares: 15,
   },
-  // Add more entries for "Journal Of Sciences" to have a list
   {
     id: 'SCI002',
     title: 'Quantum Entanglement and Its Applications',
@@ -159,6 +166,8 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Dr. Quantum Physicist'],
     imagePath: 'https://placehold.co/200x150.png',
     imageHint: 'quantum physics',
+    views: 300,
+    shares: 70,
   },
   {
     id: 'SCI003',
@@ -170,6 +179,8 @@ export const journalEntries: JournalEntry[] = [
     authors: ['Dr. Energy Expert'],
     imagePath: 'https://placehold.co/200x150.png',
     imageHint: 'renewable energy',
+    views: 250,
+    shares: 60,
   }
 ];
 

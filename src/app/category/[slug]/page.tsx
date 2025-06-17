@@ -234,9 +234,10 @@ export default function CategoryPage() {
   const slug = params.slug as string;
 
   const [category, setCategory] = useState<JournalCategory | null>(null);
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [allCategoryJournals, setAllCategoryJournals] = useState<JournalEntry[]>([]);
+  const [displayedEntries, setDisplayedEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedView, setSelectedView] = useState<string | null>("Most Recent"); // Default view
+  const [selectedView, setSelectedView] = useState<string>("Most Recent");
   const [activeTab, setActiveTab] = useState<TabKey>('OVERVIEW');
 
   useEffect(() => {
@@ -244,14 +245,32 @@ export default function CategoryPage() {
       const foundCategory = getCategoryBySlug(slug);
       if (foundCategory) {
         setCategory(foundCategory);
-        const categoryJournals = getJournalsByCategoryId(foundCategory.id);
-        setEntries(categoryJournals);
+        const baseJournals = getJournalsByCategoryId(foundCategory.id);
+        setAllCategoryJournals(baseJournals);
       } else {
         console.error("Category not found");
+        setCategory(null);
+        setAllCategoryJournals([]);
       }
       setIsLoading(false);
     }
   }, [slug]);
+
+  useEffect(() => {
+    if (allCategoryJournals.length > 0) {
+      let sortedJournals = [...allCategoryJournals];
+      if (selectedView === "Most Recent") {
+        sortedJournals.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      } else if (selectedView === "Most View") {
+        sortedJournals.sort((a, b) => (b.views || 0) - (a.views || 0));
+      } else if (selectedView === "Most Shared") {
+        sortedJournals.sort((a, b) => (b.shares || 0) - (a.shares || 0));
+      }
+      setDisplayedEntries(sortedJournals);
+    } else {
+      setDisplayedEntries([]);
+    }
+  }, [allCategoryJournals, selectedView]);
 
   const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
     { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
@@ -268,7 +287,6 @@ export default function CategoryPage() {
       <div className="flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8">
-          {/* Using the full page skeleton from loading.tsx implicitly */}
            <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
            <Skeleton className="h-8 w-full mb-6" />
            <Skeleton className="h-64 w-full" />
@@ -354,8 +372,8 @@ export default function CategoryPage() {
             <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
             
             <div className="space-y-8">
-              {entries.length > 0 ? (
-                entries.map((entry) => (
+              {displayedEntries.length > 0 ? (
+                displayedEntries.map((entry) => (
                   <ArticleListItemCard 
                     key={entry.id} 
                     entry={entry} 
@@ -363,7 +381,10 @@ export default function CategoryPage() {
                   />
                 ))
               ) : (
-                <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
+                 allCategoryJournals.length > 0 && selectedView ? 
+                  <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for the current filter.</p>
+                  :
+                  <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
               )}
             </div>
 
@@ -396,3 +417,4 @@ export default function CategoryPage() {
     </div>
   );
 }
+

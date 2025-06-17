@@ -35,5 +35,7 @@ export interface JournalEntry {
   doiSuffix?: string; 
   imagePath?: string; 
   imageHint?: string; 
+  views?: number;
+  shares?: number;
 }
 
