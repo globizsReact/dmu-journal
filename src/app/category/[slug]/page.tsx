@@ -130,7 +130,7 @@ export default function CategoryPage() {
         
         <div className="space-y-8">
           {entries.length > 0 ? (
-            entries.map((entry, index) => (
+            entries.map((entry) => (
               <ArticleListItemCard 
                 key={entry.id} 
                 entry={entry} 
