@@ -1,17 +1,17 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Added React and useRef
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'; // Still needed for Sign In button
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
+// import { Separator } from '@/components/ui/separator'; // No longer needed for tabs
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils'; // Added cn
 
 type ActiveTab = 'author' | 'editor' | 'reviewer';
 
@@ -37,21 +38,55 @@ const LoginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof LoginSchema>;
 
+const TABS_CONFIG = [
+  { key: 'author' as ActiveTab, label: 'Author' },
+  { key: 'editor' as ActiveTab, label: 'Editor' },
+  { key: 'reviewer' as ActiveTab, label: 'Reviewer' },
+];
+
+interface TabButtonProps {
+  children: React.ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}
+
+const TabButton = React.forwardRef<HTMLButtonElement, TabButtonProps>(
+  ({ children, isActive, onClick, disabled }, ref) => {
+    return (
+      <button
+        ref={ref}
+        onClick={onClick}
+        disabled={disabled}
+        className={cn(
+          "px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background rounded-t-sm",
+          isActive ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
+        )}
+        role="tab"
+        aria-selected={isActive}
+      >
+        {children}
+      </button>
+    );
+  }
+);
+TabButton.displayName = 'TabButton';
+
 export default function SubmitPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('author');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); 
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png');
+  const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0, opacity: 0 });
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>(new Array(TABS_CONFIG.length).fill(null));
 
   useEffect(() => {
     const updateLogo = () => {
       const isDarkMode = document.documentElement.classList.contains('dark');
       setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
     };
-
-    updateLogo(); 
-
+    updateLogo();
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
         if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
@@ -59,14 +94,9 @@ export default function SubmitPage() {
         }
       }
     });
-
     observer.observe(document.documentElement, { attributes: true });
-
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
-
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -88,14 +118,35 @@ export default function SubmitPage() {
     }
   }, [form]);
 
+  useEffect(() => {
+    const activeTabIndex = TABS_CONFIG.findIndex(t => t.key === activeTab);
+    const currentTabElement = tabRefs.current[activeTabIndex];
+
+    if (currentTabElement) {
+      const timeoutId = setTimeout(() => {
+        // Re-check element in timeout in case of quick tab changes
+        const currentEl = tabRefs.current[TABS_CONFIG.findIndex(t => t.key === activeTab)];
+        if (currentEl) {
+          setUnderlineStyle({
+            width: currentEl.offsetWidth,
+            left: currentEl.offsetLeft,
+            opacity: 1,
+          });
+        }
+      }, 0); // Using timeout to ensure DOM is updated for measurements
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Hide underline if tab element not found (e.g., during initial render before refs are set)
+      setUnderlineStyle({ width: 0, left: 0, opacity: 0 });
+    }
+  }, [activeTab]); // Rerun when activeTab changes
+
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-
     if (typeof window !== 'undefined') {
       localStorage.setItem('isAuthorLoggedIn', 'true');
-      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); 
-      
+      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma');
       if (values.rememberMe && values.username) {
         localStorage.setItem('rememberAuthorLogin', 'true');
         localStorage.setItem('rememberedUsername', values.username);
@@ -105,42 +156,40 @@ export default function SubmitPage() {
       }
       window.dispatchEvent(new CustomEvent('authChange'));
     }
-
     toast({
       title: "Navigating to Dashboard",
       description: "You are being redirected.",
     });
-    
     router.push('/author/dashboard');
+    // setIsSubmitting will be set to false implicitly if component unmounts
+    // or can be set after a timeout if needed.
   };
-
-  const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
-    <Button
-      variant={activeTab === tab ? 'default' : 'ghost'}
-      onClick={() => setActiveTab(tab)}
-      className={`
-        px-4 py-2 text-lg font-medium
-        ${activeTab === tab ? 'text-primary-foreground' : 'text-foreground/80 hover:text-primary'}
-        transition-colors
-      `}
-      disabled={isSubmitting && activeTab === 'author'}
-    >
-      {children}
-    </Button>
-  );
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-muted to-secondary/10">
       <Header />
-
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center space-x-1 md:space-x-3 bg-muted p-1 rounded-lg">
-            <TabButton tab="author">Author</TabButton>
-            <Separator orientation="vertical" className="h-5 bg-border mx-1 md:mx-2" />
-            <TabButton tab="editor">Editor</TabButton>
-            <Separator orientation="vertical" className="h-5 bg-border mx-1 md:mx-2" />
-            <TabButton tab="reviewer">Reviewer</TabButton>
+          <div className="relative inline-flex items-center space-x-1 md:space-x-2 p-1">
+            {TABS_CONFIG.map((tabInfo, index) => (
+              <TabButton
+                key={tabInfo.key}
+                ref={el => (tabRefs.current[index] = el)}
+                isActive={activeTab === tabInfo.key}
+                onClick={() => setActiveTab(tabInfo.key)}
+                disabled={isSubmitting}
+              >
+                {tabInfo.label}
+              </TabButton>
+            ))}
+            <div
+              className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
+              style={{
+                width: `${underlineStyle.width}px`,
+                left: `${underlineStyle.left}px`,
+                opacity: underlineStyle.opacity,
+              }}
+            />
           </div>
         </div>
 
@@ -255,7 +304,6 @@ export default function SubmitPage() {
           2025 Academic Journal
         </p>
       </main>
-
       <Footer />
     </div>
   );
