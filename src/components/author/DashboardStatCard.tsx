@@ -22,30 +22,30 @@ export default function DashboardStatCard({
   viewAllHref,
   actionButton,
 }: DashboardStatCardProps) {
-  let cardClasses = 'text-white';
+  let cardClasses = 'text-white rounded-none'; // Added rounded-none
   let titleClasses = 'opacity-90';
-  let valueClasses = 'text-3xl md:text-4xl font-bold'; // Reduced font size
+  let valueClasses = 'text-3xl md:text-4xl font-bold';
   let viewAllLinkClasses = 'text-white/80 hover:text-white';
   let actionButtonClasses = '';
 
   if (variant === 'default') {
-    cardClasses = cn(cardClasses, 'bg-slate-600'); // Dark gray
+    cardClasses = cn(cardClasses, 'bg-slate-600'); 
   } else if (variant === 'info') {
-    cardClasses = cn(cardClasses, 'bg-blue-600'); // Blue
+    cardClasses = cn(cardClasses, 'bg-blue-600'); 
   } else if (variant === 'success') {
-    cardClasses = cn(cardClasses, 'bg-green-600'); // Green
+    cardClasses = cn(cardClasses, 'bg-green-600'); 
     actionButtonClasses = 'bg-white text-green-700 hover:bg-slate-100 font-semibold shadow-sm';
   }
 
   return (
-    <Card className={cn("shadow-lg flex flex-col justify-between", cardClasses)}> {/* Removed h-full */}
-      <CardHeader className="pt-3 pb-1 px-3"> {/* Reduced padding */}
+    <Card className={cn("shadow-lg flex flex-col justify-between", cardClasses)}>
+      <CardHeader className="pt-3 pb-1 px-3">
         <p className={cn("text-xs uppercase tracking-wider font-medium", titleClasses)}>{title}</p>
       </CardHeader>
-      <CardContent className="text-center py-2 px-3 flex items-center justify-center"> {/* Removed flex-grow, reduced padding */}
+      <CardContent className="text-center py-2 px-3 flex items-center justify-center">
         <p className={valueClasses}>{value}</p>
       </CardContent>
-      <CardFooter className={cn("flex items-center pt-1 pb-3 px-3", actionButton ? "justify-between" : "justify-center")}> {/* Reduced padding */}
+      <CardFooter className={cn("flex items-center pt-1 pb-3 px-3", actionButton ? "justify-between" : "justify-center")}>
         <Button asChild variant="link" className={cn("p-0 h-auto text-sm", viewAllLinkClasses)}>
           <Link href={viewAllHref}>View All</Link>
         </Button>
