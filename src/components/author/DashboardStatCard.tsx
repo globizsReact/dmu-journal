@@ -24,7 +24,7 @@ export default function DashboardStatCard({
 }: DashboardStatCardProps) {
   let cardClasses = 'text-white';
   let titleClasses = 'opacity-90';
-  let valueClasses = 'text-4xl md:text-5xl font-bold';
+  let valueClasses = 'text-3xl md:text-4xl font-bold'; // Reduced font size
   let viewAllLinkClasses = 'text-white/80 hover:text-white';
   let actionButtonClasses = '';
 
@@ -38,14 +38,14 @@ export default function DashboardStatCard({
   }
 
   return (
-    <Card className={cn("shadow-lg flex flex-col justify-between h-full", cardClasses)}>
-      <CardHeader className="pt-4 pb-2 px-4">
+    <Card className={cn("shadow-lg flex flex-col justify-between", cardClasses)}> {/* Removed h-full */}
+      <CardHeader className="pt-3 pb-1 px-3"> {/* Reduced padding */}
         <p className={cn("text-xs uppercase tracking-wider font-medium", titleClasses)}>{title}</p>
       </CardHeader>
-      <CardContent className="text-center py-3 md:py-4 px-4 flex-grow flex items-center justify-center">
+      <CardContent className="text-center py-2 px-3 flex items-center justify-center"> {/* Removed flex-grow, reduced padding */}
         <p className={valueClasses}>{value}</p>
       </CardContent>
-      <CardFooter className={cn("flex items-center pt-2 pb-4 px-4", actionButton ? "justify-between" : "justify-center")}>
+      <CardFooter className={cn("flex items-center pt-1 pb-3 px-3", actionButton ? "justify-between" : "justify-center")}> {/* Reduced padding */}
         <Button asChild variant="link" className={cn("p-0 h-auto text-sm", viewAllLinkClasses)}>
           <Link href={viewAllHref}>View All</Link>
         </Button>

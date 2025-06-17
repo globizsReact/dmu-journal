@@ -27,13 +27,13 @@ export default function LoadingAuthorDashboardPage() {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(7)].map((_, i) => (
-              <div key={i} className="bg-card p-4 rounded-lg shadow-sm">
-                <Skeleton className="h-4 w-2/3 mb-2" />
-                <Skeleton className="h-10 w-1/3 mb-4" />
-                <div className="flex justify-between">
-                  <Skeleton className="h-6 w-1/4" />
+              <div key={i} className="bg-card p-3 rounded-lg shadow-sm"> {/* Reduced padding */}
+                <Skeleton className="h-3 w-2/3 mb-2" /> {/* Reduced height for title */}
+                <Skeleton className="h-8 w-1/3 mb-3" /> {/* Reduced height for value, adjusted margin */}
+                <div className="flex justify-between items-center"> {/* Added items-center for better alignment */}
+                  <Skeleton className="h-5 w-1/4" /> {/* Reduced height for View All */}
                   {/* Simulating the "Pay Now" button for one of the cards */}
-                  {i === 3 && <Skeleton className="h-8 w-1/3" />}
+                  {i === 3 && <Skeleton className="h-7 w-1/3" />} {/* Reduced height for Pay Now */}
                 </div>
               </div>
             ))}
