@@ -9,7 +9,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges.',
     icon: FlaskConical,
     slug: 'journal-of-sciences',
-    imagePath: '/images/journal-of-sciences.png', 
+    imagePath: '/images/j2.png', 
     imageHint: 'molecules science',
     abbreviation: 'J. Biophys. Struct. Biol.',
     language: 'English',
@@ -41,7 +41,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Insights into culture, society, and human behavior, fostering critical discourse and interdisciplinary approaches to understanding the human experience.',
     icon: Library,
     slug: 'journal-of-humanities-and-social-sciences',
-    imagePath: '/images/journal-of-humanities-and-social-sciences.png', 
+    imagePath: '/images/j3.png', 
     imageHint: 'library books',
     abbreviation: 'J. Hum. Soc. Sci.',
     language: 'English',
@@ -63,7 +63,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research through empirical studies, case analyses, and theoretical contributions that address contemporary business challenges.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: '/images/journal-of-business-and-applied-research.png', 
+    imagePath: '/images/j1.png', 
     imageHint: 'graphs business',
     abbreviation: 'J. Bus. Appl. Res.',
     language: 'English',
@@ -85,7 +85,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems, promoting scholarly debate on a wide range of legal issues, both domestic and international.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: '/images/journal-of-legal-studies.png', 
+    imagePath: '/images/j4.png', 
     imageHint: 'gavel law',
     abbreviation: 'J. Legal Stud.',
     language: 'English',
@@ -184,3 +184,4 @@ export const getJournalsByCategoryId = (categoryId: string): JournalEntry[] => {
 export const getJournalById = (id: string): JournalEntry | undefined => {
   return journalEntries.find(entry => entry.id === id);
 }
+
