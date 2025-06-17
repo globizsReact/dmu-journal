@@ -112,12 +112,12 @@ export default function FAQPage() {
       {/* Hero Section */}
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
-          src="https://placehold.co/1200x350.png"
-          alt="FAQ Background"
+          src="https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+          alt="FAQ Background - People at a help desk"
           layout="fill"
           objectFit="cover"
           className="absolute inset-0 z-0"
-          data-ai-hint="library abstract"
+          data-ai-hint="help desk"
           priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
