@@ -27,7 +27,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: 'https://storage.googleapis.com/otoroshi-dev-public-assets/image-gen-test/dda8c9e5-7f30-49f6-a375-a162e13c6334.png',
+    imagePath: '/assets/images/journal-business-applied-research.png', // Updated path
     imageHint: 'graphs business'
   },
   {
@@ -36,7 +36,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: 'https://storage.googleapis.com/otoroshi-dev-public-assets/image-gen-test/39394d64-c90b-4db9-8522-217f7a80a464.png',
+    imagePath: '/assets/images/journal-legal-studies.png', // Updated path
     imageHint: 'gavel law'
   },
 ];
