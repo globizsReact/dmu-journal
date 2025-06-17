@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -45,7 +45,7 @@ const SignupSchema = z
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword'], // path of error
+    path: ['confirmPassword'], 
   });
 
 type SignupFormValues = z.infer<typeof SignupSchema>;
@@ -54,6 +54,30 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Default to light logo
+
+  useEffect(() => {
+    const updateLogo = () => {
+      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      setLogoSrc(theme === 'dark' ? '/images/logo_black.png' : '/images/logo.png');
+    };
+
+    updateLogo(); // Set initial logo
+
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateLogo();
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(SignupSchema),
@@ -68,46 +92,23 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     setIsSubmitting(true);
-    try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullName: values.fullName,
-          username: values.username,
-          email: values.email,
-          password: values.password,
-        }),
-      });
+    // Simulate API call / User creation
+    console.log('Mock Sign Up Attempt with values:', {
+        fullName: values.fullName,
+        username: values.username,
+        email: values.email,
+    });
 
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'Account Created Successfully!',
-          description: 'You can now sign in with your new credentials.',
-          variant: 'default',
-        });
-        router.push('/submit'); // Redirect to login page
-      } else {
-        toast({
-          title: 'Sign Up Failed',
-          description: result.error || 'An unexpected error occurred. Please try again.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Sign up error:', error);
+    // Simulate successful user creation after a short delay
+    setTimeout(() => {
       toast({
-        title: 'Sign Up Error',
-        description: 'An unexpected error occurred. Please check your connection and try again.',
-        variant: 'destructive',
+        title: 'Account Created Successfully (Mock)!',
+        description: 'You can now sign in with your new credentials.',
+        variant: 'default',
       });
-    } finally {
+      router.push('/submit'); // Redirect to login page
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   return (
@@ -117,7 +118,7 @@ export default function SignupPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-col items-center pt-8 pb-6">
             <Image
-              src="/images/logo.png"
+              src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}

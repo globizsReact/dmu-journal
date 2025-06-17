@@ -42,6 +42,30 @@ export default function SubmitPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Default to light logo
+
+  useEffect(() => {
+    const updateLogo = () => {
+      const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      setLogoSrc(theme === 'dark' ? '/images/logo_black.png' : '/images/logo.png');
+    };
+
+    updateLogo(); // Set initial logo based on current theme
+
+    const observer = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          updateLogo();
+        }
+      }
+    });
+
+    observer.observe(document.documentElement, { attributes: true });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
 
   const form = useForm<LoginFormValues>({
@@ -56,10 +80,6 @@ export default function SubmitPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
-      if (!rememberMe) {
-        // We are not trying to re-establish a session here,
-        // just pre-filling form if "remember me" was checked.
-      }
       const rememberedUsername = localStorage.getItem('rememberedUsername');
       if (rememberMe && rememberedUsername) {
         form.setValue('username', rememberedUsername);
@@ -71,10 +91,9 @@ export default function SubmitPage() {
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-    // Simulate login and persist state
     if (typeof window !== 'undefined') {
       localStorage.setItem('isAuthorLoggedIn', 'true');
-      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); // Store username or a default
+      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); 
       if (values.rememberMe && values.username) {
         localStorage.setItem('rememberAuthorLogin', 'true');
         localStorage.setItem('rememberedUsername', values.username);
@@ -82,19 +101,17 @@ export default function SubmitPage() {
         localStorage.removeItem('rememberAuthorLogin');
         localStorage.removeItem('rememberedUsername');
       }
+      // Dispatch a custom event to notify other components (like Header) about auth change
+      window.dispatchEvent(new CustomEvent('authChange'));
     }
 
     toast({
-      title: "Login Successful",
+      title: "Login Successful (Mock)",
       description: "Redirecting to dashboard...",
     });
     
-    // Use a short delay to allow toast to be seen before navigation
-    // and to ensure localStorage operations complete
     setTimeout(() => {
       router.push('/author/dashboard');
-      // It's generally better to let the component unmount rather than manually setting isSubmitting to false
-      // if navigating away immediately. If there was a chance of staying, you would set it.
     }, 500); 
   };
 
@@ -131,7 +148,7 @@ export default function SubmitPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-col items-center pt-8 pb-6">
             <Image
-              src="/images/logo.png"
+              src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
