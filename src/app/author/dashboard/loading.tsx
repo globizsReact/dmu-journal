@@ -23,9 +23,9 @@ export default function LoadingAuthorDashboardPage() {
 
         {/* Main Content Skeleton - Default Dashboard View */}
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
-          <Skeleton className="h-10 w-1/2 mb-8" /> {/* Dashboard Title */}
+          {/* Dashboard Title Skeleton removed from here */}
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> {/* Added mb-8 */}
             {[...Array(7)].map((_, i) => (
               <div key={i} className="bg-card p-3 rounded-lg shadow-sm"> {/* Reduced padding */}
                 <Skeleton className="h-3 w-2/3 mb-2" /> {/* Reduced height for title */}

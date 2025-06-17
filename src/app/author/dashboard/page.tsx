@@ -76,8 +76,8 @@ export default function AuthorDashboardPage() {
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
           {activeTab === 'dashboard' && (
             <>
-              <h1 className="text-3xl font-headline font-bold text-primary mb-8">Author Dashboard</h1>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* The h1 title "Author Dashboard" was removed from here */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> {/* Added mb-8 to compensate for removed title margin */}
                 {dashboardItems.map((item) => (
                   <DashboardStatCard
                     key={item.title}
