@@ -26,7 +26,7 @@ interface DashboardSidebarProps {
 interface NavItem {
   label: string;
   icon: LucideIcon;
-  tabKey?: string; 
+  tabKey?: string;
   isLogout?: boolean;
 }
 
@@ -54,7 +54,7 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
       <nav className="space-y-2">
         {navItems.map((item) => {
           const isActive = item.tabKey === activeTab && !item.isLogout;
-          
+
           if (item.isLogout) {
             return (
               <AlertDialog key={item.label}>
@@ -63,7 +63,6 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
                     variant="destructive"
                     className={cn(
                       "w-full flex items-center justify-start gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors",
-                      // Destructive variant already handles colors, but we ensure consistency
                       "text-destructive-foreground bg-destructive hover:bg-destructive/90 hover:text-destructive-foreground"
                     )}
                   >
@@ -93,13 +92,11 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
               onClick={() => item.tabKey && onTabChange(item.tabKey)}
               className={cn(
                 "w-full flex items-center gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left",
-                "hover:bg-muted hover:text-primary",
-                isActive 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" 
-                  : "text-foreground",
-                 "hover:bg-card/50" // Adding a subtle hover for items on muted background
+                isActive
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                  : "text-foreground hover:bg-primary/10 hover:text-primary"
               )}
-              disabled={!item.tabKey} 
+              disabled={!item.tabKey}
             >
               <item.icon className="w-4 h-4" />
               {item.label}
