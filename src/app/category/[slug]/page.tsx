@@ -2,7 +2,7 @@
 "use client"; 
 
 import type { ReactNode } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -10,7 +10,7 @@ import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
 import { getCategoryBySlug, getJournalsByCategoryId } from '@/lib/data';
 import type { JournalCategory, JournalEntry } from '@/lib/types';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -18,21 +18,37 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY' | 'AUTHORS_SECTION' | 'JOURNAL_ISSUES';
 
-const TabButton = ({ onClick, isActive, label, icon: Icon }: { onClick: () => void; isActive: boolean; label: string; icon: React.ElementType }) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-muted",
-      isActive ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-foreground"
-    )}
-    aria-pressed={isActive}
-  >
-    <Icon className="w-4 h-4" />
-    {label}
-  </button>
-);
+// ForwardRef for TabButton to get its DOM element for measurements
+const TabButton = React.forwardRef<
+  HTMLButtonElement,
+  {
+    onClick: () => void;
+    isActive: boolean;
+    label: string;
+    icon: React.ElementType;
+  }
+>(({ onClick, isActive, label, icon: Icon }, ref) => {
+  return (
+    <button
+      ref={ref}
+      onClick={onClick}
+      className={cn(
+        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md",
+        "transition-colors hover:text-primary",
+        isActive ? "font-semibold text-primary" : "text-foreground"
+      )}
+      role="tab"
+      aria-selected={isActive}
+    >
+      <Icon className="w-4 h-4" />
+      {label}
+    </button>
+  );
+});
+TabButton.displayName = 'TabButton';
 
-// Content Components for Tabs
+
+// Content Components for Tabs (remain unchanged, but ensure they are correctly defined as before)
 const AboutDMUJContent = () => (
   <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4 py-8">
     <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
@@ -239,6 +255,18 @@ export default function CategoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedView, setSelectedView] = useState<string>("Most Recent");
   const [activeTab, setActiveTab] = useState<TabKey>('OVERVIEW');
+  
+  const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0 });
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
+    { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
+    { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
+    { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
+    { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
+    { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
+    { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
+  ];
 
   useEffect(() => {
     if (slug) {
@@ -252,6 +280,10 @@ export default function CategoryPage() {
         setCategory(null);
         setAllCategoryJournals([]);
       }
+      // Set loading to false after attempting to load category and journals
+      const timer = setTimeout(() => setIsLoading(false), 200); // Simulate small delay
+      return () => clearTimeout(timer);
+    } else {
       setIsLoading(false);
     }
   }, [slug]);
@@ -272,24 +304,56 @@ export default function CategoryPage() {
     }
   }, [allCategoryJournals, selectedView]);
 
-  const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
-    { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
-    { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
-    { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
-    { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
-    { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
-    { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
-  ];
+
+  useEffect(() => {
+    if (isLoading || !category) {
+      setUnderlineStyle({ width: 0, left: 0 }); // Reset or hide underline
+      return;
+    }
+
+    const activeTabIndex = TABS_CONFIG.findIndex(tab => tab.key === activeTab);
+    if (activeTabIndex !== -1 && tabRefs.current[activeTabIndex]) {
+      const activeTabElement = tabRefs.current[activeTabIndex];
+      // Use a timeout to ensure the DOM has settled for accurate measurements
+      const timeoutId = setTimeout(() => {
+        if (activeTabElement) { // Double check ref in case of quick changes
+          setUnderlineStyle({
+            width: activeTabElement.offsetWidth,
+            left: activeTabElement.offsetLeft,
+          });
+        }
+      }, 0);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [activeTab, category, isLoading, TABS_CONFIG]); // TABS_CONFIG is stable
 
 
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
+        {/* Simplified skeleton for page structure before tabs are interactive */}
+        <section className="py-10 md:py-16 bg-secondary">
+          <div className="container mx-auto px-4">
+            <Skeleton className="h-6 w-1/4 mb-2" />
+            <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
+          </div>
+        </section>
+        <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-wrap justify-center md:justify-start items-center py-3 gap-4">
+              <Skeleton className="h-8 w-20" /> {/* Home link skeleton */}
+              {[...Array(5)].map((_, i) => ( // Skeletons for tab buttons
+                <Skeleton key={i} className="h-8 w-24" />
+              ))}
+            </div>
+          </div>
+        </nav>
         <main className="flex-1 container mx-auto px-4 py-8">
-           <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
-           <Skeleton className="h-8 w-full mb-6" />
-           <Skeleton className="h-64 w-full" />
+           <Skeleton className="h-8 w-3/5 mb-4" />
+           <Skeleton className="h-4 w-full mb-2" />
+           <Skeleton className="h-4 w-full mb-2" />
+           <Skeleton className="h-64 w-full mt-4" />
         </main>
         <Footer />
       </div>
@@ -338,18 +402,29 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            <Link href="/" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:bg-muted rounded-md transition-colors">
+            <Link href="/" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:text-primary rounded-md transition-colors">
               <Home className="w-4 h-4" /> Home
             </Link>
-            {TABS_CONFIG.map(tabInfo => (
-              <TabButton
-                key={tabInfo.key}
-                label={tabInfo.label}
-                icon={tabInfo.icon}
-                isActive={activeTab === tabInfo.key}
-                onClick={() => setActiveTab(tabInfo.key)}
+            {/* Relative container for TABS_CONFIG and the animated underline */}
+            <div className="relative flex items-center gap-1">
+              {TABS_CONFIG.map((tabInfo, index) => (
+                <TabButton
+                  key={tabInfo.key}
+                  ref={el => (tabRefs.current[index] = el)}
+                  label={tabInfo.label}
+                  icon={tabInfo.icon}
+                  isActive={activeTab === tabInfo.key}
+                  onClick={() => setActiveTab(tabInfo.key)}
+                />
+              ))}
+              <div
+                className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
+                style={{
+                  width: `${underlineStyle.width}px`,
+                  left: `${underlineStyle.left}px`,
+                }}
               />
-            ))}
+            </div>
           </div>
         </div>
       </nav>
@@ -417,4 +492,4 @@ export default function CategoryPage() {
     </div>
   );
 }
-
+    
