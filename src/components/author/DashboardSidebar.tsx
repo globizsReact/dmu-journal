@@ -51,7 +51,7 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
 
   return (
     <aside className="w-full lg:w-64 self-start">
-      <div className="mb-6 px-3 pt-3">
+      <div className="mb-6 px-3">
         <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
         <p className="text-sm text-muted-foreground">{authorName}</p>
       </div>
