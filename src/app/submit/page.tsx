@@ -24,6 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Loader2 } from 'lucide-react';
 
 type ActiveTab = 'author' | 'editor' | 'reviewer';
 
@@ -37,6 +38,7 @@ type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export default function SubmitPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('author');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
   const form = useForm<LoginFormValues>({
@@ -48,10 +50,16 @@ export default function SubmitPage() {
     },
   });
 
-  const onSubmitAuthor = (values: LoginFormValues) => {
+  const onSubmitAuthor = async (values: LoginFormValues) => {
+    setIsSubmitting(true);
     console.log('Author login attempt:', values);
+    
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
     // For prototype, any valid submission navigates
     router.push('/author/dashboard');
+    // setIsSubmitting(false); // Not strictly necessary as component will unmount
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
@@ -107,7 +115,7 @@ export default function SubmitPage() {
                       <FormItem>
                         <FormLabel>Username</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your username" {...field} />
+                          <Input placeholder="Enter your username" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -120,7 +128,7 @@ export default function SubmitPage() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} />
+                          <Input type="password" placeholder="Enter your password" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -136,6 +144,7 @@ export default function SubmitPage() {
                             <Checkbox
                               checked={field.value}
                               onCheckedChange={field.onChange}
+                              disabled={isSubmitting}
                             />
                           </FormControl>
                           <Label htmlFor="remember-me" className="text-sm font-normal text-foreground/80 -translate-y-0.5">
@@ -144,16 +153,27 @@ export default function SubmitPage() {
                         </FormItem>
                       )}
                     />
-                    <Link href="#" className="text-sm text-primary hover:underline">
+                    <Link href="#" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
                       Forgot Password?
                     </Link>
                   </div>
-                  <Button type="submit" className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground">
-                    Sign In
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing In...
+                      </>
+                    ) : (
+                      'Sign In'
+                    )}
                   </Button>
                   <p className="text-center text-sm text-muted-foreground">
                     Don&apos;t have an account?{' '}
-                    <Link href="#" className="font-medium text-primary hover:underline">
+                    <Link href="#" className={`font-medium text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
                       Sign Up
                     </Link>
                   </p>
