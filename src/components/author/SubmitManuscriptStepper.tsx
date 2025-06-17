@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManuscriptDetailsForm, { type ManuscriptDetailsData } from '@/components/author/forms/ManuscriptDetailsForm';
+import AuthorDetailsForm, { type AuthorDetailsData } from '@/components/author/forms/AuthorDetailsForm'; // New import
 import { cn } from '@/lib/utils';
 
 const steps = [
@@ -14,7 +15,6 @@ const steps = [
 ];
 
 // Placeholder form data types for other steps
-export type AuthorDetailsData = { coAuthors: string }; // Example
 export type UploadFilesData = { manuscriptFile: File | null }; // Example
 
 export default function SubmitManuscriptStepper() {
@@ -49,6 +49,14 @@ export default function SubmitManuscriptStepper() {
     setCurrentStep((prev) => Math.max(1, prev - 1));
   };
 
+  const canNavigateToStep = (stepId: number) => {
+    if (stepId < currentStep) return true; // Allow navigation to previous, completed steps
+    if (stepId === 1 && formDataStep1) return true;
+    if (stepId === 2 && formDataStep1 && formDataStep2) return true; 
+    // Add similar checks if forms for step 3 are implemented
+    return false;
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -65,16 +73,26 @@ export default function SubmitManuscriptStepper() {
                 "px-3 py-2 md:px-6 md:py-3 text-xs md:text-sm rounded-md transition-all duration-300",
                 currentStep === step.id ? "bg-green-600 hover:bg-green-700 text-white" : 
                                         "bg-gray-200 text-gray-700 hover:bg-gray-300",
-                currentStep > step.id ? "bg-green-600 text-white" : "" // Completed steps
+                // Mark as completed if step.id < currentStep and corresponding form data exists
+                (step.id < currentStep && 
+                  ( (step.id === 1 && formDataStep1) || (step.id === 2 && formDataStep2) )
+                ) ? "bg-green-600 text-white" : "" 
               )}
               onClick={() => {
-                // Allow navigation to previous, completed steps
-                if (step.id < currentStep) {
-                   if (step.id === 1 && formDataStep1) setCurrentStep(step.id);
-                   // Add similar checks if forms for step 2 and 3 are implemented
+                if (canNavigateToStep(step.id)) {
+                   setCurrentStep(step.id);
                 }
               }}
-              disabled={step.id > currentStep && !(step.id === currentStep + 1 && (currentStep === 1 ? formDataStep1 : true) )} // Simplistic disable for future steps
+              // Disable if trying to go to a future step that isn't the immediate next one,
+              // or if data for previous steps isn't filled.
+              disabled={step.id > currentStep && !(
+                step.id === currentStep + 1 && 
+                (
+                  (currentStep === 1 && formDataStep1) ||
+                  (currentStep === 2 && formDataStep2) ||
+                  currentStep > 2 // If beyond implemented forms, allow next (for placeholder steps)
+                )
+              )}
             >
               {step.id}. {step.title}
             </Button>
@@ -89,62 +107,42 @@ export default function SubmitManuscriptStepper() {
           />
         )}
         {currentStep === 2 && (
-          <div className="py-8 text-center">
-            <h3 className="text-xl font-semibold mb-2">Step 2: Author Details</h3>
-            <p className="text-muted-foreground">Author details form will be here.</p>
-            <p className="text-muted-foreground mt-2">For now, click "Next" to proceed or "Previous" to go back.</p>
-          </div>
+           <AuthorDetailsForm 
+            onValidatedNext={handleNextFromStep2} 
+            initialData={formDataStep2} 
+            onPrevious={handlePrevious}
+          />
         )}
         {currentStep === 3 && (
           <div className="py-8 text-center">
             <h3 className="text-xl font-semibold mb-2">Step 3: Upload Files</h3>
             <p className="text-muted-foreground">File upload form will be here.</p>
              <p className="text-muted-foreground mt-2">For now, click "Finish" to simulate submission or "Previous" to go back.</p>
+            {/* Navigation Buttons for Step 3 */}
+            <div className="mt-8 flex justify-between">
+                <Button
+                    onClick={handlePrevious}
+                    variant="outline"
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+                >
+                    Previous
+                </Button>
+                <Button 
+                    onClick={() => handleFinish({manuscriptFile: null})}  // Simulate data for now
+                    variant="default"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                    Finish
+                </Button>
+            </div>
           </div>
         )}
+        
+        {/* Common Navigation buttons are now mostly handled within each form or specific step content */}
+        {/* Step 1 (ManuscriptDetailsForm) has its own Next button */}
+        {/* Step 2 (AuthorDetailsForm) has its own Next and Previous buttons */}
+        {/* Step 3 (Placeholder) has its own Previous and Finish buttons */}
 
-        {/* Navigation Buttons */}
-        <div className="mt-8 flex justify-between">
-          <Button
-            onClick={handlePrevious}
-            variant="outline"
-            disabled={currentStep === 1}
-            className="bg-gray-300 hover:bg-gray-400 text-gray-800"
-          >
-            Previous
-          </Button>
-
-          {currentStep < steps.length && (
-            <Button 
-              onClick={() => {
-                // For steps 2 and 3, we directly go next if they are just placeholders
-                if (currentStep === 2) handleNextFromStep2({coAuthors: "test"}); // Simulate data for now
-                // For step 1, the ManuscriptDetailsForm internal submit button handles it.
-                // This button is primarily for placeholder steps 2 & 3.
-                // If ManuscriptDetailsForm had its own next button, this logic would need adjustment.
-                // For now, this next button will not be shown on step 1 if form handles its own next.
-                // The ManuscriptDetailsForm will have its own "Next" button.
-              }}
-              variant="default"
-              className="bg-green-600 hover:bg-green-700 text-white"
-              // This button is only truly functional for step 2 for now.
-              // Step 1's "Next" is inside ManuscriptDetailsForm.
-              style={{ display: currentStep === 1 ? 'none' : 'inline-flex' }} 
-            >
-              Next
-            </Button>
-          )}
-
-          {currentStep === steps.length && (
-            <Button 
-              onClick={() => handleFinish({manuscriptFile: null})}  // Simulate data for now
-              variant="default"
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              Finish
-            </Button>
-          )}
-        </div>
         <div className="text-center mt-10 text-sm text-muted-foreground">
             2025 Academic Journal
         </div>
