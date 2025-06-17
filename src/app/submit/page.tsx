@@ -42,7 +42,7 @@ export default function SubmitPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); 
 
   useEffect(() => {
     const updateLogo = () => {
@@ -50,7 +50,7 @@ export default function SubmitPage() {
       setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
     };
 
-    updateLogo(); // Set initial logo based on current theme
+    updateLogo(); 
 
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
@@ -112,7 +112,6 @@ export default function SubmitPage() {
     });
     
     router.push('/author/dashboard');
-    // setIsSubmitting(false); // No need if navigating away immediately
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
@@ -146,17 +145,19 @@ export default function SubmitPage() {
         </div>
 
         <Card className="w-full max-w-md shadow-xl bg-card">
-          <CardHeader className="flex flex-col items-center pt-8 pb-6">
+          <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
               src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
               data-ai-hint="university logo"
-              className="rounded-full mb-2"
+              className="rounded-full"
             />
-            <CardTitle className="text-xl font-headline text-primary">Dhanamanjuri University</CardTitle>
-            <p className="text-xs text-muted-foreground">JOURNAL - {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portal</p>
+            <div className="text-left">
+              <CardTitle className="text-xl font-headline text-primary">Dhanamanjuri University</CardTitle>
+              <p className="text-xs text-muted-foreground">JOURNAL - {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Portal</p>
+            </div>
           </CardHeader>
           <CardContent className="p-6">
             {activeTab === 'author' && (

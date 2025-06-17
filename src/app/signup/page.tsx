@@ -54,7 +54,7 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); 
 
   useEffect(() => {
     const updateLogo = () => {
@@ -62,7 +62,7 @@ export default function SignupPage() {
       setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
     };
 
-    updateLogo(); // Set initial logo
+    updateLogo(); 
 
     const observer = new MutationObserver((mutationsList) => {
       for (const mutation of mutationsList) {
@@ -105,11 +105,11 @@ export default function SignupPage() {
       toast({
         title: 'Account Created Successfully (Mock)!',
         description: 'You can now sign in with your new credentials.',
-        variant: 'default', // Or 'success' if you have a success variant for toast
+        variant: 'default', 
       });
-      router.push('/submit'); // Redirect to login page after successful signup
+      router.push('/submit'); 
       setIsSubmitting(false);
-    }, 1000); // Simulate network delay
+    }, 1000); 
   };
 
   return (
@@ -117,17 +117,19 @@ export default function SignupPage() {
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md shadow-xl bg-card">
-          <CardHeader className="flex flex-col items-center pt-8 pb-6">
+          <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
               src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
               data-ai-hint="university logo"
-              className="rounded-full mb-2"
+              className="rounded-full"
             />
-            <CardTitle className="text-xl font-headline text-primary">Create Your Account</CardTitle>
-            <p className="text-xs text-muted-foreground">Dhanamanjuri University Journal Portal</p>
+            <div className="text-left">
+              <CardTitle className="text-xl font-headline text-primary">Create Your Account</CardTitle>
+              <p className="text-xs text-muted-foreground">Dhanamanjuri University Journal Portal</p>
+            </div>
           </CardHeader>
           <CardContent className="p-6">
             <Form {...form}>
