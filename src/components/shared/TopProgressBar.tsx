@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -24,7 +25,7 @@ export default function TopProgressBar() {
 
     let currentProg = 0;
     progressIntervalRef.current = setInterval(() => {
-      currentProg += Math.random() * 15 + 5; // Increment progress a bit randomly
+      currentProg += Math.random() * 20 + 10; // Increment progress a bit more aggressively
       if (currentProg >= 90) {
         currentProg = 90;
         setProgress(currentProg);
@@ -39,11 +40,11 @@ export default function TopProgressBar() {
           secondaryTimerRef.current = setTimeout(() => {
             setProgress(0);
           }, 300); // Corresponds to opacity transition duration
-        }, 500); // Time for 100% to be visible before fading
+        }, 250); // Reduced time for 100% to be visible before fading (was 500ms)
       } else {
         setProgress(currentProg);
       }
-    }, 80); // Interval for progress simulation
+    }, 50); // Reduced interval for progress simulation (was 80ms)
 
     return () => {
       if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
@@ -71,7 +72,7 @@ export default function TopProgressBar() {
           width: `${progress}%`,
           height: '100%',
           backgroundColor: 'hsl(var(--accent))',
-          transition: progress === 100 && isVisible ? 'width 0.2s linear' : 'width 0.1s linear' , // Faster initial, slightly slower finish
+          transition: progress === 100 && isVisible ? 'width 0.15s linear' : 'width 0.05s linear' , // Faster transitions
           boxShadow: '0 0 10px hsl(var(--accent)), 0 0 5px hsl(var(--accent))' // Optional: add a glow effect
         }}
       />
