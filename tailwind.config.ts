@@ -12,6 +12,7 @@ export default {
       fontFamily: {
         body: ['Poppins', 'sans-serif'],
         headline: ['Poppins', 'sans-serif'],
+        poltawski: ['Poltawski Nowy', 'serif'],
         code: ['monospace'],
       },
       colors: {
