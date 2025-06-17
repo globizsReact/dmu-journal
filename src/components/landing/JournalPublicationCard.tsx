@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,9 +23,9 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
             data-ai-hint={category.imageHint}
           />
         </div>
-        <CardContent className="p-4 text-center flex-grow flex flex-col justify-center">
+        <CardContent className="p-3 text-center flex-grow flex flex-col justify-center"> {/* Reduced padding from p-4 to p-3 */}
           <p className="text-xs text-muted-foreground mb-1">{universityName}</p>
-          <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors"> {/* Reduced font size from text-base to text-sm */}
             {category.name}
           </h3>
         </CardContent>
