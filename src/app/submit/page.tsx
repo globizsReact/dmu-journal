@@ -1,17 +1,16 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react'; // Added React and useRef
+import React, { useState, useEffect, useRef } from 'react'; 
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button'; // Still needed for Sign In button
+import { Button } from '@/components/ui/button'; 
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-// import { Separator } from '@/components/ui/separator'; // No longer needed for tabs
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +25,7 @@ import {
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils'; // Added cn
+import { cn } from '@/lib/utils'; 
 
 type ActiveTab = 'author' | 'editor' | 'reviewer';
 
@@ -59,7 +58,7 @@ const TabButton = React.forwardRef<HTMLButtonElement, TabButtonProps>(
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background rounded-t-sm",
+          "px-3 py-1.5 text-sm font-medium text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background rounded-t-sm",
           isActive ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
         )}
         role="tab"
@@ -124,7 +123,6 @@ export default function SubmitPage() {
 
     if (currentTabElement) {
       const timeoutId = setTimeout(() => {
-        // Re-check element in timeout in case of quick tab changes
         const currentEl = tabRefs.current[TABS_CONFIG.findIndex(t => t.key === activeTab)];
         if (currentEl) {
           setUnderlineStyle({
@@ -133,13 +131,12 @@ export default function SubmitPage() {
             opacity: 1,
           });
         }
-      }, 0); // Using timeout to ensure DOM is updated for measurements
+      }, 0); 
       return () => clearTimeout(timeoutId);
     } else {
-      // Hide underline if tab element not found (e.g., during initial render before refs are set)
       setUnderlineStyle({ width: 0, left: 0, opacity: 0 });
     }
-  }, [activeTab]); // Rerun when activeTab changes
+  }, [activeTab]); 
 
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
@@ -161,8 +158,6 @@ export default function SubmitPage() {
       description: "You are being redirected.",
     });
     router.push('/author/dashboard');
-    // setIsSubmitting will be set to false implicitly if component unmounts
-    // or can be set after a timeout if needed.
   };
 
   return (
@@ -194,7 +189,7 @@ export default function SubmitPage() {
         </div>
 
         <Card className="w-full max-w-md shadow-xl bg-card">
-          <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
+           <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
               src={logoSrc}
               alt="Dhanamanjuri University Logo"
