@@ -1,0 +1,60 @@
+
+import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+export interface DashboardStatCardProps {
+  title: string;
+  value: string;
+  variant: 'default' | 'info' | 'success';
+  viewAllHref: string;
+  actionButton?: {
+    text: string;
+    href: string;
+  };
+}
+
+export default function DashboardStatCard({
+  title,
+  value,
+  variant,
+  viewAllHref,
+  actionButton,
+}: DashboardStatCardProps) {
+  let cardClasses = 'text-white';
+  let titleClasses = 'opacity-90';
+  let valueClasses = 'text-4xl md:text-5xl font-bold';
+  let viewAllLinkClasses = 'text-white/80 hover:text-white';
+  let actionButtonClasses = '';
+
+  if (variant === 'default') {
+    cardClasses = cn(cardClasses, 'bg-slate-600'); // Dark gray
+  } else if (variant === 'info') {
+    cardClasses = cn(cardClasses, 'bg-blue-600'); // Blue
+  } else if (variant === 'success') {
+    cardClasses = cn(cardClasses, 'bg-green-600'); // Green
+    actionButtonClasses = 'bg-white text-green-700 hover:bg-slate-100 font-semibold shadow-sm';
+  }
+
+  return (
+    <Card className={cn("shadow-lg flex flex-col justify-between h-full", cardClasses)}>
+      <CardHeader className="pt-4 pb-2 px-4">
+        <p className={cn("text-xs uppercase tracking-wider font-medium", titleClasses)}>{title}</p>
+      </CardHeader>
+      <CardContent className="text-center py-3 md:py-4 px-4 flex-grow flex items-center justify-center">
+        <p className={valueClasses}>{value}</p>
+      </CardContent>
+      <CardFooter className={cn("flex items-center pt-2 pb-4 px-4", actionButton ? "justify-between" : "justify-center")}>
+        <Button asChild variant="link" className={cn("p-0 h-auto text-sm", viewAllLinkClasses)}>
+          <Link href={viewAllHref}>View All</Link>
+        </Button>
+        {actionButton && (
+          <Button asChild size="sm" className={cn(actionButtonClasses, "ml-2")}>
+            <Link href={actionButton.href}>{actionButton.text}</Link>
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
+  );
+}
