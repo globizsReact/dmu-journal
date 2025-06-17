@@ -19,6 +19,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY' | 'AUTHORS_SECTION' | 'JOURNAL_ISSUES';
 
+// Moved TABS_CONFIG outside the component
+const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
+  { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
+  { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
+  { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
+  { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
+  { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
+  { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
+];
+
 // ForwardRef for TabButton to get its DOM element for measurements
 const TabButton = React.forwardRef<
   HTMLButtonElement,
@@ -260,15 +270,6 @@ export default function CategoryPage() {
   const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
-    { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
-    { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
-    { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
-    { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
-    { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
-    { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
-  ];
-
   useEffect(() => {
     if (slug) {
       const foundCategory = getCategoryBySlug(slug);
@@ -326,7 +327,7 @@ export default function CategoryPage() {
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [activeTab, category, isLoading, TABS_CONFIG]); // TABS_CONFIG is stable
+  }, [activeTab, category, isLoading]); // Removed TABS_CONFIG from here as it's stable
 
 
   if (isLoading) {
