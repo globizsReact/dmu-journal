@@ -3,10 +3,9 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import HeroSection from '@/components/landing/HeroSection';
 import JournalPublicationCard from '@/components/landing/JournalPublicationCard';
+import GlobalSearchInput from '@/components/shared/GlobalSearchInput';
 import { journalCategories } from '@/lib/data';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HomePage() {
@@ -36,14 +35,7 @@ export default function HomePage() {
               >
                 <Link href="/journals">View All Journals</Link>
               </Button>
-              <div className="relative w-full md:w-auto md:max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search By Article"
-                  className="pl-10 pr-4 py-2 w-full"
-                />
-              </div>
+              <GlobalSearchInput />
             </div>
 
             <div className="text-center mb-12">
