@@ -1,22 +1,55 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState('light');
 
   useEffect(() => {
     // Ensure this only runs on the client
     if (typeof window !== 'undefined') {
       const authorSession = localStorage.getItem('isAuthorLoggedIn');
       setIsLoggedIn(authorSession === 'true');
+
+      const storedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (storedTheme) {
+        setCurrentTheme(storedTheme);
+        if (storedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else if (prefersDark) {
+        setCurrentTheme('dark');
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        setCurrentTheme('light'); // Default if nothing else
+        document.documentElement.classList.remove('dark'); // Ensure no dark class
+        localStorage.setItem('theme', 'light'); // Store default
+      }
     }
   }, []);
 
+  const toggleTheme = () => {
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    setCurrentTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  };
 
   const handleLinkClick = () => {
     setIsOpen(false);
@@ -57,14 +90,32 @@ const Header = () => {
                 DASHBOARD
               </Link>
             )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
+              className="text-primary-foreground hover:text-accent hover:bg-primary/80"
+            >
+              {currentTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </Button>
           </nav>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          {/* Mobile Menu Button & Theme Toggle */}
+          <div className="md:hidden flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
+              className="text-primary-foreground hover:text-accent hover:bg-primary/80"
+            >
+              {currentTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </Button>
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
-              className="text-primary-foreground hover:text-accent transition-colors"
+              className="text-primary-foreground hover:text-accent transition-colors p-2"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -93,7 +144,7 @@ const Header = () => {
            <button
             onClick={() => setIsOpen(false)}
             aria-label="Close menu"
-            className="text-primary-foreground hover:text-accent transition-colors"
+            className="text-primary-foreground hover:text-accent transition-colors p-2"
           >
             <X size={24} />
           </button>
@@ -128,6 +179,18 @@ const Header = () => {
             DASHBOARD
           </Link>
         )}
+        {/* Theme toggle is handled globally for mobile, or could be added as a nav item too */}
+        {/* 
+        <Button
+            variant="ghost"
+            onClick={() => { toggleTheme(); handleLinkClick(); }}
+            className="w-full justify-start py-3 text-md font-medium text-primary-foreground hover:text-accent hover:bg-primary/80"
+            aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
+          >
+            {currentTheme === 'light' ? <Moon className="mr-2" size={20} /> : <Sun className="mr-2" size={20} />}
+            Switch to {currentTheme === 'light' ? 'Dark' : 'Light'} Mode
+        </Button>
+        */}
       </nav>
     </>
   );
