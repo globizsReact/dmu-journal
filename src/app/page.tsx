@@ -64,7 +64,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-16 text-center">
-              <Button asChild variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/10 px-10">
+              <Button asChild variant="outline" size="lg" className="border-primary text-primary hover:bg-primary/10 hover:text-primary px-10">
                 <Link href="/faq">SEE FAQ</Link>
               </Button>
             </div>
