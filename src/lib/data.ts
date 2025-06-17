@@ -9,7 +9,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges.',
     icon: FlaskConical,
     slug: 'journal-of-sciences',
-    imagePath: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
+    imagePath: '/images/journal-of-sciences.jpeg', // Updated path
     imageHint: 'molecules science',
     abbreviation: 'J. Biophys. Struct. Biol.',
     language: 'English',
@@ -41,7 +41,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Insights into culture, society, and human behavior, fostering critical discourse and interdisciplinary approaches to understanding the human experience.',
     icon: Library,
     slug: 'journal-of-humanities-and-social-sciences',
-    imagePath: 'https://images.pexels.com/photos/12064/pexels-photo-12064.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
+    imagePath: '/images/journal-of-humanities-and-social-sciences.jpeg', // Updated path
     imageHint: 'library books',
     abbreviation: 'J. Hum. Soc. Sci.',
     language: 'English',
@@ -63,7 +63,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Advancing business practices and applied research through empirical studies, case analyses, and theoretical contributions that address contemporary business challenges.',
     icon: Briefcase,
     slug: 'journal-of-business-and-applied-research',
-    imagePath: 'https://images.pexels.com/photos/3184418/pexels-photo-3184418.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
+    imagePath: '/images/journal-of-business-and-applied-research.jpeg', // Updated path
     imageHint: 'graphs business',
     abbreviation: 'J. Bus. Appl. Res.',
     language: 'English',
@@ -85,7 +85,7 @@ export const journalCategories: JournalCategory[] = [
     description: 'Critical analysis of law and legal systems, promoting scholarly debate on a wide range of legal issues, both domestic and international.',
     icon: Scale,
     slug: 'journal-of-legal-studies',
-    imagePath: 'https://images.pexels.com/photos/813269/pexels-photo-813269.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&dpr=1',
+    imagePath: '/images/journal-of-legal-studies.jpeg', // Updated path
     imageHint: 'gavel law',
     abbreviation: 'J. Legal Stud.',
     language: 'English',
@@ -184,3 +184,4 @@ export const getJournalsByCategoryId = (categoryId: string): JournalEntry[] => {
 export const getJournalById = (id: string): JournalEntry | undefined => {
   return journalEntries.find(entry => entry.id === id);
 }
+
