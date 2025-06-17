@@ -12,8 +12,8 @@ interface JournalPublicationCardProps {
 const JournalPublicationCard = ({ category, universityName }: JournalPublicationCardProps) => {
   return (
     <Link href={`/category/${category.slug}`} className="group block h-full">
-      <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card border border-border hover:border-primary/50">
-        <div className="relative w-full aspect-[4/3]"> {/* Aspect ratio for image consistency */}
+      <Card className="h-full overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card border border-border hover:border-primary/50">
+        <div className="relative w-full aspect-[4/3]"> {/* Image and text container */}
           <Image
             src={category.imagePath}
             alt={category.name}
@@ -22,13 +22,17 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
             className="transition-transform duration-300 group-hover:scale-105"
             data-ai-hint={category.imageHint}
           />
+          {/* Gradient overlay for text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent pointer-events-none"></div>
+          
+          {/* Text content positioned over the image */}
+          <CardContent className="absolute inset-0 p-3 flex flex-col justify-end text-primary-foreground">
+            <p className="text-xs opacity-90 mb-0.5">{universityName}</p>
+            <h3 className="text-sm font-semibold group-hover:underline leading-tight">
+              {category.name}
+            </h3>
+          </CardContent>
         </div>
-        <CardContent className="p-3 text-center flex-grow flex flex-col justify-center"> {/* Reduced padding from p-4 to p-3 */}
-          <p className="text-xs text-muted-foreground mb-1">{universityName}</p>
-          <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors"> {/* Reduced font size from text-base to text-sm */}
-            {category.name}
-          </h3>
-        </CardContent>
       </Card>
     </Link>
   );
