@@ -1,14 +1,15 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
+import { useRouter } from 'next/navigation'; // Added useRouter
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import DashboardSidebar from '@/components/author/DashboardSidebar';
 import DashboardStatCard from '@/components/author/DashboardStatCard';
 import type { DashboardStatCardProps } from '@/components/author/DashboardStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; // New import
+import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; 
 
 const dashboardItems: DashboardStatCardProps[] = [
   { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
@@ -26,7 +27,6 @@ const dashboardItems: DashboardStatCardProps[] = [
   { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
 ];
 
-// Placeholder components for other tab content
 const MyManuscriptView = () => (
   <Card>
     <CardHeader>
@@ -51,8 +51,39 @@ const EditProfileView = () => (
 
 
 export default function AuthorDashboardPage() {
-  const authorName = "Dr. Santosh Sharma";
+  const [authorName, setAuthorName] = useState("Loading...");
   const [activeTab, setActiveTab] = useState<string>('dashboard');
+  const router = useRouter();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isLoggedIn = localStorage.getItem('isAuthorLoggedIn') === 'true';
+      const storedName = localStorage.getItem('authorName');
+      
+      if (!isLoggedIn) {
+        router.push('/submit'); // Redirect to login if not logged in
+      } else if (storedName) {
+        setAuthorName(storedName);
+      } else {
+        setAuthorName("Author"); // Fallback name if not found
+      }
+    }
+  }, [router]);
+
+  // Prevent rendering content if redirection is imminent or name is not yet loaded.
+  if (authorName === "Loading...") {
+    // You might want to return a proper loading skeleton here for better UX
+    return (
+        <div className="flex flex-col min-h-screen bg-muted">
+            <Header />
+            <div className="flex-1 flex items-center justify-center">
+                <p>Loading dashboard...</p>
+            </div>
+            <Footer />
+        </div>
+    );
+  }
+
 
   return (
     <div className="flex flex-col min-h-screen bg-muted">

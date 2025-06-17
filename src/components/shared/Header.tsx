@@ -6,11 +6,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation'; // Import for potential refresh
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentTheme, setCurrentTheme] = useState('light');
+  const router = useRouter(); // For potential refresh if needed
 
   useEffect(() => {
     // Ensure this only runs on the client
@@ -38,7 +40,20 @@ const Header = () => {
         localStorage.setItem('theme', 'light'); // Store default
       }
     }
-  }, []);
+
+    // Listen for custom event to update header on login/logout
+    const handleAuthChange = () => {
+      const authorSession = localStorage.getItem('isAuthorLoggedIn');
+      setIsLoggedIn(authorSession === 'true');
+    };
+
+    window.addEventListener('authChange', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('authChange', handleAuthChange);
+    };
+
+  }, []); // Empty dependency array means this runs once on mount and on event listener registration
 
   const toggleTheme = () => {
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -179,18 +194,6 @@ const Header = () => {
             DASHBOARD
           </Link>
         )}
-        {/* Theme toggle is handled globally for mobile, or could be added as a nav item too */}
-        {/* 
-        <Button
-            variant="ghost"
-            onClick={() => { toggleTheme(); handleLinkClick(); }}
-            className="w-full justify-start py-3 text-md font-medium text-primary-foreground hover:text-accent hover:bg-primary/80"
-            aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {currentTheme === 'light' ? <Moon className="mr-2" size={20} /> : <Sun className="mr-2" size={20} />}
-            Switch to {currentTheme === 'light' ? 'Dark' : 'Light'} Mode
-        </Button>
-        */}
       </nav>
     </>
   );

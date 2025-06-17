@@ -53,14 +53,12 @@ export default function SubmitPage() {
     },
   });
 
-  // Effect to clear login status on page load if not remembered
   useEffect(() => {
-    // This effect is kept for potential future re-integration of auth
-    // For now, it doesn't impact direct navigation.
     if (typeof window !== 'undefined') {
       const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
       if (!rememberMe) {
-        localStorage.removeItem('isAuthorLoggedIn');
+        // We are not trying to re-establish a session here,
+        // just pre-filling form if "remember me" was checked.
       }
       const rememberedUsername = localStorage.getItem('rememberedUsername');
       if (rememberMe && rememberedUsername) {
@@ -73,20 +71,31 @@ export default function SubmitPage() {
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-    // Simulate a short delay then navigate
-    // No actual authentication call is made
-    console.log('Attempting mock login with:', values);
+    // Simulate login and persist state
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isAuthorLoggedIn', 'true');
+      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); // Store username or a default
+      if (values.rememberMe && values.username) {
+        localStorage.setItem('rememberAuthorLogin', 'true');
+        localStorage.setItem('rememberedUsername', values.username);
+      } else {
+        localStorage.removeItem('rememberAuthorLogin');
+        localStorage.removeItem('rememberedUsername');
+      }
+    }
+
     toast({
-      title: "Navigating to Dashboard",
-      description: "Taking you to the author dashboard...",
+      title: "Login Successful",
+      description: "Redirecting to dashboard...",
     });
     
-    // Direct navigation to the dashboard
-    router.push('/author/dashboard');
-    
-    // No need to setIsSubmitting(false) if navigating away,
-    // but good practice if there was a chance of staying on page.
-    // For this direct navigation, it's less critical.
+    // Use a short delay to allow toast to be seen before navigation
+    // and to ensure localStorage operations complete
+    setTimeout(() => {
+      router.push('/author/dashboard');
+      // It's generally better to let the component unmount rather than manually setting isSubmitting to false
+      // if navigating away immediately. If there was a chance of staying, you would set it.
+    }, 500); 
   };
 
   const TabButton = ({ tab, children }: { tab: ActiveTab; children: React.ReactNode }) => (
@@ -194,7 +203,7 @@ export default function SubmitPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Proceeding...
+                        Signing In...
                       </>
                     ) : (
                       'Sign In'

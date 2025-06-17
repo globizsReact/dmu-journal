@@ -44,7 +44,11 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('isAuthorLoggedIn');
-      localStorage.removeItem('rememberAuthorLogin'); // Also clear remember me flag
+      localStorage.removeItem('authorName');
+      localStorage.removeItem('rememberAuthorLogin'); 
+      localStorage.removeItem('rememberedUsername');
+      // Dispatch a custom event to notify other components (like Header) about auth change
+      window.dispatchEvent(new CustomEvent('authChange'));
     }
     router.push('/submit');
   };
