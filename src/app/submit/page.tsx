@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -50,6 +50,17 @@ export default function SubmitPage() {
     },
   });
 
+  // Effect to clear login status on page load if not remembered
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
+      if (!rememberMe) {
+        localStorage.removeItem('isAuthorLoggedIn');
+      }
+    }
+  }, []);
+
+
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     console.log('Author login attempt:', values);
@@ -58,6 +69,14 @@ export default function SubmitPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     // For prototype, any valid submission navigates
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('isAuthorLoggedIn', 'true');
+      if (values.rememberMe) {
+        localStorage.setItem('rememberAuthorLogin', 'true');
+      } else {
+        localStorage.removeItem('rememberAuthorLogin');
+      }
+    }
     router.push('/author/dashboard');
     // setIsSubmitting(false); // Not strictly necessary as component will unmount
   };
@@ -71,6 +90,7 @@ export default function SubmitPage() {
         ${activeTab === tab ? 'text-primary-foreground' : 'text-foreground/80 hover:text-primary'}
         transition-colors
       `}
+      disabled={isSubmitting && activeTab === 'author'}
     >
       {children}
     </Button>
@@ -142,6 +162,7 @@ export default function SubmitPage() {
                         <FormItem className="flex flex-row items-start space-x-2 space-y-0">
                            <FormControl>
                             <Checkbox
+                              id="remember-me"
                               checked={field.value}
                               onCheckedChange={field.onChange}
                               disabled={isSubmitting}

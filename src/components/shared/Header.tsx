@@ -1,12 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Ensure this only runs on the client
+    if (typeof window !== 'undefined') {
+      const authorSession = localStorage.getItem('isAuthorLoggedIn');
+      setIsLoggedIn(authorSession === 'true');
+    }
+  }, []);
+
 
   const handleLinkClick = () => {
     setIsOpen(false);
@@ -32,7 +42,7 @@ const Header = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-4 md:space-x-6">
+          <nav className="hidden md:flex space-x-4 md:space-x-6 items-center">
             <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
               HOME
             </Link>
@@ -42,6 +52,11 @@ const Header = () => {
             <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
               CALL FOR PAPER SUBMISSION
             </Link>
+            {isLoggedIn && (
+              <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
+                DASHBOARD
+              </Link>
+            )}
           </nav>
 
           {/* Mobile Menu Button */}
@@ -70,7 +85,8 @@ const Header = () => {
       <nav
         className={`
           fixed inset-y-0 right-0 w-3/4 max-w-xs bg-primary p-4 z-50 shadow-lg md:hidden
-          ${isOpen ? 'block opacity-100' : 'hidden opacity-0 pointer-events-none'}
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0 pointer-events-none'}
         `}
       >
         <div className="flex justify-end mb-4">
@@ -103,6 +119,15 @@ const Header = () => {
         >
           CALL FOR PAPER SUBMISSION
         </Link>
+        {isLoggedIn && (
+          <Link
+            href="/author/dashboard"
+            onClick={handleLinkClick}
+            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          >
+            DASHBOARD
+          </Link>
+        )}
       </nav>
     </>
   );

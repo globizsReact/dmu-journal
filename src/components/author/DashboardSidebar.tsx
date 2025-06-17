@@ -42,16 +42,20 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
   const router = useRouter();
 
   const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('isAuthorLoggedIn');
+      localStorage.removeItem('rememberAuthorLogin'); // Also clear remember me flag
+    }
     router.push('/submit');
   };
 
   return (
     <aside className="w-full lg:w-64 self-start">
-      <div className="mb-6 px-3 pt-3"> {/* Added some padding here for the header only */}
+      <div className="mb-6 px-3 pt-3">
         <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
         <p className="text-sm text-muted-foreground">{authorName}</p>
       </div>
-      <nav className="space-y-2 px-3 pb-3"> {/* Added some padding here for nav items */}
+      <nav className="space-y-2 px-3 pb-3">
         {navItems.map((item) => {
           const isActive = item.tabKey === activeTab && !item.isLogout;
 
