@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // Added React import
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -78,7 +78,7 @@ export default function JournalPage() {
             <Image
                 src={category.imagePath}
                 alt={`${category.name} background`}
-                layout="fill"
+                fill
                 objectFit="cover"
                 className="absolute inset-0 z-0 opacity-30"
                 data-ai-hint={category.imageHint}
