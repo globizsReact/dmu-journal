@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
-import Image from 'next/image'; // Added Image import
+import Image from 'next/image';
 import { Button } from '@/components/ui/button'; 
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -126,7 +126,7 @@ export default function SubmitPage() {
     setIsSubmitting(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('isAuthorLoggedIn', 'true');
-      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); // Use entered username or fallback
+      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); 
       if (values.rememberMe && values.username) {
         localStorage.setItem('rememberAuthorLogin', 'true');
         localStorage.setItem('rememberedUsername', values.username);
@@ -153,11 +153,11 @@ export default function SubmitPage() {
           objectFit: 'none',
           objectPosition: 'right bottom',
         }}
-        className="z-[-1]"
+        className="absolute inset-0" 
         priority
       />
-      <Header />
-      <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-[1]">
+      <Header className="relative z-10" />
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10">
         <div className="mb-8 text-center">
           <div className="relative inline-flex items-center p-1">
             {TABS_CONFIG.map((tabInfo, index) => (
@@ -293,7 +293,7 @@ export default function SubmitPage() {
           2025 Academic Journal
         </p>
       </main>
-      <Footer className="relative z-[1]" />
+      <Footer className="relative z-10" />
     </div>
   );
 }

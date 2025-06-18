@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { cn } from '@/lib/utils'; // Import cn for conditional class names
+import { cn } from '@/lib/utils';
 
 const FooterLink = ({ href, children, target }: { href: string; children: React.ReactNode, target?: string }) => (
   <Link href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined} className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">
@@ -9,13 +9,13 @@ const FooterLink = ({ href, children, target }: { href: string; children: React.
 );
 
 interface FooterProps {
-  className?: string; // Add className prop
+  className?: string;
 }
 
 const Footer = ({ className }: FooterProps) => {
   return (
     <>
-      <footer className={cn("py-10 md:py-16 px-4 md:px-8 bg-primary text-primary-foreground", className)}> {/* Use cn here */}
+      <footer className={cn("py-10 md:py-16 px-4 md:px-8 bg-primary text-primary-foreground", className)}>
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             
@@ -57,7 +57,7 @@ const Footer = ({ className }: FooterProps) => {
           </div>
         </div>
       </footer>
-      <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className)}> {/* Use cn here, though likely not needed for this part */}
+      <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className?.includes('relative') ? '' : className )}> {/* Avoid passing z-index to this part */}
         <p>Design &amp; Developed By: <Link href="#" className="hover:text-accent transition-colors">Globizs</Link></p>
       </div>
     </>

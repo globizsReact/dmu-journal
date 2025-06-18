@@ -5,22 +5,24 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation'; // Not strictly needed here anymore, but kept for consistency
 
-const Header = () => {
+interface HeaderProps {
+  className?: string;
+}
+
+const Header = ({ className }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const logoSrc = '/images/logo.png';
-  const router = useRouter();
+  // const router = useRouter(); // Not used in current logic
 
   useEffect(() => {
-    // Ensure this only runs on the client
     if (typeof window !== 'undefined') {
       const authorSession = localStorage.getItem('isAuthorLoggedIn');
       setIsLoggedIn(authorSession === 'true');
 
-      // Listen for custom event to update header on login/logout
       const handleAuthChange = () => {
         const authorSession = localStorage.getItem('isAuthorLoggedIn');
         setIsLoggedIn(authorSession === 'true');
@@ -39,7 +41,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="py-3 px-4 md:px-8 bg-primary text-primary-foreground relative z-40">
+      <header className={cn("py-3 px-4 md:px-8 bg-primary text-primary-foreground relative z-40", className)}>
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Image
@@ -56,7 +58,6 @@ const Header = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-4 md:space-x-6 items-center">
             <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
               HOME
@@ -76,7 +77,6 @@ const Header = () => {
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -89,7 +89,6 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Backdrop for Mobile Menu */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
@@ -98,7 +97,6 @@ const Header = () => {
         />
       )}
 
-      {/* Mobile Navigation Menu */}
       <nav
         className={`
           fixed inset-y-0 right-0 w-3/4 max-w-xs bg-black p-4 z-50 shadow-lg md:hidden
@@ -109,7 +107,7 @@ const Header = () => {
         <div className="flex items-center justify-between mb-6">
             <Link href="/" onClick={handleLinkClick} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
               <Image
-                src={logoSrc}
+                src={logoSrc} // Using the consistent logoSrc for mobile drawer as well
                 alt="Dhanamanjuri University Logo"
                 width={32}
                 height={32}
