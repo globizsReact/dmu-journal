@@ -4,16 +4,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, Sun, Moon } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation'; // Import for potential refresh
+import { useRouter } from 'next/navigation';
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentTheme, setCurrentTheme] = useState('light');
-  const [logoSrc, setLogoSrc] = useState('/images/logo.png'); // Always use logo.png
-  const router = useRouter(); // For potential refresh if needed
+  const logoSrc = '/images/logo.png'; // Always use logo.png
+  const router = useRouter();
 
   useEffect(() => {
     // Ensure this only runs on the client
@@ -21,29 +20,8 @@ const Header = () => {
       const authorSession = localStorage.getItem('isAuthorLoggedIn');
       setIsLoggedIn(authorSession === 'true');
 
-      const updateThemeState = () => { // Renamed from updateThemeAndLogo
-        const storedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        let newTheme = 'light';
-
-        if (storedTheme) {
-          newTheme = storedTheme;
-        } else if (prefersDark) {
-          newTheme = 'dark';
-        }
-        
-        setCurrentTheme(newTheme);
-        if (newTheme === 'dark') {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-        if (!storedTheme && newTheme !== 'light') { // Store if based on prefersDark initially
-            localStorage.setItem('theme', newTheme);
-        }
-      };
-
-      updateThemeState(); // Initial call
+      // Set default theme to light if no theme is set
+      document.documentElement.classList.remove('dark');
 
       // Listen for custom event to update header on login/logout
       const handleAuthChange = () => {
@@ -52,28 +30,11 @@ const Header = () => {
       };
       window.addEventListener('authChange', handleAuthChange);
 
-      // Observe class changes on html element for theme
-      const observer = new MutationObserver(updateThemeState);
-      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
       return () => {
         window.removeEventListener('authChange', handleAuthChange);
-        observer.disconnect();
       };
     }
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    setCurrentTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-    // No longer setting logoSrc here
-  };
 
   const handleLinkClick = () => {
     setIsOpen(false);
@@ -85,7 +46,7 @@ const Header = () => {
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Image
-              src={logoSrc} // Will always be /images/logo.png
+              src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={40}
               height={40}
@@ -116,28 +77,10 @@ const Header = () => {
                 DASHBOARD
               </Link>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
-              className="text-primary-foreground hover:text-accent hover:bg-primary/80"
-            >
-              {currentTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </Button>
           </nav>
 
-          {/* Mobile Menu Button & Theme Toggle */}
+          {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleTheme}
-              aria-label={`Switch to ${currentTheme === 'light' ? 'dark' : 'light'} mode`}
-              className="text-primary-foreground hover:text-accent hover:bg-primary/80"
-            >
-              {currentTheme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
-            </Button>
             <button
               onClick={() => setIsOpen(!isOpen)}
               aria-label="Toggle menu"
@@ -169,7 +112,7 @@ const Header = () => {
         <div className="flex items-center justify-between mb-6">
             <Link href="/" onClick={handleLinkClick} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
               <Image
-                src={logoSrc} // Will always be /images/logo.png
+                src={logoSrc}
                 alt="Dhanamanjuri University Logo"
                 width={32}
                 height={32}

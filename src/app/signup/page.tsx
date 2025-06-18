@@ -54,30 +54,6 @@ export default function SignupPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); 
-
-  useEffect(() => {
-    const updateLogo = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
-    };
-
-    updateLogo(); 
-
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          updateLogo();
-        }
-      }
-    });
-
-    observer.observe(document.documentElement, { attributes: true });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(SignupSchema),
@@ -98,9 +74,6 @@ export default function SignupPage() {
         email: values.email,
     });
 
-    // Simulate API call for signup
-    // In a real app, you would make a POST request to your signup API endpoint here.
-    // For now, we'll just simulate success and redirect.
     setTimeout(() => {
       toast({
         title: 'Account Created Successfully (Mock)!',
@@ -119,7 +92,7 @@ export default function SignupPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
-              src={logoSrc}
+              src="/images/logo_black.png" // Default to light theme logo
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}

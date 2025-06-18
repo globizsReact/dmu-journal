@@ -40,37 +40,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
-
-  .dark {
-    /* Dark mode based on the new primary color */
-    --background: 197 70% 8%; /* Very dark teal */
-    --foreground: 0 0% 95%; /* Light gray text */
-
-    --card: 197 70% 12%; 
-    --card-foreground: 0 0% 95%;
-
-    --popover: 197 70% 5%;
-    --popover-foreground: 0 0% 95%;
-
-    --primary: 197 70% 35%; /* Lighter teal for dark mode primary */
-    --primary-foreground: 0 0% 98%;
-
-    --secondary: 197 48% 30%;
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 197 30% 22%;
-    --muted-foreground: 0 0% 60%;
-
-    --accent: 51 100% 60%; /* Slightly brighter yellow for dark mode */
-    --accent-foreground: 197 70% 8%;
-
-    --destructive: 0 70% 45%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 197 70% 20%;
-    --input: 197 70% 20%;
-    --ring: 197 70% 40%;
-  }
 }
 
 @layer base {

@@ -76,26 +76,8 @@ export default function SubmitPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png');
   const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0, opacity: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>(new Array(TABS_CONFIG.length).fill(null));
-
-  useEffect(() => {
-    const updateLogo = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      setLogoSrc(isDarkMode ? '/images/logo.png' : '/images/logo_black.png');
-    };
-    updateLogo();
-    const observer = new MutationObserver((mutationsList) => {
-      for (const mutation of mutationsList) {
-        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-          updateLogo();
-        }
-      }
-    });
-    observer.observe(document.documentElement, { attributes: true });
-    return () => observer.disconnect();
-  }, []);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -191,7 +173,7 @@ export default function SubmitPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
            <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
-              src={logoSrc}
+              src="/images/logo_black.png" // Default to light theme logo
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
