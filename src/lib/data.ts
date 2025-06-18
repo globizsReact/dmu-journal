@@ -112,7 +112,7 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '3', // Changed to Business & Applied Research to match image context
     excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
-    imagePath: 'https://placehold.co/300x200.png', // Placeholder for specific article image
+    imagePath: '/images/j1.png', 
     imageHint: 'data charts',
     views: 45,
     downloads: 5,
@@ -192,7 +192,7 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '1',
     excerpt: 'A deep dive into the phenomenon of quantum entanglement and its potential applications...',
     authors: ['Dr. Quantum Physicist'],
-    imagePath: 'https://placehold.co/300x200.png',
+    imagePath: '/images/j2.png',
     imageHint: 'quantum physics',
     views: 300,
     downloads: 75,
@@ -208,7 +208,7 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '1',
     excerpt: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy...',
     authors: ['Dr. Energy Expert'],
-    imagePath: 'https://placehold.co/300x200.png',
+    imagePath: '/images/j2.png',
     imageHint: 'renewable energy',
     views: 250,
     downloads: 60,
