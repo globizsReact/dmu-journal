@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function LoadingSignupPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-muted to-secondary/10">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header />
 
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">

@@ -34,6 +34,7 @@ export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const logoSrc = '/images/logo_black.png';
 
   const form = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(ForgotPasswordSchema),
@@ -61,13 +62,13 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-muted to-secondary/10">
+    <div className="flex flex-col min-h-screen bg-background bg-[url('/images/login_bg.png')] bg-no-repeat bg-right-bottom bg-fixed">
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
-              src="/images/logo_black.png" 
+              src={logoSrc} 
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}

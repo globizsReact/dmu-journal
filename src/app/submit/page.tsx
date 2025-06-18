@@ -78,7 +78,7 @@ export default function SubmitPage() {
   const { toast } = useToast();
   const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0, opacity: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>(new Array(TABS_CONFIG.length).fill(null));
-  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
+  const logoSrc = '/images/logo_black.png';
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -144,7 +144,7 @@ export default function SubmitPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-muted to-secondary/10">
+    <div className="flex flex-col min-h-screen bg-background bg-[url('/images/login_bg.png')] bg-no-repeat bg-right-bottom bg-fixed">
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <div className="mb-8 text-center">
