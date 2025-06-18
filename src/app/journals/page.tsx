@@ -80,7 +80,7 @@ export default function AllJournalsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Left Sidebar */}
-          <aside className="w-full md:w-1/4 lg:w-1/5">
+          <aside className="w-full md:w-1/3 lg:w-1/4"> {/* Adjusted width */}
             <div className="bg-card p-4 rounded-lg shadow">
               <h2 className="text-xl font-headline font-semibold text-primary mb-3">Browse By Subject</h2>
               <Link
@@ -100,7 +100,7 @@ export default function AllJournalsPage() {
           </aside>
 
           {/* Right Content Pane */}
-          <section className="w-full md:w-3/4 lg:w-4/5">
+          <section className="w-full md:w-2/3 lg:w-3/4"> {/* Adjusted width */}
             <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
               Journals By Title
             </h2>
