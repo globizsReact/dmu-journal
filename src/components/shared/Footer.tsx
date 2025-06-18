@@ -57,7 +57,7 @@ const Footer = ({ className }: FooterProps) => {
           </div>
         </div>
       </footer>
-      <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className?.includes('relative') ? '' : className )}> {/* Avoid passing z-index to this part */}
+      <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className)}> {/* Apply className directly */}
         <p>Design &amp; Developed By: <Link href="#" className="hover:text-accent transition-colors">Globizs</Link></p>
       </div>
     </>

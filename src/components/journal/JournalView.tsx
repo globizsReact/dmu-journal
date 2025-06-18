@@ -77,7 +77,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
             {/* Image Block */}
             {entry.imagePath && (
               <div className="w-full mt-4 sm:mt-0 sm:w-1/3 flex-shrink-0 flex flex-col">
-                <div className="relative h-[180px] sm:h-full rounded-md overflow-hidden border flex-grow">
+                <div className="relative h-[180px] sm:h-full overflow-hidden border flex-grow">
                   <Image
                     src={entry.imagePath}
                     alt={`Thumbnail for ${entry.title}`}
