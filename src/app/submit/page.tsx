@@ -58,7 +58,7 @@ const TabButton = React.forwardRef<HTMLButtonElement, TabButtonProps>(
         onClick={onClick}
         disabled={disabled}
         className={cn(
-          "px-3 py-1.5 text-sm font-medium text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background rounded-t-sm",
+          "inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-background rounded-t-sm",
           isActive ? "text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
         )}
         role="tab"
@@ -78,6 +78,7 @@ export default function SubmitPage() {
   const { toast } = useToast();
   const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0, opacity: 0 });
   const tabRefs = useRef<(HTMLButtonElement | null)[]>(new Array(TABS_CONFIG.length).fill(null));
+  const [logoSrc, setLogoSrc] = useState('/images/logo_black.png'); // Default to light theme logo
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
@@ -125,7 +126,7 @@ export default function SubmitPage() {
     setIsSubmitting(true);
     if (typeof window !== 'undefined') {
       localStorage.setItem('isAuthorLoggedIn', 'true');
-      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma');
+      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); // Use entered username or fallback
       if (values.rememberMe && values.username) {
         localStorage.setItem('rememberAuthorLogin', 'true');
         localStorage.setItem('rememberedUsername', values.username);
@@ -140,6 +141,7 @@ export default function SubmitPage() {
       description: "You are being redirected.",
     });
     router.push('/author/dashboard');
+    // No need to setIsSubmitting(false) here as page navigates away
   };
 
   return (
@@ -173,7 +175,7 @@ export default function SubmitPage() {
         <Card className="w-full max-w-md shadow-xl bg-card">
            <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
-              src="/images/logo_black.png" // Default to light theme logo
+              src={logoSrc}
               alt="Dhanamanjuri University Logo"
               width={50}
               height={50}
