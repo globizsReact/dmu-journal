@@ -46,7 +46,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Left Sidebar - Stats */}
-        <aside className="w-full md:w-24 lg:w-28 flex-shrink-0 space-y-4 md:space-y-6 flex flex-row md:flex-col justify-around md:justify-start">
+        <aside className="w-full md:w-24 lg:w-28 flex-shrink-0 flex flex-row justify-center items-center space-x-4 md:flex-col md:items-start md:space-y-6 md:space-x-0">
           <StatItem icon={Eye} label="Views" value={entry.views} />
           <StatItem icon={Download} label="Downloads" value={entry.downloads} />
           <StatItem icon={MessageSquareQuote} label="Citations" value={entry.citations} />
