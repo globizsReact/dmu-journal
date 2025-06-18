@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const logoSrc = '/images/logo.png'; // Always use logo.png
+  const logoSrc = '/images/logo.png';
   const router = useRouter();
 
   useEffect(() => {
@@ -19,9 +19,6 @@ const Header = () => {
     if (typeof window !== 'undefined') {
       const authorSession = localStorage.getItem('isAuthorLoggedIn');
       setIsLoggedIn(authorSession === 'true');
-
-      // Set default theme to light if no theme is set
-      document.documentElement.classList.remove('dark');
 
       // Listen for custom event to update header on login/logout
       const handleAuthChange = () => {
@@ -42,7 +39,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="py-4 px-4 md:px-8 bg-primary text-primary-foreground shadow-md relative z-40">
+      <header className="py-3 px-4 md:px-8 bg-primary text-primary-foreground shadow-md relative z-40">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Image
