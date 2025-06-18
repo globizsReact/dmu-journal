@@ -37,7 +37,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
   ];
 
   return (
-    <div className="bg-card shadow-lg rounded-lg p-6 md:p-8">
+    <>
       {entry.articleType && (
         <Badge variant="secondary" className="mb-6 text-sm py-1 px-3">
           {entry.articleType}
@@ -118,7 +118,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
       </div>
 
       {/* Abstract Section */}
-      <div className="my-8">
+      <div className="my-8 bg-card shadow-md rounded-lg p-6 md:p-8"> {/* Added card background for abstract section */}
         <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
         <Separator className="mb-4" />
         <div
@@ -149,9 +149,8 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
           {copyrightText}
         </p>
       </div>
-    </div>
+    </>
   );
 };
 
 export default JournalView;
-
