@@ -46,14 +46,14 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Left Sidebar - Stats */}
-        <aside className="w-full md:w-1/5 lg:w-1/6 space-y-4 md:space-y-6 flex flex-row md:flex-col justify-around md:justify-start">
+        <aside className="w-full md:w-24 lg:w-28 flex-shrink-0 space-y-4 md:space-y-6 flex flex-row md:flex-col justify-around md:justify-start">
           <StatItem icon={Eye} label="Views" value={entry.views} />
           <StatItem icon={Download} label="Downloads" value={entry.downloads} />
           <StatItem icon={MessageSquareQuote} label="Citations" value={entry.citations} />
         </aside>
 
         {/* Right Main Content - Article Details */}
-        <section className="w-full md:w-4/5 lg:w-5/6">
+        <section className="w-full md:flex-1">
           {/* Container for Text Block and Image Block */}
           <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-stretch'>
             {/* Text Block */}
