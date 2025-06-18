@@ -54,24 +54,29 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 
         {/* Right Main Content - Article Details */}
         <section className="w-full md:w-4/5 lg:w-5/6">
-          <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
-            {entry.title}
-          </h1>
-          <p className="text-sm text-muted-foreground mb-1">
-            Article Number - {entry.id}
-          </p>
-          <p className="text-md font-medium text-primary/80 mb-3">
-            Journal Of {category.name}
-          </p>
-          
-          <div className="flex flex-row gap-4 items-start"> {/* Changed to always flex-row */}
-            <div className="flex-grow">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {copyrightText}
+          {/* Container for Text Block and Image Block */}
+          <div className='flex flex-col sm:flex-row gap-4 items-start'>
+            {/* Text Block */}
+            <div className="flex-grow"> {/* Added flex-grow to allow text block to take available space */}
+              <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
+                {entry.title}
+              </h1>
+              <p className="text-sm text-muted-foreground mb-1">
+                Article Number - {entry.id}
               </p>
+              <p className="text-md font-medium text-primary/80 mb-3">
+                Journal Of {category.name}
+              </p>
+              <div className="flex-grow"> {/* This inner flex-grow might be redundant if the outer one handles it */}
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {copyrightText}
+                </p>
+              </div>
             </div>
+            
+            {/* Image Block */}
             {entry.imagePath && (
-              <div className="w-1/4 md:w-1/5 flex-shrink-0"> {/* Adjusted width classes and removed conditional margin */}
+              <div className="w-full mt-4 sm:mt-0 sm:w-1/4 md:w-1/5 flex-shrink-0">
                 <div className="aspect-[4/3] relative rounded-md overflow-hidden border">
                   <Image
                     src={entry.imagePath}
@@ -81,9 +86,9 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
                     data-ai-hint={entry.imageHint || "research graph"}
                   />
                 </div>
-                  <p className="text-xs text-center text-muted-foreground mt-1 truncate" title={`Article Number - ${entry.id}`}>
-                    Article Number - {entry.id}
-                  </p>
+                <p className="text-xs text-center text-muted-foreground mt-1 truncate" title={`Article Number - ${entry.id}`}>
+                  Article Number - {entry.id}
+                </p>
               </div>
             )}
           </div>
@@ -149,3 +154,4 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 };
 
 export default JournalView;
+
