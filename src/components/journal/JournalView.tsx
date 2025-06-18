@@ -55,9 +55,9 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
         {/* Right Main Content - Article Details */}
         <section className="w-full md:w-4/5 lg:w-5/6">
           {/* Container for Text Block and Image Block */}
-          <div className='flex flex-col sm:flex-row gap-4 sm:items-stretch'>
+          <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-stretch'>
             {/* Text Block */}
-            <div className="w-full sm:w-7/12"> 
+            <div className="w-full sm:w-7/12">
               <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
                 {entry.title}
               </h1>
@@ -67,17 +67,17 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
               <p className="text-md font-medium text-primary/80 mb-3">
                 Journal Of {category.name}
               </p>
-              <div> 
+              <div>
                 <p className="text-xs text-muted-foreground leading-relaxed">
                   {copyrightText}
                 </p>
               </div>
             </div>
-            
+
             {/* Image Block */}
             {entry.imagePath && (
               <div className="w-full mt-4 sm:mt-0 sm:w-5/12 flex-shrink-0 flex flex-col">
-                <div className="relative h-full rounded-md overflow-hidden border flex-grow">
+                <div className="relative h-[180px] sm:h-full rounded-md overflow-hidden border flex-grow">
                   <Image
                     src={entry.imagePath}
                     alt={`Thumbnail for ${entry.title}`}
@@ -118,12 +118,12 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
       </div>
 
       {/* Abstract Section */}
-      <div className="my-8"> 
+      <div className="my-8">
         <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
         <Separator className="mb-4" />
         <div
-          className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 
-                     prose-headings:font-headline prose-headings:text-primary 
+          className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80
+                     prose-headings:font-headline prose-headings:text-primary
                      prose-strong:text-primary/90"
           dangerouslySetInnerHTML={{ __html: entry.content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />') }}
         />
@@ -138,7 +138,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
           </div>
         )}
       </div>
-      
+
       {/* Bottom "Tabs" and Copyright */}
       <div className="my-8 pt-6 border-t border-border">
         <div className="flex items-center space-x-4 mb-3">
