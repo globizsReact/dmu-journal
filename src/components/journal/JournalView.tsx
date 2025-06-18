@@ -64,14 +64,14 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
             Journal Of {category.name}
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 items-start">
+          <div className="flex flex-row gap-4 items-start"> {/* Changed to always flex-row */}
             <div className="flex-grow">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {copyrightText}
               </p>
             </div>
             {entry.imagePath && (
-              <div className="w-full sm:w-1/3 md:w-1/4 lg:w-1/5 flex-shrink-0 mt-4 sm:mt-0">
+              <div className="w-1/4 md:w-1/5 flex-shrink-0"> {/* Adjusted width classes and removed conditional margin */}
                 <div className="aspect-[4/3] relative rounded-md overflow-hidden border">
                   <Image
                     src={entry.imagePath}
