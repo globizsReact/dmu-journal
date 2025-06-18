@@ -1,4 +1,5 @@
 
+import * as React from 'react'; // Added import
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
