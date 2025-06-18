@@ -57,7 +57,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
           {/* Container for Text Block and Image Block */}
           <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-stretch'>
             {/* Text Block */}
-            <div className="w-full sm:w-7/12">
+            <div className="w-full sm:w-2/3">
               <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
                 {entry.title}
               </h1>
@@ -76,7 +76,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 
             {/* Image Block */}
             {entry.imagePath && (
-              <div className="w-full mt-4 sm:mt-0 sm:w-5/12 flex-shrink-0 flex flex-col">
+              <div className="w-full mt-4 sm:mt-0 sm:w-1/3 flex-shrink-0 flex flex-col">
                 <div className="relative h-[180px] sm:h-full rounded-md overflow-hidden border flex-grow">
                   <Image
                     src={entry.imagePath}
