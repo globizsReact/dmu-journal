@@ -39,7 +39,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="py-3 px-4 md:px-8 bg-primary text-primary-foreground shadow-md relative z-40">
+      <header className="py-3 px-4 md:px-8 bg-primary text-primary-foreground relative z-40">
         <div className="container mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <Image
