@@ -86,9 +86,6 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
                     data-ai-hint={entry.imageHint || "research graph"}
                   />
                 </div>
-                <p className="text-xs text-center text-muted-foreground mt-1 truncate" title={`Article Number - ${entry.id}`}>
-                  Article Number - {entry.id}
-                </p>
               </div>
             )}
           </div>
