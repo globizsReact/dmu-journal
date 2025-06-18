@@ -141,7 +141,6 @@ export default function SubmitPage() {
       description: "You are being redirected.",
     });
     router.push('/author/dashboard');
-    // No need to setIsSubmitting(false) here as page navigates away
   };
 
   return (
@@ -149,7 +148,7 @@ export default function SubmitPage() {
       <Header />
       <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
         <div className="mb-8 text-center">
-          <div className="relative inline-flex items-center space-x-1 md:space-x-2 p-1">
+          <div className="relative inline-flex items-center p-1">
             {TABS_CONFIG.map((tabInfo, index) => (
               <TabButton
                 key={tabInfo.key}
@@ -237,7 +236,7 @@ export default function SubmitPage() {
                         </FormItem>
                       )}
                     />
-                    <Link href="#" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
+                    <Link href="/forgot-password" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
                       Forgot Password?
                     </Link>
                   </div>
