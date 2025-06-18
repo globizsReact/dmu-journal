@@ -1,43 +1,149 @@
+
 import type { JournalEntry, JournalCategory } from '@/lib/types';
-import { CalendarDays, Tag } from 'lucide-react';
-import { format } from 'date-fns';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Eye, Download, MessageSquareQuote, FileText, Users, ListOrdered, BarChart3 } from 'lucide-react'; // Using MessageSquareQuote for Citations
+
+interface StatItemProps {
+  icon: React.ElementType;
+  label: string;
+  value?: number | string;
+}
+
+const StatItem: React.FC<StatItemProps> = ({ icon: Icon, label, value }) => (
+  <div className="text-center md:text-left">
+    <p className="text-xs text-muted-foreground">{label}</p>
+    <p className="text-2xl font-bold text-primary">{value ?? 'N/A'}</p>
+  </div>
+);
 
 interface JournalViewProps {
   entry: JournalEntry;
-  category?: JournalCategory;
+  category: JournalCategory;
 }
 
 const JournalView = ({ entry, category }: JournalViewProps) => {
+  const copyrightText = `Copyright © ${new Date().getFullYear()} Author(S) Retain The Copyright Of This Article. This Article Is Published Under The Terms Of The University`;
+
+  const actionLinks = [
+    { label: "Full Text PDF", href: "#", icon: FileText },
+    { label: "Authors", href: "#authors", icon: Users },
+    { label: "Articles", href: `/category/${category.slug}`, icon: ListOrdered },
+    { label: "Citations", href: "#citations", icon: MessageSquareQuote },
+    { label: "Article Metrics", href: "#metrics", icon: BarChart3 },
+  ];
+
   return (
-    <article className="max-w-3xl mx-auto py-8 px-4 md:px-0 bg-card shadow-xl rounded-lg my-8 animate-fade-in">
-      <header className="mb-8 border-b pb-6 px-6">
-        <h1 className="text-4xl md:text-5xl font-headline text-primary leading-tight mb-4">
-          {entry.title}
-        </h1>
-        <div className="flex flex-wrap items-center text-sm text-muted-foreground space-x-4">
-          <div className="flex items-center">
-            <CalendarDays className="w-4 h-4 mr-2" />
-            <time dateTime={entry.date}>{format(new Date(entry.date), 'MMMM d, yyyy, h:mm a')}</time>
-          </div>
-          {category && (
-            <div className="flex items-center">
-              <Tag className="w-4 h-4 mr-2" />
-              <Link href={`/category/${category.slug}`} className="hover:underline">
-                <Badge variant="secondary">{category.name}</Badge>
-              </Link>
+    <div className="bg-card shadow-lg rounded-lg p-6 md:p-8">
+      {entry.articleType && (
+        <Badge variant="secondary" className="mb-6 text-sm py-1 px-3">
+          {entry.articleType}
+        </Badge>
+      )}
+
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Left Sidebar - Stats */}
+        <aside className="w-full md:w-1/5 lg:w-1/6 space-y-4 md:space-y-6 flex flex-row md:flex-col justify-around md:justify-start">
+          <StatItem icon={Eye} label="Views" value={entry.views} />
+          <StatItem icon={Download} label="Downloads" value={entry.downloads} />
+          <StatItem icon={MessageSquareQuote} label="Citations" value={entry.citations} />
+        </aside>
+
+        {/* Right Main Content - Article Details */}
+        <section className="w-full md:w-4/5 lg:w-5/6">
+          <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
+            {entry.title}
+          </h1>
+          <p className="text-sm text-muted-foreground mb-1">
+            Article Number - {entry.id}
+          </p>
+          <p className="text-md font-medium text-primary/80 mb-3">
+            Journal Of {category.name}
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 items-start">
+            <div className="flex-grow">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {copyrightText}
+              </p>
             </div>
-          )}
+            {entry.imagePath && (
+              <div className="w-full sm:w-1/3 md:w-1/4 lg:w-1/5 flex-shrink-0 mt-4 sm:mt-0">
+                <div className="aspect-[4/3] relative rounded-md overflow-hidden border">
+                  <Image
+                    src={entry.imagePath}
+                    alt={`Thumbnail for ${entry.title}`}
+                    layout="fill"
+                    objectFit="cover"
+                    data-ai-hint={entry.imageHint || "research graph"}
+                  />
+                </div>
+                  <p className="text-xs text-center text-muted-foreground mt-1 truncate" title={`Article Number - ${entry.id}`}>
+                    Article Number - {entry.id}
+                  </p>
+              </div>
+            )}
+          </div>
+        </section>
+      </div>
+
+      {/* Action Bar */}
+      <div className="my-8 py-3 bg-primary/90 text-primary-foreground rounded-md">
+        <div className="container mx-auto px-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-around gap-x-3 gap-y-2">
+                {actionLinks.map((link, index) => (
+                <React.Fragment key={link.label}>
+                    <Link
+                    href={link.href}
+                    className="text-sm font-medium hover:text-accent transition-colors px-2 py-1 flex items-center gap-1"
+                    >
+                    {/* <link.icon className="w-3.5 h-3.5" /> */}
+                    {link.label}
+                    </Link>
+                    {index < actionLinks.length - 1 && (
+                    <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
+                    )}
+                </React.Fragment>
+                ))}
+            </div>
         </div>
-      </header>
-      <div
-        className="prose prose-lg lg:prose-xl max-w-none px-6 font-body text-foreground/90 
-                   prose-headings:font-headline prose-headings:text-primary 
-                   prose-strong:text-primary prose-a:text-accent hover:prose-a:text-accent/80"
-        dangerouslySetInnerHTML={{ __html: entry.content.replace(/\n/g, '<br />') }} // Simple new line to br conversion
-      />
-    </article>
+      </div>
+
+      {/* Abstract Section */}
+      <div className="my-8">
+        <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
+        <Separator className="mb-4" />
+        <div
+          className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 
+                     prose-headings:font-headline prose-headings:text-primary 
+                     prose-strong:text-primary/90"
+          dangerouslySetInnerHTML={{ __html: entry.content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />') }}
+        />
+        {entry.keywords && entry.keywords.length > 0 && (
+          <div className="mt-6">
+            <p className="text-sm font-semibold text-primary">
+              Key words:{' '}
+              <span className="font-normal text-foreground/80">
+                {entry.keywords.join(', ')}
+              </span>
+            </p>
+          </div>
+        )}
+      </div>
+      
+      {/* Bottom "Tabs" and Copyright */}
+      <div className="my-8 pt-6 border-t border-border">
+        <div className="flex items-center space-x-4 mb-3">
+          <h3 className="text-md font-semibold text-primary border-b-2 border-primary pb-1">Abstract</h3>
+          <h3 className="text-md font-medium text-muted-foreground hover:text-primary cursor-pointer pb-1">Full Text PDF</h3>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          {copyrightText}
+        </p>
+      </div>
+    </div>
   );
 };
 

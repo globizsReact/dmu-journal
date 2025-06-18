@@ -36,6 +36,9 @@ export interface JournalEntry {
   imagePath?: string; 
   imageHint?: string; 
   views?: number;
-  shares?: number;
+  downloads?: number;
+  citations?: number;
+  keywords?: string[];
+  articleType?: string; // e.g., "Full Length Research Paper"
 }
 

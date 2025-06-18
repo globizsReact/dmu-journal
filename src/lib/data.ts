@@ -106,16 +106,19 @@ export const journalCategories: JournalCategory[] = [
 export const journalEntries: JournalEntry[] = [
   {
     id: 'CF00B3673110',
-    title: 'Stored Products And Postharvest Research',
-    content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest losses are mainly due to insect infestation, fragmentation, contamination by foreign matter such as sand, stones and animal droppings. This study aimed at determining the effect of improved postharvest handling practices on the quality and shelf life of Omena. The improved practices included use of raised drying racks, sorting, washing, salting and packaging in UV-treated polythene bags. The results showed that Omena dried on raised racks had significantly lower microbial counts compared to that dried on the ground. Salting significantly reduced microbial growth and extended the shelf life of Omena. Packaging in UV-treated polythene bags further extended the shelf life by preventing re-infestation by insects and reducing moisture uptake. It was concluded that improved postharvest handling practices significantly improve the quality and extend the shelf life of Omena.',
+    title: 'Data-Driven Decision Making In Modern Enterprises', // Updated to match image
+    content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest loss has implications for the food security and livelihoods of the fisherfolk. Thus, there is a need for studies to provide crucial insights into the current postharvest practices and associated challenges faced by fish value chain actors in Kenya.\n\nA baseline study was conducted on four Omena landing beaches of Kenya\'s Lake Victoria as part of an EU-funded project. The objective of the baseline study was to assess the status of value addition and marketing of silver cyprinid. The findings of the study highlight the need for improved drying, storage, and processing techniques to enhance the quality and marketability of Omena. It also underscores the importance of capacity building, market linkages, quality assurance, and policy support to transform the Omena value chain. By addressing these challenges through innovative technologies and practices, the sector can significantly contribute to food security, livelihoods, and economic growth in the riparian communities of Lake Victoria.',
     date: '2023-07-15T10:00:00Z',
-    categoryId: '1',
+    categoryId: '3', // Changed to Business & Applied Research to match image context
     excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
-    imagePath: '/images/j2.png',
-    imageHint: 'scientific research',
-    views: 150,
-    shares: 30,
+    imagePath: 'https://placehold.co/300x200.png', // Placeholder for specific article image
+    imageHint: 'data charts',
+    views: 45,
+    downloads: 5,
+    citations: 2,
+    keywords: ['Silver Cyprinid (Omena)', 'value addition', 'postharvest loss', 'marketing', 'food security'],
+    articleType: 'Full Length Research Paper',
   },
   {
     id: 'CF00B3673111',
@@ -128,7 +131,10 @@ export const journalEntries: JournalEntry[] = [
     imagePath: '/images/j3.png',
     imageHint: 'social analysis',
     views: 220,
-    shares: 55,
+    downloads: 45,
+    citations: 22,
+    keywords: ['social media', 'politics', 'discourse analysis', 'misinformation'],
+    articleType: 'Review Article',
   },
   {
     id: 'CF00B3673112',
@@ -141,7 +147,10 @@ export const journalEntries: JournalEntry[] = [
     imagePath: '/images/j1.png',
     imageHint: 'business report',
     views: 180,
-    shares: 40,
+    downloads: 30,
+    citations: 15,
+    keywords: ['sustainability', 'business models', 'emerging economies', 'csr'],
+    articleType: 'Case Study',
   },
    {
     id: 'CF00B3673113',
@@ -154,7 +163,26 @@ export const journalEntries: JournalEntry[] = [
     imagePath: '/images/j4.png',
     imageHint: 'legal documents law',
     views: 95,
-    shares: 15,
+    downloads: 10,
+    citations: 5,
+    keywords: ['stare decisis', 'precedent', 'judicial process', 'common law'],
+    articleType: 'Legal Analysis',
+  },
+  {
+    id: 'SCI001', // Was CF00B3673110 before, changed to make it unique for science
+    title: 'Stored Products And Postharvest Research',
+    content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest losses are mainly due to insect infestation, fragmentation, contamination by foreign matter such as sand, stones and animal droppings. This study aimed at determining the effect of improved postharvest handling practices on the quality and shelf life of Omena. The improved practices included use of raised drying racks, sorting, washing, salting and packaging in UV-treated polythene bags. The results showed that Omena dried on raised racks had significantly lower microbial counts compared to that dried on the ground. Salting significantly reduced microbial growth and extended the shelf life of Omena. Packaging in UV-treated polythene bags further extended the shelf life by preventing re-infestation by insects and reducing moisture uptake. It was concluded that improved postharvest handling practices significantly improve the quality and extend the shelf life of Omena.',
+    date: '2023-07-15T10:00:00Z',
+    categoryId: '1',
+    excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
+    authors: ['Dr. Maina K.', 'Dr. Wanjiku O.'],
+    imagePath: '/images/j2.png',
+    imageHint: 'scientific research',
+    views: 150,
+    downloads: 25,
+    citations: 12,
+    keywords: ['postharvest', 'omena', 'fish processing', 'food preservation'],
+    articleType: 'Research Article',
   },
   {
     id: 'SCI002',
@@ -164,10 +192,13 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '1',
     excerpt: 'A deep dive into the phenomenon of quantum entanglement and its potential applications...',
     authors: ['Dr. Quantum Physicist'],
-    imagePath: 'https://placehold.co/200x150.png',
+    imagePath: 'https://placehold.co/300x200.png',
     imageHint: 'quantum physics',
     views: 300,
-    shares: 70,
+    downloads: 75,
+    citations: 50,
+    keywords: ['quantum entanglement', 'quantum computing', 'quantum communication'],
+    articleType: 'Theoretical Paper',
   },
   {
     id: 'SCI003',
@@ -177,10 +208,13 @@ export const journalEntries: JournalEntry[] = [
     categoryId: '1',
     excerpt: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy...',
     authors: ['Dr. Energy Expert'],
-    imagePath: 'https://placehold.co/200x150.png',
+    imagePath: 'https://placehold.co/300x200.png',
     imageHint: 'renewable energy',
     views: 250,
-    shares: 60,
+    downloads: 60,
+    citations: 40,
+    keywords: ['renewable energy', 'battery technology', 'energy storage', 'sustainability'],
+    articleType: 'Review',
   }
 ];
 
@@ -195,4 +229,3 @@ export const getJournalsByCategoryId = (categoryId: string): JournalEntry[] => {
 export const getJournalById = (id: string): JournalEntry | undefined => {
   return journalEntries.find(entry => entry.id === id);
 }
-
