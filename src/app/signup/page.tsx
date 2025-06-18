@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from 'next/image'; // Added Image import
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -87,9 +87,20 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background bg-[url('/images/login_bg.png')] bg-no-repeat bg-right-bottom bg-fixed">
+    <div className="relative flex flex-col min-h-screen bg-background">
+      <Image
+        src="/images/login_bg.png"
+        alt="Background"
+        fill
+        style={{
+          objectFit: 'none',
+          objectPosition: 'right bottom',
+        }}
+        className="z-[-1]"
+        priority
+      />
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center py-12 px-4">
+      <main className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-[1]">
         <Card className="w-full max-w-md shadow-xl bg-card">
           <CardHeader className="flex flex-row items-center justify-center gap-3 pt-8 pb-6">
             <Image
@@ -201,7 +212,7 @@ export default function SignupPage() {
           2025 Academic Journal
         </p>
       </main>
-      <Footer />
+      <Footer className="relative z-[1]" />
     </div>
   );
 }

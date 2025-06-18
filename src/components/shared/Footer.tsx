@@ -1,4 +1,6 @@
+
 import Link from 'next/link';
+import { cn } from '@/lib/utils'; // Import cn for conditional class names
 
 const FooterLink = ({ href, children, target }: { href: string; children: React.ReactNode, target?: string }) => (
   <Link href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined} className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">
@@ -6,10 +8,14 @@ const FooterLink = ({ href, children, target }: { href: string; children: React.
   </Link>
 );
 
-const Footer = () => {
+interface FooterProps {
+  className?: string; // Add className prop
+}
+
+const Footer = ({ className }: FooterProps) => {
   return (
     <>
-      <footer className="py-10 md:py-16 px-4 md:px-8 bg-primary text-primary-foreground">
+      <footer className={cn("py-10 md:py-16 px-4 md:px-8 bg-primary text-primary-foreground", className)}> {/* Use cn here */}
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             
@@ -51,7 +57,7 @@ const Footer = () => {
           </div>
         </div>
       </footer>
-      <div className="py-3 bg-black text-center text-xs text-gray-400">
+      <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className)}> {/* Use cn here, though likely not needed for this part */}
         <p>Design &amp; Developed By: <Link href="#" className="hover:text-accent transition-colors">Globizs</Link></p>
       </div>
     </>
