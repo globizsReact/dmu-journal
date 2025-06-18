@@ -1,16 +1,16 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react'; // Added React import
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import JournalView from '@/components/journal/JournalView';
-import { getJournalById, getCategoryBySlug, journalCategories } from '@/lib/data';
+import { getJournalById, journalCategories } from '@/lib/data'; // Removed getCategoryBySlug as it's not directly used here
 import type { JournalEntry, JournalCategory } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList } from 'lucide-react';
+import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide-react'; // Removed LayoutList as it wasn't used
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 
@@ -32,12 +32,16 @@ export default function JournalPage() {
       } else {
         console.error("Journal entry not found");
       }
-      setIsLoading(false);
+      // Simulate a small delay or remove if data loading is faster
+      const timer = setTimeout(() => setIsLoading(false), 150); 
+      return () => clearTimeout(timer);
+    } else {
+        setIsLoading(false);
     }
   }, [id]);
 
   if (isLoading) {
-    // Delegate to loading.tsx
+    // Delegate to loading.tsx for full page skeleton
     return null; 
   }
 
@@ -79,9 +83,10 @@ export default function JournalPage() {
                 src={category.imagePath}
                 alt={`${category.name} background`}
                 fill
-                objectFit="cover"
+                style={{ objectFit: "cover" }}
                 className="absolute inset-0 z-0 opacity-30"
                 data-ai-hint={category.imageHint}
+                priority
             />
         )}
         <div className="absolute inset-0 bg-primary/70 z-0"></div> {/* Dark overlay */}
@@ -122,7 +127,7 @@ export default function JournalPage() {
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl"> {/* Added max-w-5xl here */}
         <JournalView entry={entry} category={category} />
          <div className="mt-12 text-center">
             <Button asChild variant="outline">
