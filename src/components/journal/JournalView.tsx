@@ -77,7 +77,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
             {/* Image Block */}
             {entry.imagePath && (
               <div className="w-full mt-4 sm:mt-0 sm:w-5/12 flex-shrink-0">
-                <div className="aspect-[4/3] relative rounded-md overflow-hidden border">
+                <div className="relative h-[150px] rounded-md overflow-hidden border">
                   <Image
                     src={entry.imagePath}
                     alt={`Thumbnail for ${entry.title}`}
@@ -118,7 +118,7 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
       </div>
 
       {/* Abstract Section */}
-      <div className="my-8 bg-card shadow-md rounded-lg p-6 md:p-8"> {/* Added card background for abstract section */}
+      <div className="my-8"> 
         <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
         <Separator className="mb-4" />
         <div
@@ -154,3 +154,4 @@ const JournalView = ({ entry, category }: JournalViewProps) => {
 };
 
 export default JournalView;
+
