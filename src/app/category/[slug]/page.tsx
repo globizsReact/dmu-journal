@@ -379,13 +379,25 @@ export default function CategoryPage() {
       </div>
     );
   }
+  
+  const categorySpecificBgColor = 
+    category.slug === 'journal-of-humanities-and-social-sciences' ? '#A56D51' :
+    category.slug === 'journal-of-business-and-applied-research' ? '#1C252C' :
+    category.slug === 'journal-of-legal-studies' ? '#2C344C' :
+    undefined;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
 
       {/* Hero/Title Section */}
-      <section className="py-10 md:py-16 bg-secondary text-secondary-foreground">
+      <section
+        className={cn(
+          "py-10 md:py-16 text-secondary-foreground",
+          !categorySpecificBgColor && "bg-secondary" // Apply default if no specific color
+        )}
+        style={categorySpecificBgColor ? { backgroundColor: categorySpecificBgColor } : {}}
+      >
         <div className="container mx-auto px-4 text-center md:text-left">
           <p className="text-lg font-medium opacity-90">Dhanamanjuri University</p>
           <h1 className="text-4xl md:text-5xl font-headline font-bold mt-1 mb-4">{category.name}</h1>
