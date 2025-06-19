@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react'; // Removed useEffect as it's not used here
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -69,21 +69,43 @@ export default function SignupPage() {
 
   const onSubmit = async (values: SignupFormValues) => {
     setIsSubmitting(true);
-    console.log('Mock Sign Up Attempt with values:', {
-        fullName: values.fullName,
-        username: values.username,
-        email: values.email,
-    });
-
-    setTimeout(() => {
-      toast({
-        title: 'Account Created Successfully (Mock)!',
-        description: 'You can now sign in with your new credentials.',
-        variant: 'default', 
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        }),
       });
-      router.push('/submit'); 
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Account Created Successfully!',
+          description: 'You can now sign in with your new credentials.',
+          variant: 'default',
+        });
+        router.push('/submit'); 
+      } else {
+        toast({
+          title: 'Sign Up Failed',
+          description: data.error || 'An unknown error occurred. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: 'Sign Up Error',
+        description: 'Could not connect to the server. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000); 
+    }
   };
 
   return (

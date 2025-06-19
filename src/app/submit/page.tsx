@@ -30,7 +30,7 @@ import { cn } from '@/lib/utils';
 type ActiveTab = 'author' | 'editor' | 'reviewer';
 
 const LoginSchema = z.object({
-  username: z.string().min(1, { message: 'Username is required.' }),
+  username: z.string().min(1, { message: 'Username or email is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
   rememberMe: z.boolean().optional(),
 });
@@ -124,23 +124,53 @@ export default function SubmitPage() {
 
   const onSubmitAuthor = async (values: LoginFormValues) => {
     setIsSubmitting(true);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('isAuthorLoggedIn', 'true');
-      localStorage.setItem('authorName', values.username || 'Dr. Santosh Sharma'); 
-      if (values.rememberMe && values.username) {
-        localStorage.setItem('rememberAuthorLogin', 'true');
-        localStorage.setItem('rememberedUsername', values.username);
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('isAuthorLoggedIn', 'true');
+          localStorage.setItem('authToken', data.token); // Store JWT
+          localStorage.setItem('authorName', data.user.fullName || 'Author'); 
+          localStorage.setItem('authorRole', data.user.role || 'author');
+
+          if (values.rememberMe && values.username) {
+            localStorage.setItem('rememberAuthorLogin', 'true');
+            localStorage.setItem('rememberedUsername', values.username);
+          } else {
+            localStorage.removeItem('rememberAuthorLogin');
+            localStorage.removeItem('rememberedUsername');
+          }
+          window.dispatchEvent(new CustomEvent('authChange'));
+        }
+        toast({
+          title: "Login Successful",
+          description: "Redirecting to your dashboard...",
+        });
+        router.push('/author/dashboard');
       } else {
-        localStorage.removeItem('rememberAuthorLogin');
-        localStorage.removeItem('rememberedUsername');
+        toast({
+          title: "Login Failed",
+          description: data.error || "An unknown error occurred.",
+          variant: "destructive",
+        });
       }
-      window.dispatchEvent(new CustomEvent('authChange'));
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login Error",
+        description: "Could not connect to the server. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    toast({
-      title: "Navigating to Dashboard",
-      description: "You are being redirected.",
-    });
-    router.push('/author/dashboard');
   };
 
   return (
@@ -206,9 +236,9 @@ export default function SubmitPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>Username or Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="Enter your username" {...field} disabled={isSubmitting} />
+                          <Input placeholder="Enter your username or email" {...field} disabled={isSubmitting} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
