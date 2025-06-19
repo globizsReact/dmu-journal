@@ -1,17 +1,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import prisma from '@/lib/prisma';
 import { comparePassword, generateToken } from '@/lib/authUtils';
-import type { RowDataPacket } from 'mysql2';
-
-interface UserRecord extends RowDataPacket {
-  id: number;
-  fullName: string;
-  username: string;
-  email: string;
-  password_hash: string;
-  role: string;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,22 +15,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    let connection;
     try {
-      connection = await pool.getConnection();
-      const [rows] = await connection.execute<UserRecord[]>(
-        'SELECT id, fullName, username, email, password_hash, role FROM users WHERE username = ? OR email = ?',
-        [username, username]
-      );
+      const user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { username: username },
+            { email: username },
+          ],
+        },
+      });
 
-      if (rows.length === 0) {
+      if (!user) {
         return NextResponse.json(
           { error: 'Invalid username/email or password' },
           { status: 401 }
         );
       }
 
-      const user = rows[0];
       const isPasswordValid = await comparePassword(password, user.password_hash);
 
       if (!isPasswordValid) {
@@ -50,13 +41,12 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const token = generateToken({ 
-        userId: user.id, 
+      const token = generateToken({
+        userId: user.id,
         username: user.username,
-        role: user.role 
+        role: user.role,
       });
 
-      // Return token and user info (excluding password hash)
       return NextResponse.json(
         {
           message: 'Login successful',
@@ -74,11 +64,9 @@ export async function POST(request: NextRequest) {
     } catch (dbError) {
       console.error('Database error during login:', dbError);
       return NextResponse.json(
-        { error: 'An internal server error occurred.' },
+        { error: 'An internal server error occurred during database operation.' },
         { status: 500 }
       );
-    } finally {
-      if (connection) connection.release();
     }
   } catch (error) {
     console.error('Login API error:', error);
@@ -89,5 +77,8 @@ export async function POST(request: NextRequest) {
       { error: 'An unexpected error occurred during login.' },
       { status: 500 }
     );
+  } finally {
+    // Prisma manages connections automatically.
+    // await prisma.$disconnect();
   }
 }

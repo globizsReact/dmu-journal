@@ -1,12 +1,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import prisma from '@/lib/prisma';
 import { hashPassword } from '@/lib/authUtils';
-import type { ResultSetHeader, RowDataPacket } from 'mysql2';
-
-interface UserCheckResult extends RowDataPacket {
-  count: number;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,23 +21,21 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    // Basic email validation (more robust validation can be added)
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
 
-
-    let connection;
     try {
-      connection = await pool.getConnection();
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { username: username },
+            { email: email },
+          ],
+        },
+      });
 
-      // Check if username or email already exists
-      const [existingUsers] = await connection.execute<UserCheckResult[]>(
-        'SELECT COUNT(*) as count FROM users WHERE username = ? OR email = ?',
-        [username, email]
-      );
-
-      if (existingUsers[0].count > 0) {
+      if (existingUser) {
         return NextResponse.json(
           { error: 'Username or email already exists.' },
           { status: 409 } // 409 Conflict
@@ -51,40 +44,42 @@ export async function POST(request: NextRequest) {
 
       const hashedPassword = await hashPassword(password);
 
-      const [result] = await connection.execute<ResultSetHeader>(
-        'INSERT INTO users (fullName, username, email, password_hash, role) VALUES (?, ?, ?, ?, ?)',
-        [fullName, username, email, hashedPassword, 'author'] // Default role to 'author'
-      );
+      const newUser = await prisma.user.create({
+        data: {
+          fullName,
+          username,
+          email,
+          password_hash: hashedPassword,
+          role: 'author', // Default role to 'author'
+        },
+      });
 
-      if (result.affectedRows === 1) {
-        return NextResponse.json(
-          {
-            message: 'User account created successfully.',
-            user: {
-              id: result.insertId,
-              fullName,
-              username,
-              email,
-              role: 'author',
-            },
+      return NextResponse.json(
+        {
+          message: 'User account created successfully.',
+          user: {
+            id: newUser.id,
+            fullName: newUser.fullName,
+            username: newUser.username,
+            email: newUser.email,
+            role: newUser.role,
           },
-          { status: 201 } // 201 Created
-        );
-      } else {
-        console.error('User creation failed, affectedRows was not 1.');
-        return NextResponse.json(
-          { error: 'Failed to create user account.' },
-          { status: 500 }
-        );
-      }
+        },
+        { status: 201 } // 201 Created
+      );
     } catch (dbError) {
       console.error('Database error during signup:', dbError);
+      // Check for Prisma specific error codes if needed, e.g., P2002 for unique constraint violation
+      if ((dbError as any).code === 'P2002') {
+         return NextResponse.json(
+          { error: 'Username or email already exists.' },
+          { status: 409 }
+        );
+      }
       return NextResponse.json(
-        { error: 'An internal server error occurred.' },
+        { error: 'An internal server error occurred during database operation.' },
         { status: 500 }
       );
-    } finally {
-      if (connection) connection.release();
     }
   } catch (error) {
     console.error('Signup API error:', error);
@@ -95,5 +90,8 @@ export async function POST(request: NextRequest) {
       { error: 'An unexpected error occurred during sign up.' },
       { status: 500 }
     );
+  } finally {
+    // Prisma manages connections automatically, so explicit disconnect is not usually needed here.
+    // await prisma.$disconnect(); // Generally not recommended per request in serverless environments
   }
 }
