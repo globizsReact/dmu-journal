@@ -12,14 +12,14 @@ interface JournalPublicationCardProps {
 const JournalPublicationCard = ({ category, universityName }: JournalPublicationCardProps) => {
   return (
     <Link href={`/category/${category.slug}`} className="group block h-full">
-      <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card border border-border hover:border-primary/50 rounded-none">
+      <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card rounded-none">
         <div className="relative w-full aspect-video"> {/* Image and text container */}
           <Image
             src={category.imagePath}
             alt={category.name}
             layout="fill"
             objectFit="cover"
-            className="transition-transform duration-500 ease-in-out group-hover:scale-110"
+            className="transition-transform duration-1600 ease-in-out group-hover:scale-125"
             data-ai-hint={category.imageHint}
           />
           {/* Gradient overlay for text visibility */}

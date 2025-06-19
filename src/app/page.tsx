@@ -27,7 +27,7 @@ export default function HomePage() {
 
         <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8 lg:max-w-3xl lg:mx-auto md:justify-center">
+            <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8 lg:max-w-5xl lg:mx-auto md:justify-center">
               {/* Search Input on the left */}
               <div className="w-full md:flex-1">
                 <GlobalSearchInput />
@@ -44,7 +44,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="text-center mb-12">
+            <div className="text-center mb-12 lg:max-w-5xl lg:mx-auto">
               <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary">
                 {universityName} Journals Portal
               </h2>
@@ -53,7 +53,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-3xl lg:mx-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-5xl lg:mx-auto">
               {journalCategories.map((category) => (
                 <JournalPublicationCard
                   key={category.id}

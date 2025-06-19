@@ -8,6 +8,9 @@ export default {
   ],
   theme: {
     extend: {
+      transitionDuration: {
+        1600: '1600ms', // Add your custom duration here
+      },
       fontFamily: {
         body: ['Poppins', 'sans-serif'],
         headline: ['Poppins', 'sans-serif'],
