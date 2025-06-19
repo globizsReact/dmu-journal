@@ -28,14 +28,40 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils'; 
 
 type ActiveTab = 'author' | 'editor' | 'reviewer';
+type FormMode = 'login' | 'signup';
 
 const LoginSchema = z.object({
   username: z.string().min(1, { message: 'Username or email is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
   rememberMe: z.boolean().optional(),
 });
-
 type LoginFormValues = z.infer<typeof LoginSchema>;
+
+const SignupSchema = z
+  .object({
+    fullName: z
+      .string()
+      .min(3, { message: 'Full name must be at least 3 characters.' })
+      .max(100, { message: 'Full name cannot exceed 100 characters.' }),
+    username: z
+      .string()
+      .min(3, { message: 'Username must be at least 3 characters.' })
+      .max(50, { message: 'Username cannot exceed 50 characters.' })
+      .regex(/^[a-zA-Z0-9_]+$/, {
+        message: 'Username can only contain letters, numbers, and underscores.',
+      }),
+    email: z.string().email({ message: 'Invalid email address.' }),
+    password: z
+      .string()
+      .min(6, { message: 'Password must be at least 6 characters.' }),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'], 
+  });
+type SignupFormValues = z.infer<typeof SignupSchema>;
+
 
 const TABS_CONFIG = [
   { key: 'author' as ActiveTab, label: 'Author' },
@@ -73,6 +99,7 @@ TabButton.displayName = 'TabButton';
 
 export default function SubmitPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('author');
+  const [formMode, setFormMode] = useState<FormMode>('login');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -80,7 +107,7 @@ export default function SubmitPage() {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>(new Array(TABS_CONFIG.length).fill(null));
   const logoSrc = '/images/logo_black.png';
 
-  const form = useForm<LoginFormValues>({
+  const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
       username: '',
@@ -89,16 +116,27 @@ export default function SubmitPage() {
     },
   });
 
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(SignupSchema),
+    defaultValues: {
+      fullName: '',
+      username: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (formMode === 'login' && typeof window !== 'undefined') {
       const rememberMe = localStorage.getItem('rememberAuthorLogin') === 'true';
       const rememberedUsername = localStorage.getItem('rememberedUsername');
       if (rememberMe && rememberedUsername) {
-        form.setValue('username', rememberedUsername);
-        form.setValue('rememberMe', true);
+        loginForm.setValue('username', rememberedUsername);
+        loginForm.setValue('rememberMe', true);
       }
     }
-  }, [form]);
+  }, [formMode, loginForm]);
 
   useEffect(() => {
     const activeTabIndex = TABS_CONFIG.findIndex(t => t.key === activeTab);
@@ -122,7 +160,7 @@ export default function SubmitPage() {
   }, [activeTab]); 
 
 
-  const onSubmitAuthor = async (values: LoginFormValues) => {
+  const onSubmitLogin = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/login', {
@@ -136,7 +174,7 @@ export default function SubmitPage() {
       if (response.ok) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('isAuthorLoggedIn', 'true');
-          localStorage.setItem('authToken', data.token); // Store JWT
+          localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'Author'); 
           localStorage.setItem('authorRole', data.user.role || 'author');
 
@@ -172,6 +210,49 @@ export default function SubmitPage() {
       setIsSubmitting(false);
     }
   };
+
+  const onSubmitSignup = async (values: SignupFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Account Created Successfully!',
+          description: 'You can now sign in with your new credentials.',
+          variant: 'default',
+        });
+        setFormMode('login'); // Switch to login form
+        signupForm.reset(); // Reset signup form fields
+      } else {
+        toast({
+          title: 'Sign Up Failed',
+          description: data.error || 'An unknown error occurred. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: 'Sign Up Error',
+        description: 'Could not connect to the server. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background">
@@ -229,80 +310,194 @@ export default function SubmitPage() {
           </CardHeader>
           <CardContent className="p-6">
             {activeTab === 'author' && (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmitAuthor)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username or Email</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter your username or email" {...field} disabled={isSubmitting} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="Enter your password" {...field} disabled={isSubmitting} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex items-center justify-between">
-                    <FormField
-                      control={form.control}
-                      name="rememberMe"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                           <FormControl>
-                            <Checkbox
-                              id="remember-me"
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                              disabled={isSubmitting}
-                            />
-                          </FormControl>
-                          <Label htmlFor="remember-me" className="text-sm font-normal text-foreground/80 -translate-y-0.5">
-                            Remember me
-                          </Label>
-                        </FormItem>
-                      )}
-                    />
-                    <Link href="/forgot-password" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
-                      Forgot Password?
-                    </Link>
-                  </div>
-                  <Button
-                    type="submit"
-                    className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing In...
-                      </>
-                    ) : (
-                      'Sign In'
-                    )}
-                  </Button>
-                  <p className="text-center text-sm text-muted-foreground">
-                    Don&apos;t have an account?{' '}
-                    <Link href="/signup" className={`font-medium text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
-                      Sign Up
-                    </Link>
-                  </p>
-                </form>
-              </Form>
+              <>
+                {formMode === 'login' && (
+                  <>
+                    <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Sign In to Your Account</h2>
+                    <Form {...loginForm}>
+                      <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-6">
+                        <FormField
+                          control={loginForm.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Username or Email</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your username or email" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={loginForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Enter your password" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex items-center justify-between">
+                          <FormField
+                            control={loginForm.control}
+                            name="rememberMe"
+                            render={({ field }) => (
+                              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                                <FormControl>
+                                  <Checkbox
+                                    id="remember-me"
+                                    checked={field.value}
+                                    onCheckedChange={field.onChange}
+                                    disabled={isSubmitting}
+                                  />
+                                </FormControl>
+                                <Label htmlFor="remember-me" className="text-sm font-normal text-foreground/80 -translate-y-0.5">
+                                  Remember me
+                                </Label>
+                              </FormItem>
+                            )}
+                          />
+                          <Link href="/forgot-password" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
+                            Forgot Password?
+                          </Link>
+                        </div>
+                        <Button
+                          type="submit"
+                          className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Signing In...
+                            </>
+                          ) : (
+                            'Sign In'
+                          )}
+                        </Button>
+                        <p className="text-center text-sm text-muted-foreground">
+                          Don&apos;t have an account?{' '}
+                          <Button
+                            type="button"
+                            variant="link"
+                            onClick={() => setFormMode('signup')}
+                            className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
+                            disabled={isSubmitting}
+                          >
+                            Sign Up
+                          </Button>
+                        </p>
+                      </form>
+                    </Form>
+                  </>
+                )}
+
+                {formMode === 'signup' && (
+                   <>
+                    <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Create Your Account</h2>
+                    <Form {...signupForm}>
+                      <form onSubmit={signupForm.handleSubmit(onSubmitSignup)} className="space-y-4">
+                        <FormField
+                          control={signupForm.control}
+                          name="fullName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Enter your full name" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signupForm.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Username</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Choose a username" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signupForm.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email Address</FormLabel>
+                              <FormControl>
+                                <Input type="email" placeholder="Enter your email" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signupForm.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Create a password" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={signupForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Confirm Password</FormLabel>
+                              <FormControl>
+                                <Input type="password" placeholder="Confirm your password" {...field} disabled={isSubmitting} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <Button
+                          type="submit"
+                          className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground mt-6"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Creating Account...
+                            </>
+                          ) : (
+                            'Sign Up'
+                          )}
+                        </Button>
+                        <p className="text-center text-sm text-muted-foreground pt-2">
+                          Already have an account?{' '}
+                          <Button
+                            type="button"
+                            variant="link"
+                            onClick={() => setFormMode('login')}
+                            className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
+                            disabled={isSubmitting}
+                          >
+                            Sign In
+                          </Button>
+                        </p>
+                      </form>
+                    </Form>
+                   </>
+                )}
+              </>
             )}
             {activeTab === 'editor' && (
               <div className="text-center py-8">
@@ -327,3 +522,5 @@ export default function SubmitPage() {
     </div>
   );
 }
+
+    
