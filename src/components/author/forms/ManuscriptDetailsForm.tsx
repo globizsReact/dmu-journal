@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/components/ui/label'; // Not strictly needed if using FormLabel
 import {
   Select,
   SelectContent,
@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { journalCategories } from '@/lib/data';
+import { Loader2 } from 'lucide-react';
 
 const manuscriptDetailsSchema = z.object({
   journalId: z.string().min(1, { message: 'Please select a journal.' }),
@@ -39,9 +40,10 @@ export type ManuscriptDetailsData = z.infer<typeof manuscriptDetailsSchema>;
 interface ManuscriptDetailsFormProps {
   onValidatedNext: (data: ManuscriptDetailsData) => void;
   initialData?: ManuscriptDetailsData | null;
+  isSubmitting: boolean; // Added prop
 }
 
-export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: ManuscriptDetailsFormProps) {
+export default function ManuscriptDetailsForm({ onValidatedNext, initialData, isSubmitting }: ManuscriptDetailsFormProps) {
   const form = useForm<ManuscriptDetailsData>({
     resolver: zodResolver(manuscriptDetailsSchema),
     defaultValues: initialData || {
@@ -67,8 +69,12 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: 
           name="journalId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Select A Journal</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormLabel>Select A Journal <span className="text-destructive">*</span></FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                defaultValue={field.value}
+                disabled={isSubmitting}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a journal" />
@@ -97,6 +103,7 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: 
                   checked={field.value}
                   onCheckedChange={field.onChange}
                   id="isSpecialReview"
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
@@ -113,9 +120,9 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: 
           name="articleTitle"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Article Title</FormLabel>
+              <FormLabel>Article Title <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Input placeholder="Enter the title of your article" {...field} />
+                <Input placeholder="Enter the title of your article" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -127,12 +134,13 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: 
           name="abstract"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Abstract</FormLabel>
+              <FormLabel>Abstract <span className="text-destructive">*</span></FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Provide a brief summary of your article (max 5000 characters)"
                   className="min-h-[150px]"
                   {...field}
+                  disabled={isSubmitting}
                 />
               </FormControl>
               <FormMessage />
@@ -145,22 +153,18 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData }: 
           name="keywords"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Key Words</FormLabel>
+              <FormLabel>Key Words <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Input placeholder="Enter keywords, separated by commas" {...field} />
+                <Input placeholder="Enter keywords, separated by commas" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
         
-        {/* The "Next" button for this step is implicitly handled by the parent,
-            but we need a submit button for this specific form instance.
-            This button's click will be handled by react-hook-form's handleSubmit,
-            which then calls our `onSubmit` that in turn calls `onValidatedNext`.
-        */}
         <div className="flex justify-end">
-          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">
+          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Next
           </Button>
         </div>

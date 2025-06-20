@@ -21,7 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
 
 const authorSchema = z.object({
   title: z.string().min(1, 'Title is required.'),
@@ -42,11 +42,12 @@ interface AuthorDetailsFormProps {
   onValidatedNext: (data: AuthorDetailsData) => void;
   onPrevious: () => void;
   initialData?: AuthorDetailsData | null;
+  isSubmitting: boolean; // Added prop
 }
 
 const authorTitles = ['Dr.', 'Prof.', 'Mr.', 'Ms.', 'Mrs.'];
 
-export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initialData }: AuthorDetailsFormProps) {
+export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initialData, isSubmitting }: AuthorDetailsFormProps) {
   const form = useForm<AuthorDetailsData>({
     resolver: zodResolver(authorDetailsSchema),
     defaultValues: initialData || {
@@ -76,7 +77,8 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 text-destructive hover:bg-destructive/10"
-                onClick={() => remove(index)}
+                onClick={() => !isSubmitting && remove(index)}
+                disabled={isSubmitting}
               >
                 <Trash2 className="h-4 w-4" />
                 <span className="sr-only">Remove Author</span>
@@ -89,8 +91,12 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.title`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Title</FormLabel>
-                    <Select onValueChange={controllerField.onChange} defaultValue={controllerField.value}>
+                    <FormLabel>Title <span className="text-destructive">*</span></FormLabel>
+                    <Select 
+                        onValueChange={controllerField.onChange} 
+                        defaultValue={controllerField.value}
+                        disabled={isSubmitting}
+                    >
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select title" />
@@ -111,9 +117,9 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.givenName`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Given Name</FormLabel>
+                    <FormLabel>Given Name <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter given name" {...controllerField} />
+                      <Input placeholder="Enter given name" {...controllerField} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -124,9 +130,9 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.lastName`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Last Name</FormLabel>
+                    <FormLabel>Last Name <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter last name" {...controllerField} />
+                      <Input placeholder="Enter last name" {...controllerField} disabled={isSubmitting}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -137,9 +143,9 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.email`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Email Address</FormLabel>
+                    <FormLabel>Email Address <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="Enter email address" {...controllerField} />
+                      <Input type="email" placeholder="Enter email address" {...controllerField} disabled={isSubmitting}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -150,9 +156,9 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.affiliation`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Affiliation</FormLabel>
+                    <FormLabel>Affiliation <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter affiliation" {...controllerField} />
+                      <Input placeholder="Enter affiliation" {...controllerField} disabled={isSubmitting}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -163,9 +169,9 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
                 name={`authors.${index}.country`}
                 render={({ field: controllerField }) => (
                   <FormItem>
-                    <FormLabel>Country</FormLabel>
+                    <FormLabel>Country <span className="text-destructive">*</span></FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter country" {...controllerField} />
+                      <Input placeholder="Enter country" {...controllerField} disabled={isSubmitting}/>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -180,6 +186,7 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
           variant="outline"
           onClick={() => append({ title: '', givenName: '', lastName: '', email: '', affiliation: '', country: '' })}
           className="border-dashed border-primary text-primary hover:bg-primary/10"
+          disabled={isSubmitting}
         >
           Add More Author
         </Button>
@@ -190,10 +197,12 @@ export default function AuthorDetailsForm({ onValidatedNext, onPrevious, initial
             onClick={onPrevious}
             variant="outline"
             className="bg-gray-300 hover:bg-gray-400 text-gray-800"
+            disabled={isSubmitting}
           >
             Previous
           </Button>
-          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">
+          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Next
           </Button>
         </div>

@@ -9,13 +9,45 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  fullName      String
-  username      String   @unique
-  email         String   @unique
-  password_hash String   // Field name in Prisma model
-  role          String?  @default("author")
-  created_at    DateTime @default(now()) @map("created_at") // Maps to 'created_at' column in DB
+  id                   Int      @id @default(autoincrement())
+  fullName             String
+  username             String   @unique
+  email                String   @unique
+  password_hash        String
+  role                 String?  @default("author")
+  created_at           DateTime @default(now()) @map("created_at")
 
-  @@map("users") // Explicitly maps this model to the "users" table in your database
+  submittedManuscripts Manuscript[] // Relation to manuscripts submitted by this user
+
+  @@map("users")
+}
+
+model Manuscript {
+  id                   String    @id @default(cuid())
+  articleTitle         String
+  abstract             String    @db.Text
+  keywords             String    // Comma-separated string
+  journalCategoryId    String    // Corresponds to JournalCategory.id from lib/data.ts
+  isSpecialReview      Boolean?  @default(false)
+  
+  coverLetterFileName  String?
+  manuscriptFileName   String
+  supplementaryFilesName String?
+  
+  authorAgreement      Boolean
+  
+  // Store co-author details as JSON. Ensure your MySQL version supports JSON (5.7.8+).
+  // If not, this might need to be a String and handled with JSON.parse/stringify manually,
+  // or a separate related table for CoAuthors.
+  coAuthors            Json      
+  
+  status               String    @default("Submitted") // e.g., Submitted, Under Review, Accepted
+  
+  submittedAt          DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  submittedBy          User      @relation(fields: [submittedById], references: [id])
+  submittedById        Int
+
+  @@map("manuscripts") // Explicitly map model to "manuscripts" table
 }

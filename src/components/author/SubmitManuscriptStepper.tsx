@@ -1,27 +1,44 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ManuscriptDetailsForm, { type ManuscriptDetailsData } from '@/components/author/forms/ManuscriptDetailsForm';
 import AuthorDetailsForm, { type AuthorDetailsData } from '@/components/author/forms/AuthorDetailsForm';
 import UploadFilesForm, { type UploadFilesData } from '@/components/author/forms/UploadFilesForm';
 import { cn } from '@/lib/utils';
-import { Check, CheckCircle2 } from 'lucide-react';
+import { Check, CheckCircle2, Loader2 } from 'lucide-react';
 import React from 'react';
+import { useToast } from '@/hooks/use-toast';
+
 
 const steps = [
   { id: 1, title: 'Manuscript Information' },
   { id: 2, title: 'Author Details' },
-  { id: 3, title: 'Upload Files' },
+  { id: 3, title: 'Upload Files & Submit' }, // Updated title
 ];
 
 export default function SubmitManuscriptStepper() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formDataStep1, setFormDataStep1] = useState<ManuscriptDetailsData | null>(null);
   const [formDataStep2, setFormDataStep2] = useState<AuthorDetailsData | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { toast } = useToast();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      setAuthToken(token);
+      if (!token) {
+        // Optionally, redirect or show message if no token, though page access should be guarded
+        console.warn("Auth token not found. Submissions will likely fail.");
+      }
+    }
+  }, []);
+
 
   const handleNextFromStep1 = (data: ManuscriptDetailsData) => {
     setFormDataStep1(data);
@@ -33,21 +50,76 @@ export default function SubmitManuscriptStepper() {
     setCurrentStep(3);
   };
   
-  const handleFinish = (dataStep3: UploadFilesData) => {
-    const finalSubmissionData = {
+  const handleFinish = async (dataStep3: UploadFilesData) => {
+    if (!formDataStep1 || !formDataStep2) {
+      toast({
+        title: 'Error',
+        description: 'Previous step data is missing. Please go back and complete all steps.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!authToken) {
+      toast({
+        title: 'Authentication Error',
+        description: 'You are not logged in. Please log in to submit a manuscript.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const submissionPayload = {
       manuscriptDetails: formDataStep1,
       authorDetails: formDataStep2,
       files: {
-        coverLetter: dataStep3.coverLetterFile?.name || 'Not provided',
-        manuscriptFile: dataStep3.manuscriptFile.name,
-        supplementaryFiles: dataStep3.supplementaryFiles?.name || 'Not provided',
+        coverLetterFileName: dataStep3.coverLetterFile?.name,
+        manuscriptFileName: dataStep3.manuscriptFile.name, // Manuscript file is required by schema
+        supplementaryFilesName: dataStep3.supplementaryFiles?.name,
         agreedToTerms: dataStep3.authorAgreement,
       }
     };
-    console.log('Submitting manuscript:', finalSubmissionData);
+
+    console.log('Submitting manuscript with payload:', JSON.stringify(submissionPayload, null, 2));
     
-    setIsSubmitted(true);
-    // Form data will be reset if "Submit Another Journal" is clicked
+    try {
+      const response = await fetch('/api/manuscripts/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify(submissionPayload),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Submission Successful!',
+          description: `Manuscript "${formDataStep1.articleTitle}" submitted. ID: ${result.manuscriptId}`,
+          variant: 'default',
+        });
+        setIsSubmitted(true);
+      } else {
+        toast({
+          title: 'Submission Failed',
+          description: result.error || 'An unknown error occurred.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Submission error:', error);
+      toast({
+        title: 'Network Error',
+        description: 'Could not connect to the server. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handlePrevious = () => {
@@ -56,27 +128,30 @@ export default function SubmitManuscriptStepper() {
 
   const handleSubmitAnother = () => {
     setIsSubmitted(false);
+    setIsSubmitting(false);
     setCurrentStep(1);
     setFormDataStep1(null);
     setFormDataStep2(null);
-    // Individual forms (like UploadFilesForm) should reset their own internal state (e.g., file names)
-    // or be reset via their `key` prop if necessary for full reset.
-    // The form in UploadFilesForm is reset via its `form.reset()` call in its onSubmit.
+    // The UploadFilesForm will reset its own file inputs and agreement checkbox
+    // when its internal form.reset() is called upon successful submission or if a key is used to re-mount it.
   };
 
   const isStepComplete = (stepId: number): boolean => {
+    if (isSubmitted && stepId <= 3) return true;
+    if (stepId < currentStep) return true; // All previous steps are considered complete
     if (stepId === 1 && formDataStep1) return true;
     if (stepId === 2 && formDataStep1 && formDataStep2) return true;
-    // Step 3 is complete once submitted, not just by filling data.
-    // For UI, it's complete if we are past it or viewing the submission success.
-    if (isSubmitted && stepId <= 3) return true; 
     return false;
   };
 
   let maxReachableStep = 1;
   if (formDataStep1) maxReachableStep = 2;
   if (formDataStep1 && formDataStep2) maxReachableStep = 3;
-  if (currentStep > maxReachableStep && !isSubmitted) maxReachableStep = currentStep;
+  if (currentStep > maxReachableStep && !isSubmitted) {
+     // Allow navigation to current step even if prior data isn't fully "validated" by next click
+     // This is primarily for allowing navigation back and forth.
+     maxReachableStep = currentStep;
+  }
 
 
   return (
@@ -92,15 +167,15 @@ export default function SubmitManuscriptStepper() {
                 <div className="flex flex-col items-center text-center">
                   <button
                     onClick={() => {
-                      if (step.id <= maxReachableStep && step.id !== currentStep) {
+                      if (step.id <= maxReachableStep && step.id !== currentStep && !isSubmitting) {
                         setCurrentStep(step.id);
                       }
                     }}
-                    disabled={step.id > maxReachableStep && step.id !== currentStep}
+                    disabled={isSubmitting || (step.id > maxReachableStep && step.id !== currentStep)}
                     className={cn(
                       "flex flex-col items-center focus:outline-none",
-                      step.id <= maxReachableStep ? "cursor-pointer" : "cursor-default",
-                      step.id > maxReachableStep && step.id !== currentStep && "opacity-60"
+                      step.id <= maxReachableStep && !isSubmitting ? "cursor-pointer" : "cursor-default",
+                      (isSubmitting || (step.id > maxReachableStep && step.id !== currentStep)) && "opacity-60"
                     )}
                   >
                     <div
@@ -108,12 +183,12 @@ export default function SubmitManuscriptStepper() {
                         "w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ease-in-out",
                         currentStep === step.id
                           ? "bg-primary border-primary text-primary-foreground scale-110 shadow-lg"
-                          : isStepComplete(step.id)
+                          : isStepComplete(step.id) && step.id < currentStep // Mark previous steps as complete
                           ? "bg-green-600 border-green-600 text-white"
                           : "bg-card border-border text-foreground"
                       )}
                     >
-                      {isStepComplete(step.id) && currentStep !== step.id ? (
+                      {isStepComplete(step.id) && step.id < currentStep ? ( // Checkmark only for truly completed previous steps
                         <Check className="w-4 h-4 md:w-5 md:h-5" />
                       ) : (
                         step.id
@@ -124,7 +199,7 @@ export default function SubmitManuscriptStepper() {
                         "mt-2 text-xs md:text-sm font-medium w-24 md:w-32 break-words transition-colors duration-300",
                         currentStep === step.id
                           ? "text-primary font-semibold"
-                          : isStepComplete(step.id)
+                          : isStepComplete(step.id) && step.id < currentStep
                           ? "text-green-700 dark:text-green-500"
                           : "text-muted-foreground"
                       )}
@@ -137,7 +212,7 @@ export default function SubmitManuscriptStepper() {
                   <div
                     className={cn(
                       "flex-1 h-1 mt-[18px] md:mt-[22px] transition-colors duration-500 ease-in-out",
-                      isStepComplete(step.id) && (currentStep > step.id || isStepComplete(step.id +1))
+                       isStepComplete(step.id) && (currentStep > step.id || isStepComplete(step.id +1) || (currentStep === step.id +1 && isStepComplete(step.id) ))
                         ? "bg-green-600"
                         : "bg-border" 
                     )}
@@ -156,7 +231,7 @@ export default function SubmitManuscriptStepper() {
               Your Journal Has Successfully Been Submitted
             </h2>
             <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-              A Confirmation Has Been Sent To Your Email.
+              A Confirmation Has Been Sent To Your Email (mock).
               Our Team Will Review Your Journal For Publishing.
             </p>
             <Button 
@@ -171,7 +246,8 @@ export default function SubmitManuscriptStepper() {
             {currentStep === 1 && (
               <ManuscriptDetailsForm 
                 onValidatedNext={handleNextFromStep1} 
-                initialData={formDataStep1} 
+                initialData={formDataStep1}
+                isSubmitting={isSubmitting}
               />
             )}
             {currentStep === 2 && ( 
@@ -179,12 +255,14 @@ export default function SubmitManuscriptStepper() {
                 onValidatedNext={handleNextFromStep2} 
                 initialData={formDataStep2} 
                 onPrevious={handlePrevious}
+                isSubmitting={isSubmitting}
               />
             )}
             {currentStep === 3 && (
               <UploadFilesForm
                 onFinish={handleFinish}
                 onPrevious={handlePrevious}
+                isSubmitting={isSubmitting}
               />
             )}
           </>
