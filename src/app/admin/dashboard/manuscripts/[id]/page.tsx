@@ -47,11 +47,10 @@ export default function ManuscriptDetailsPage() {
 
   const fetchManuscriptDetails = useCallback(async () => {
     if (!manuscriptId || !authToken) {
-      if (!authToken && !isLoading) setError("Authentication token not found."); 
-      // Removed setIsLoading(false) here as it might be set too early
+      if (!authToken && !isLoading) setError("Authentication token not found.");
       return;
     }
-    setIsLoading(true); // Ensure loading is true at the start of fetch
+    setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(`/api/admin/manuscripts/${manuscriptId}`, {
@@ -69,7 +68,7 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken, toast]); // Removed isLoading, added toast
+  }, [manuscriptId, authToken, isLoading]); // Removed toast from here, it was an unused dependency
 
   useEffect(() => {
     if (manuscriptId && (authToken !== null || (typeof window !== 'undefined' && localStorage.getItem('authToken')))) {
@@ -98,13 +97,14 @@ export default function ManuscriptDetailsPage() {
         throw new Error(errorData.error || `Failed to update status: ${response.status}`);
       }
       const updatedManuscript = await response.json();
-      setManuscript(updatedManuscript); 
+      setManuscript(updatedManuscript);
       toast({
         title: "Status Updated",
         description: `Manuscript status changed to ${newStatus}.`,
         variant: 'default',
       });
-    } catch (err: any)      toast({
+    } catch (err: any) { // Fixed: Added opening brace for catch block
+      toast({
         title: "Update Failed",
         description: err.message || "Could not update manuscript status.",
         variant: "destructive",
