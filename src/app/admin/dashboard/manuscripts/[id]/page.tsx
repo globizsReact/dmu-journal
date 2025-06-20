@@ -36,20 +36,28 @@ export default function ManuscriptDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [authToken, setAuthToken] = useState<string | undefined>(undefined); // Initialize as undefined
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
-      setAuthToken(token);
+      setAuthToken(token || null); // Set to null if not found, to distinguish from initial undefined
     }
   }, []);
 
   const fetchManuscriptDetails = useCallback(async () => {
+    // Guard clause: ensure manuscriptId and authToken (state) are present.
     if (!manuscriptId || !authToken) {
-      if (!authToken && !isLoading) setError("Authentication token not found.");
+      // This function should only be called when both are available.
+      // If called otherwise, it's a logic error in the calling useEffect.
+      // To be safe, we can set an error or simply return.
+      if (!authToken) { // Check specifically for authToken missing
+         setError("Authentication token not available for fetching details.");
+         setIsLoading(false);
+      }
       return;
     }
+
     setIsLoading(true);
     setError(null);
     try {
@@ -68,15 +76,21 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken, isLoading]); // Removed toast from here, it was an unused dependency
+  }, [manuscriptId, authToken]); // Removed isLoading
 
   useEffect(() => {
-    if (manuscriptId && (authToken !== null || (typeof window !== 'undefined' && localStorage.getItem('authToken')))) {
-        fetchManuscriptDetails();
-    } else if (manuscriptId && authToken === null && typeof window !== 'undefined' && !localStorage.getItem('authToken')) {
-        setError("Authentication token not found. Cannot load manuscript.");
-        setIsLoading(false);
+    if (manuscriptId && authToken) {
+      // If we have both manuscriptId and a valid authToken string, proceed to fetch.
+      fetchManuscriptDetails();
+    } else if (manuscriptId && authToken === null) {
+      // If manuscriptId is present, but authToken state is explicitly null
+      // (meaning the initial localStorage check completed and found no token, or token was cleared),
+      // then set an error and ensure loading is stopped.
+      setError("Authentication token not found. Cannot load manuscript.");
+      setIsLoading(false);
     }
+    // If manuscriptId is not yet available, or if authToken is `undefined` (initial state),
+    // this effect will do nothing and wait. It will re-run when manuscriptId or authToken changes.
   }, [manuscriptId, authToken, fetchManuscriptDetails]);
 
 
@@ -103,7 +117,7 @@ export default function ManuscriptDetailsPage() {
         description: `Manuscript status changed to ${newStatus}.`,
         variant: 'default',
       });
-    } catch (err: any) { // Fixed: Added opening brace for catch block
+    } catch (err: any) {
       toast({
         title: "Update Failed",
         description: err.message || "Could not update manuscript status.",
@@ -129,7 +143,7 @@ export default function ManuscriptDetailsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && authToken !== null) { // Show loading only if token isn't explicitly null (which means error state)
     return (
       <Card>
         <CardHeader>
@@ -160,7 +174,7 @@ export default function ManuscriptDetailsPage() {
     );
   }
 
-  if (!manuscript) {
+  if (!manuscript && !isLoading) { // Added !isLoading to prevent showing "Not Found" during initial load
     return (
       <Card>
         <CardHeader>
@@ -175,6 +189,10 @@ export default function ManuscriptDetailsPage() {
       </Card>
     );
   }
+  
+  // If manuscript is null but we are still in initial undefined authToken state, don't render main content yet.
+  if (!manuscript) return null;
+
 
   const statusBadgeColor = (status: ManuscriptStatus) => {
     switch (status) {
