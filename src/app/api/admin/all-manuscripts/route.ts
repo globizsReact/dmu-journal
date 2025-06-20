@@ -8,56 +8,63 @@ export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
-      console.log('Admin All Manuscripts API: Missing token.');
       return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
     }
-
     const decodedToken = verifyToken(token);
-    
-    if (!decodedToken || !decodedToken.userId) {
-      console.log('Admin All Manuscripts API: Invalid token or missing userId.');
-      // verifyToken already logs specifics, so this is a fallback message.
-      return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
+    if (!decodedToken || decodedToken.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    // Restrict access to 'admin' role only
-    if (decodedToken.role !== 'admin') {
-      console.log(`Admin All Manuscripts API: User role '${decodedToken.role}' not authorized. Admin access required.`);
-      return NextResponse.json({ error: 'Forbidden: Insufficient privileges. Admin access required.' }, { status: 403 });
-    }
-    
-    const userId = decodedToken.userId as number; 
-    console.log(`Admin All Manuscripts API: Authenticated user ID: ${userId}, Role: ${decodedToken.role}`);
+    const { searchParams } = new URL(request.url);
+    const searchQuery = searchParams.get('search') || '';
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '10', 10);
+    const skip = (page - 1) * limit;
+
+    const whereClause = searchQuery
+      ? {
+          OR: [
+            { articleTitle: { contains: searchQuery, mode: 'insensitive' as const } },
+            { id: { contains: searchQuery, mode: 'insensitive' as const } }, // Assuming ID is string, adjust if numeric
+            { submittedBy: { 
+                OR: [
+                    { fullName: { contains: searchQuery, mode: 'insensitive' as const } },
+                    { email: { contains: searchQuery, mode: 'insensitive' as const } },
+                ]
+            } },
+          ],
+        }
+      : {};
 
     const manuscripts = await prisma.manuscript.findMany({
+      where: whereClause,
       include: {
-        submittedBy: { 
+        submittedBy: {
           select: {
             fullName: true,
             email: true,
-          }
-        }
+          },
+        },
       },
       orderBy: {
-        submittedAt: 'desc', 
+        submittedAt: 'desc',
       },
+      skip: skip,
+      take: limit,
     });
-    console.log(`Admin All Manuscripts API: Found ${manuscripts.length} manuscripts.`);
 
-    return NextResponse.json(manuscripts, { status: 200 });
+    const totalCount = await prisma.manuscript.count({ where: whereClause });
+    const totalPages = Math.ceil(totalCount / limit);
+
+    console.log(`Admin All Manuscripts API: Found ${manuscripts.length} manuscripts for page ${page}, total ${totalCount}.`);
+    return NextResponse.json({ manuscripts, totalCount, totalPages, currentPage: page }, { status: 200 });
 
   } catch (error: any) {
     console.error('Admin All Manuscripts API: General error:', error);
-    if (error.code) { 
-        console.error(`Admin All Manuscripts API: Prisma error code: ${error.code}, Meta: ${JSON.stringify(error.meta)}`);
-        return NextResponse.json(
-            { error: 'Database error while fetching manuscripts.', prismaCode: error.code, details: error.message },
-            { status: 500 }
-        );
-    }
     return NextResponse.json(
       { error: 'An unexpected error occurred while fetching manuscripts.', details: error.message },
       { status: 500 }
     );
   }
 }
+    
