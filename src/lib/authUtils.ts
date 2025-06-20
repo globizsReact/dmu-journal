@@ -2,7 +2,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-default-fallback-secret-key'; // Fallback for safety, but .env is preferred
+const JWT_SECRET = process.env.JWT_SECRET || 'your-default-fallback-secret-key'; 
 const SALT_ROUNDS = 10;
 
 export async function hashPassword(password: string): Promise<string> {
@@ -15,18 +15,24 @@ export async function comparePassword(password: string, hash: string): Promise<b
 
 export function generateToken(payload: object, expiresIn: string | number = '1h'): string {
   if (!process.env.JWT_SECRET) {
-    console.warn('JWT_SECRET is not set. Using a default secret. THIS IS NOT SECURE FOR PRODUCTION.');
+    console.warn('AuthUtils: JWT_SECRET is not set in .env for token generation. Using a default secret. THIS IS NOT SECURE FOR PRODUCTION.');
   }
+  // console.log(`AuthUtils: Generating token with secret starting with: ${JWT_SECRET.substring(0, 5)}...`);
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
 export function verifyToken(token: string): any {
   if (!process.env.JWT_SECRET) {
-    console.warn('JWT_SECRET is not set. Using a default secret. THIS IS NOT SECURE FOR PRODUCTION.');
+    console.warn('AuthUtils: JWT_SECRET is not set in .env for token verification. Using a default secret. THIS IS NOT SECURE FOR PRODUCTION.');
   }
+  // console.log(`AuthUtils: Verifying token starting with: ${token.substring(0,15)}... using secret starting with: ${JWT_SECRET.substring(0, 5)}...`);
   try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
-    return null; // Or throw error if you want to handle it differently
+    const decoded = jwt.verify(token, JWT_SECRET);
+    // console.log('AuthUtils: Token verified successfully:', decoded);
+    return decoded;
+  } catch (error: any) {
+    console.error('AuthUtils: Token verification failed. Error:', error.message); // Log the specific JWT error
+    return null; 
   }
 }
+
