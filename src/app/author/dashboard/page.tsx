@@ -155,24 +155,41 @@ const MyManuscriptView = () => {
           <TableBody>
             {manuscripts.map((manuscript) => {
               // For debugging:
-              console.log(`Manuscript ID: ${manuscript.id}, submittedAt: `, manuscript.submittedAt, typeof manuscript.submittedAt);
+              console.log(`Processing Manuscript ID: ${manuscript.id}, raw submittedAt:`, manuscript.submittedAt, `(type: ${typeof manuscript.submittedAt})`);
               
               let formattedDate = 'N/A';
               if (manuscript.submittedAt) {
-                const dateToFormat = new Date(manuscript.submittedAt);
-                if (isValid(dateToFormat)) {
+                const dateValue = manuscript.submittedAt;
+                let dateToFormat: Date | null = null;
+                let dateIsValidByIsValidFn = false;
+                let dateIsValidByGetTime = false;
+
+                try {
+                  dateToFormat = new Date(dateValue);
+                  dateIsValidByIsValidFn = isValid(dateToFormat);
+                  // Also check with getTime()
+                  dateIsValidByGetTime = dateToFormat instanceof Date && !isNaN(dateToFormat.getTime());
+
+                } catch (initError: any) {
+                  console.error(`Error initializing Date for manuscript ID ${manuscript.id} with value '${dateValue}'. Error: ${initError.message}`);
+                  // dateToFormat remains null, dateIsValidByIsValidFn remains false, dateIsValidByGetTime remains false
+                }
+                
+                console.log(`Manuscript ID: ${manuscript.id}, Date object: ${dateToFormat?.toString()}, isValid (date-fns): ${dateIsValidByIsValidFn}, isValid (getTime): ${dateIsValidByGetTime}`);
+
+                if (dateToFormat && dateIsValidByGetTime) { // Prioritize getTime check
                   try {
                     formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm');
-                  } catch (e: any) {
-                    console.error(`Error formatting date for manuscript ID ${manuscript.id} with value '${manuscript.submittedAt}'. Error: ${e.message}`);
+                  } catch (formatError: any) {
+                    console.error(`Error in format() for manuscript ID ${manuscript.id}. Date object was: ${dateToFormat.toString()}. isValid (date-fns) was ${dateIsValidByIsValidFn}. Error: ${formatError.message}. Stack: ${formatError.stack}`);
                     // formattedDate remains 'N/A'
                   }
                 } else {
-                  console.warn(`Invalid Date object created for manuscript ID ${manuscript.id} from value:`, manuscript.submittedAt);
-                  // formattedDate remains 'N/A' if date is invalid
+                  console.warn(`Date deemed invalid or null for manuscript ID ${manuscript.id}. Original submittedAt: '${dateValue}', Parsed as: ${dateToFormat?.toString()}, isValid (date-fns) result: ${dateIsValidByIsValidFn}, isValid (getTime) result: ${dateIsValidByGetTime}`);
+                  // formattedDate remains 'N/A'
                 }
               } else {
-                console.warn(`submittedAt is null or undefined for manuscript ID: ${manuscript.id}`);
+                console.warn(`submittedAt is null, undefined, or empty for manuscript ID: ${manuscript.id}`);
                 // formattedDate remains 'N/A'
               }
 
