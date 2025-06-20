@@ -46,8 +46,8 @@ export default function ManuscriptDetailsPage() {
 
   const fetchManuscriptDetails = useCallback(async () => {
     if (!manuscriptId || !authToken) {
-      if (!authToken && !isLoading) setError("Authentication token not found."); // Set error only if not already loading
-      setIsLoading(false); // Ensure loading is false if we can't fetch
+      if (!authToken && !isLoading) setError("Authentication token not found."); 
+      setIsLoading(false); 
       return;
     }
     setIsLoading(true);
@@ -68,14 +68,12 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken, isLoading]); // Added isLoading to deps to avoid race conditions if needed
+  }, [manuscriptId, authToken]); // Removed isLoading from dependency array
 
   useEffect(() => {
-    // Only fetch if manuscriptId is available and authToken is set (or attempted to be set)
     if (manuscriptId && (authToken !== null || localStorage.getItem('authToken'))) {
         fetchManuscriptDetails();
     } else if (manuscriptId && authToken === null && !localStorage.getItem('authToken')) {
-        // If no token at all and not tried fetching yet
         setError("Authentication token not found. Cannot load manuscript.");
         setIsLoading(false);
     }
@@ -132,8 +130,6 @@ export default function ManuscriptDetailsPage() {
     }
   };
 
-  // This `isLoading` is the client-side loading state for the fetch.
-  // The `loading.tsx` file handles the initial route transition skeleton.
   if (isLoading) {
     return (
       <Card>
