@@ -155,8 +155,27 @@ const MyManuscriptView = () => {
           <TableBody>
             {manuscripts.map((manuscript) => {
               // For debugging:
-              // console.log(`Manuscript ID: ${manuscript.id}, submittedAt: `, manuscript.submittedAt, typeof manuscript.submittedAt);
-              const dateToFormat = new Date(manuscript.submittedAt);
+              console.log(`Manuscript ID: ${manuscript.id}, submittedAt: `, manuscript.submittedAt, typeof manuscript.submittedAt);
+              
+              let formattedDate = 'N/A';
+              if (manuscript.submittedAt) { // Ensure submittedAt is not null/undefined
+                const dateToFormat = new Date(manuscript.submittedAt);
+                if (isValid(dateToFormat)) {
+                  try {
+                    formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm');
+                  } catch (e) {
+                    console.error(`Error formatting date for manuscript ID ${manuscript.id} with value '${manuscript.submittedAt}':`, e);
+                    // formattedDate remains 'N/A'
+                  }
+                } else {
+                  console.warn(`Invalid Date object created for manuscript ID ${manuscript.id} from value:`, manuscript.submittedAt);
+                  // formattedDate remains 'N/A' if date is invalid
+                }
+              } else {
+                console.warn(`submittedAt is null or undefined for manuscript ID: ${manuscript.id}`);
+                // formattedDate remains 'N/A'
+              }
+
               return (
                 <TableRow key={manuscript.id}>
                   <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
@@ -174,8 +193,7 @@ const MyManuscriptView = () => {
                       </span>
                   </TableCell>
                   <TableCell>
-                    {/* Check if the date is valid before formatting */}
-                    {isValid(dateToFormat) ? format(dateToFormat, 'dd MMM yyyy, HH:mm') : 'N/A'}
+                    {formattedDate}
                   </TableCell>
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm">
