@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Users, FileText, BookOpen, Clock3, Loader2, AlertTriangle } from 'lucide-react';
 import { journalCategories } from '@/lib/data'; // For total journals count
+import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
 
 interface StatData {
   totalUsers: number;
@@ -30,6 +31,19 @@ const AdminStatCard: React.FC<AdminStatCardProps> = ({ title, value, icon: Icon,
     <CardContent>
       <div className={`text-2xl font-bold ${colorClass}`}>{value}</div>
       {description && <p className="text-xs text-muted-foreground">{description}</p>}
+    </CardContent>
+  </Card>
+);
+
+const StatCardSkeleton: React.FC = () => (
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+      <Skeleton className="h-4 w-20" /> {/* Stat Title */}
+      <Skeleton className="h-5 w-5 rounded-full" /> {/* Icon */}
+    </CardHeader>
+    <CardContent>
+      <Skeleton className="h-7 w-12 mb-1" /> {/* Stat Value */}
+      <Skeleton className="h-3 w-24" /> {/* Stat Description */}
     </CardContent>
   </Card>
 );
@@ -95,9 +109,10 @@ export default function AdminDashboardPage() {
       </Card>
 
       {isLoadingStats && (
-        <div className="flex justify-center items-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="ml-3 text-muted-foreground">Loading statistics...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
         </div>
       )}
 
