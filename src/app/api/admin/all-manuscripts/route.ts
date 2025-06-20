@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     
     if (!decodedToken || !decodedToken.userId) {
       console.log('Admin All Manuscripts API: Invalid token or missing userId.');
-      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+      // verifyToken already logs specifics, so this is a fallback message.
+      return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
     }
 
     if (decodedToken.role !== 'admin' && decodedToken.role !== 'reviewer') {
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Insufficient privileges' }, { status: 403 });
     }
     
-    const userId = decodedToken.userId as number;
+    const userId = decodedToken.userId as number; // Assuming userId in token is a number
     console.log(`Admin All Manuscripts API: Authenticated user ID: ${userId}, Role: ${decodedToken.role}`);
 
     const manuscripts = await prisma.manuscript.findMany({

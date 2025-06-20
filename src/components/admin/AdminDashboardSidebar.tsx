@@ -31,11 +31,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, tabKey: 'dashboard' },
-  { label: 'View Manuscripts', icon: FileText, tabKey: 'viewManuscripts' },
+  { label: 'Dashboard Overview', icon: LayoutDashboard, tabKey: 'dashboard' },
+  { label: 'View All Manuscripts', icon: FileText, tabKey: 'viewManuscripts' },
   // Future items could be:
-  // { label: 'Manage Reviewers', icon: UsersRound, tabKey: 'manageReviewers' },
-  // { label: 'Journal Settings', icon: Settings, tabKey: 'journalSettings' },
+  // { label: 'Manage Users', icon: UserCog, tabKey: 'manageUsers' },
+  // { label: 'Manage Journals', icon: BookCheck, tabKey: 'manageJournals' },
   { label: 'Logout', icon: LogOut, isLogout: true },
 ];
 
@@ -44,15 +44,15 @@ export default function AdminDashboardSidebar({ adminName, activeTab, onTabChang
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
-      localStorage.removeItem('isAuthorLoggedIn'); // Consider renaming to isUserLoggedIn
-      localStorage.removeItem('authorName'); // Consider renaming to userName
+      localStorage.removeItem('isAuthorLoggedIn'); 
+      localStorage.removeItem('authorName'); 
       localStorage.removeItem('userRole');
       localStorage.removeItem('authToken');
       localStorage.removeItem('rememberAuthorLogin'); 
       localStorage.removeItem('rememberedUsername');
       window.dispatchEvent(new CustomEvent('authChange'));
     }
-    router.push('/submit'); // Redirect to login/submit page
+    router.push('/submit'); 
   };
 
   return (
