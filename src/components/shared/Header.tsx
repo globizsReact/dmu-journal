@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ShieldCheck } from 'lucide-react'; // Added ShieldCheck for Admin
+import { Menu, X, ShieldCheck } from 'lucide-react'; 
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -26,9 +26,9 @@ const Header = ({ className }: HeaderProps) => {
         setUserRole(role);
       };
 
-      checkAuthStatus(); // Initial check
+      checkAuthStatus(); 
 
-      window.addEventListener('authChange', checkAuthStatus); // Listen for auth changes
+      window.addEventListener('authChange', checkAuthStatus); 
 
       return () => {
         window.removeEventListener('authChange', checkAuthStatus);
@@ -40,7 +40,7 @@ const Header = ({ className }: HeaderProps) => {
     setIsOpen(false);
   };
 
-  const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
+  const isAdmin = userRole === 'admin';
 
   return (
     <>
@@ -65,20 +65,23 @@ const Header = ({ className }: HeaderProps) => {
             <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
               HOME
             </Link>
+            {!isLoggedIn && (
+              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
+               SUBMIT / LOGIN
+              </Link>
+            )}
             <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
               ABOUT US
             </Link>
-            {!isLoggedIn && (
-              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
+             <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
                CALL FOR PAPER SUBMISSION
-              </Link>
-            )}
-            {isLoggedIn && !isAdminOrReviewer && (
+            </Link>
+            {isLoggedIn && !isAdmin && ( // If logged in and NOT admin, show author dashboard
               <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
                 AUTHOR DASHBOARD
               </Link>
             )}
-            {isLoggedIn && isAdminOrReviewer && (
+            {isLoggedIn && isAdmin && ( // If logged in AND admin, show admin dashboard
               <Link href="/admin/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
                 <ShieldCheck className="w-4 h-4 mr-1" /> ADMIN DASHBOARD
               </Link>
@@ -142,13 +145,6 @@ const Header = ({ className }: HeaderProps) => {
         >
           HOME
         </Link>
-        <Link
-          href="/about"
-          onClick={handleLinkClick}
-          className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
-        >
-          ABOUT US
-        </Link>
         {!isLoggedIn && (
           <Link
             href="/submit"
@@ -158,7 +154,21 @@ const Header = ({ className }: HeaderProps) => {
             SUBMIT / LOGIN
           </Link>
         )}
-        {isLoggedIn && !isAdminOrReviewer && (
+        <Link
+          href="/about"
+          onClick={handleLinkClick}
+          className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+        >
+          ABOUT US
+        </Link>
+        <Link
+            href="/submit"
+            onClick={handleLinkClick}
+            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          >
+           CALL FOR PAPER SUBMISSION
+        </Link>
+        {isLoggedIn && !isAdmin && (
           <Link
             href="/author/dashboard"
             onClick={handleLinkClick}
@@ -167,7 +177,7 @@ const Header = ({ className }: HeaderProps) => {
             AUTHOR DASHBOARD
           </Link>
         )}
-         {isLoggedIn && isAdminOrReviewer && (
+         {isLoggedIn && isAdmin && (
           <Link
             href="/admin/dashboard"
             onClick={handleLinkClick}

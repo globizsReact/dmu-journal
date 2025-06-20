@@ -20,17 +20,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized: Invalid or expired token' }, { status: 401 });
     }
 
-    if (decodedToken.role !== 'admin' && decodedToken.role !== 'reviewer') {
-      console.log(`Admin All Manuscripts API: User role '${decodedToken.role}' not authorized.`);
-      return NextResponse.json({ error: 'Forbidden: Insufficient privileges' }, { status: 403 });
+    // Restrict access to 'admin' role only
+    if (decodedToken.role !== 'admin') {
+      console.log(`Admin All Manuscripts API: User role '${decodedToken.role}' not authorized. Admin access required.`);
+      return NextResponse.json({ error: 'Forbidden: Insufficient privileges. Admin access required.' }, { status: 403 });
     }
     
-    const userId = decodedToken.userId as number; // Assuming userId in token is a number
+    const userId = decodedToken.userId as number; 
     console.log(`Admin All Manuscripts API: Authenticated user ID: ${userId}, Role: ${decodedToken.role}`);
 
     const manuscripts = await prisma.manuscript.findMany({
       include: {
-        submittedBy: { // Include author details
+        submittedBy: { 
           select: {
             fullName: true,
             email: true,

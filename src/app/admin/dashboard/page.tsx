@@ -9,15 +9,15 @@ import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import ManuscriptListTable from '@/components/admin/ManuscriptListTable';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { useToast } from '@/hooks/use-toast'; 
 
 export default function AdminDashboardPage() {
   const [adminName, setAdminName] = useState("Loading...");
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>('dashboard'); // Default to 'dashboard' overview
+  const [activeTab, setActiveTab] = useState<string>('dashboard'); 
   const router = useRouter();
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const { toast } = useToast(); // Initialize useToast
+  const { toast } = useToast(); 
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -32,10 +32,11 @@ export default function AdminDashboardPage() {
         return;
       }
       
-      if (role !== 'admin' && role !== 'reviewer') {
-        toast({ // Use the imported toast
+      // Restrict access to 'admin' role only
+      if (role !== 'admin') {
+        toast({ 
             title: "Access Denied",
-            description: "You do not have permission to view this page.",
+            description: "You do not have permission to view this page. Admin access required.",
             variant: "destructive",
         });
         router.push('/author/dashboard'); 
@@ -45,14 +46,15 @@ export default function AdminDashboardPage() {
       if (storedName) {
         setAdminName(storedName);
       } else {
-        setAdminName("Admin/Reviewer User"); 
+        setAdminName("Admin User"); 
       }
       setIsLoadingAuth(false);
 
       const handleAuthChange = () => {
         const updatedIsLoggedIn = localStorage.getItem('isAuthorLoggedIn') === 'true';
         const updatedRole = localStorage.getItem('userRole');
-        if (!updatedIsLoggedIn || (updatedRole !== 'admin' && updatedRole !== 'reviewer')) {
+        // Restrict access to 'admin' role only on auth change
+        if (!updatedIsLoggedIn || updatedRole !== 'admin') {
           router.push('/submit');
         } else {
             const updatedName = localStorage.getItem('authorName');
@@ -64,7 +66,7 @@ export default function AdminDashboardPage() {
         window.removeEventListener('authChange', handleAuthChange);
       };
     }
-  }, [router, toast]); // Add toast to dependency array
+  }, [router, toast]); 
 
   if (isLoadingAuth) {
     return (
@@ -72,7 +74,7 @@ export default function AdminDashboardPage() {
             <Header />
             <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
-                <p>Verifying access...</p>
+                <p>Verifying admin access...</p>
             </div>
             <Footer />
         </div>
