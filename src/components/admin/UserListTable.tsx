@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { User } from '@prisma/client';
+import type { User } from '@prisma/client'; // Assuming User type is still relevant
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -54,13 +54,20 @@ export default function UserListTable() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
+      if (!token) { // Initial check if token is immediately unavailable
+        setIsLoading(false);
+        setError("Authentication token not found. Please log in.");
+        setUsers([]);
+      }
     }
   }, []);
 
   const fetchUsers = useCallback(async (page: number) => {
+    // This check is slightly redundant if useEffect handles it, but good for direct calls
     if (!authToken) {
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
+      setUsers([]); // Clear users if no token
       return;
     }
     setIsLoading(true);
@@ -85,20 +92,26 @@ export default function UserListTable() {
         description: err.message || "Could not load user list.",
         variant: "destructive",
       });
+      setUsers([]); // Clear users on error
     } finally {
       setIsLoading(false);
     }
   }, [authToken, limit, toast]);
 
   useEffect(() => {
+    // This effect runs when currentPage, authToken, or fetchUsers function reference changes.
     if (authToken) {
       fetchUsers(currentPage);
     } else {
-      if (!isLoading) setIsLoading(false);
-      if (!error) setError("Authentication token not found. Please log in.");
+      // If authToken is not present (e.g., after logout or initial load without token),
+      // ensure loading is false, set an error, and clear users.
+      // This handles the case where authToken might become null after being set.
+      setIsLoading(false);
+      setError("Authentication token not found. Please log in.");
       setUsers([]);
     }
-  }, [currentPage, authToken, fetchUsers, isLoading, error]);
+  }, [currentPage, authToken, fetchUsers]);
+
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
@@ -121,13 +134,13 @@ export default function UserListTable() {
     if (currentPage !== newPage) {
       setCurrentPage(newPage);
     } else {
-      fetchUsers(newPage); // Re-fetch current page if page number doesn't change
+      fetchUsers(newPage); 
     }
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
   };
 
 
-  if (isLoading && users.length === 0 && !error) {
+  if (isLoading && users.length === 0 && !error && authToken) {
     return (
       <Card>
         <CardHeader>
@@ -181,10 +194,10 @@ export default function UserListTable() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
              </div>
         )}
-        {!isLoading && users.length === 0 && (
+        {!isLoading && !error && users.length === 0 && (
           <p className="text-foreground/80 text-center py-8">No users found.</p>
         )}
-        {!isLoading && users.length > 0 && (
+        {!isLoading && !error && users.length > 0 && (
           <div className="overflow-x-auto">
             <Table className="min-w-[700px]">
               <TableHeader>
@@ -216,10 +229,10 @@ export default function UserListTable() {
                       </span>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User">
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User" disabled={isLoading}>
                         <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => setDeletingUser(user)} title="Delete User">
+                      <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => setDeletingUser(user)} title="Delete User" disabled={isLoading}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </TableCell>
@@ -229,7 +242,7 @@ export default function UserListTable() {
             </Table>
           </div>
         )}
-        {!isLoading && totalPages > 1 && (
+        {!isLoading && !error && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2 py-4 mt-4">
             <Button
               variant="outline"

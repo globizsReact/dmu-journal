@@ -49,6 +49,11 @@ export default function ManuscriptListTable() {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
+      if (!token) {
+        setIsLoading(false);
+        setError("Authentication token not found. Please log in.");
+        setManuscripts([]);
+      }
     }
   }, []);
 
@@ -56,6 +61,7 @@ export default function ManuscriptListTable() {
     if (!authToken) {
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
+      setManuscripts([]);
       return;
     }
     setIsLoading(true);
@@ -80,6 +86,7 @@ export default function ManuscriptListTable() {
         description: err.message || "Could not load submissions for review.",
         variant: "destructive",
       });
+      setManuscripts([]);
     } finally {
       setIsLoading(false);
     }
@@ -89,11 +96,11 @@ export default function ManuscriptListTable() {
     if (authToken) {
       fetchManuscripts(currentPage);
     } else {
-      if (!isLoading) setIsLoading(false);
-      if (!error) setError("Authentication token not found. Please log in.");
+      setIsLoading(false);
+      setError("Authentication token not found. Please log in.");
       setManuscripts([]);
     }
-  }, [currentPage, authToken, fetchManuscripts, isLoading, error]);
+  }, [currentPage, authToken, fetchManuscripts]);
 
 
   const handlePageChange = (newPage: number) => {
@@ -117,7 +124,7 @@ export default function ManuscriptListTable() {
     }
   };
 
-  if (isLoading && manuscripts.length === 0 && !error) {
+  if (isLoading && manuscripts.length === 0 && !error && authToken) {
     return (
       <Card>
         <CardHeader>
@@ -159,10 +166,10 @@ export default function ManuscriptListTable() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
              </div>
         )}
-        {!isLoading && manuscripts.length === 0 && (
+        {!isLoading && !error && manuscripts.length === 0 && (
           <p className="text-foreground/80 text-center py-8">No manuscripts found.</p>
         )}
-        {!isLoading && manuscripts.length > 0 && (
+        {!isLoading && !error && manuscripts.length > 0 && (
           <div className="overflow-x-auto">
             <Table className="min-w-[800px]">
               <TableHeader>
@@ -198,7 +205,7 @@ export default function ManuscriptListTable() {
                     </TableCell>
                     <TableCell>{formatSubmittedDate(manuscript.submittedAt)}</TableCell>
                     <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm">
+                      <Button asChild variant="outline" size="sm" disabled={isLoading}>
                         <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`}>
                           <ExternalLink className="w-3.5 h-3.5 md:mr-1" />
                           <span className="hidden md:inline">Details</span>
@@ -211,7 +218,7 @@ export default function ManuscriptListTable() {
             </Table>
           </div>
         )}
-        {!isLoading && totalPages > 1 && (
+        {!isLoading && !error && totalPages > 1 && (
           <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2 py-4 mt-4">
             <Button
               variant="outline"
