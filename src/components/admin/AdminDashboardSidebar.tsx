@@ -3,7 +3,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookCheck, LogOut, LucideIcon, ShieldAlert, BookIcon } from 'lucide-react'; // Added BookIcon
+import { LayoutDashboard, FileText, Users, BookCheck, LogOut, LucideIcon, ShieldAlert, BookIcon } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +29,13 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   href: string;
-  disabled?: boolean; // For future use with User/Journal Management
+  disabled?: boolean;
 }
 
 const navItems: NavItem[] = [
   { label: 'Dashboard Overview', icon: LayoutDashboard, href: '/admin/dashboard' },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
-  { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: true }, 
+  { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false }, 
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: true },
 ];
 
