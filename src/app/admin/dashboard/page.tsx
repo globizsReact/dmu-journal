@@ -1,31 +1,12 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-// useRouter and useToast might be needed for actions within the page, but not for initial auth
-// import { useRouter } from 'next/navigation';
-// import { useToast } from '@/hooks/use-toast';
-
-import ManuscriptListTable from '@/components/admin/ManuscriptListTable';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
-// AdminDashboardSidebar is now part of AdminLayout
-
-// This page will now be rendered within AdminLayout.tsx
-// AdminLayout handles the authentication and shows AdminLoginForm if not authenticated.
-// So, this page can assume it's only rendered if the user is an authenticated admin.
+// ManuscriptListTable is no longer conditionally rendered here.
+// Navigation to the manuscript list will be handled by the sidebar linking to /admin/dashboard/manuscripts.
 
 export default function AdminDashboardPage() {
-  // The activeView state is now primarily managed by URL segments or query params,
-  // and the AdminLayout's sidebar will use these for active link highlighting.
-  // For simplicity, we can still use local state if the content switching happens
-  // purely client-side without URL changes, but URL-based is more robust for deep linking.
-
-  // This component now assumes it's rendered *after* AdminLayout confirms admin access.
-  // So, no need for isLoadingAuth here. If specific content inside this page needs loading,
-  // that can be handled with its own loading state.
-
-  const [adminName, setAdminName] = useState("Admin User"); // Or fetch if needed
+  const [adminName, setAdminName] = useState("Admin User"); 
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,41 +15,12 @@ export default function AdminDashboardPage() {
             setAdminName(name);
         }
     }
-  }, [])
-
-
-  // The ManuscriptListTable itself handles its data fetching and loading/error states.
-  // This page could act as a container for different views.
-  // For now, let's show the overview or manuscripts based on a simplified local state or future routing.
-  // This 'activeView' would be better controlled by the URL path in a full app, e.g., /admin/dashboard/overview vs /admin/dashboard/manuscripts
-
-  // For now, let's assume the path will determine what's shown or we default to overview.
-  // If window.location.pathname includes '/manuscripts', show ManuscriptListTable
-  // This is a simple example; Next.js routing features (nested routes) are better.
-  const [showManuscripts, setShowManuscripts] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // This is a simple client-side check. For robust routing, use Next.js nested routes
-      // e.g. /admin/dashboard/manuscripts would render a ManuscriptsPage component.
-      if (window.location.pathname.includes('/admin/dashboard/manuscripts')) {
-        setShowManuscripts(true);
-      } else {
-        setShowManuscripts(false);
-      }
-    }
   }, []);
 
+  // The logic for showManuscripts and conditionally rendering ManuscriptListTable
+  // has been removed. This page will now solely be the overview.
+  // The ManuscriptListTable will be on its own page: /admin/dashboard/manuscripts
 
-  // If the parent AdminLayout is still loading the session, it will show its own loader.
-  // If AdminLayout determined the user is not an admin, it shows AdminLoginForm.
-  // Thus, when this component renders, we are an authenticated admin.
-
-  if (showManuscripts) {
-    return <ManuscriptListTable />;
-  }
-
-  // Default to overview
   return (
     <Card>
       <CardHeader>
@@ -80,7 +32,7 @@ export default function AdminDashboardPage() {
           From here, you can:
         </p>
         <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
-          <li>View and manage all submitted manuscripts.</li>
+          <li>View and manage all submitted manuscripts (Navigate via sidebar).</li>
           <li>Oversee user accounts (authors, reviewers, editors). (Future Feature)</li>
           <li>Manage journal categories and settings. (Future Feature)</li>
           <li>View site statistics and reports. (Future Feature)</li>
