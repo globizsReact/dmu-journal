@@ -8,12 +8,11 @@ import Footer from '@/components/shared/Footer';
 import DashboardSidebar from '@/components/author/DashboardSidebar';
 import DashboardStatCard from '@/components/author/DashboardStatCard';
 import type { DashboardStatCardProps } from '@/components/author/DashboardStatCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; 
 import { useToast } from '@/hooks/use-toast';
-import type { Manuscript } from '@prisma/client'; // Import Prisma's Manuscript type
-import { journalCategories } from '@/lib/data'; // To look up journal names
-// import { format, isValid } from 'date-fns'; // Commented out for now
+import type { Manuscript } from '@prisma/client';
+import { journalCategories } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -23,10 +22,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, Loader2, Save, KeyRound } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Separator } from '@/components/ui/separator';
 
 const dashboardItems: DashboardStatCardProps[] = [
-  { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' }, // Value could be dynamic later
+  { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
   { title: 'MANUSCRIPTS IN REVIEW', value: '0', variant: 'info', viewAllHref: '#' },
   { title: 'ACCEPTED MANUSCRIPTS', value: '0', variant: 'default', viewAllHref: '#' },
   { 
@@ -148,48 +153,12 @@ const MyManuscriptView = () => {
               <TableHead className="w-[300px]">Article Title</TableHead>
               <TableHead>Journal</TableHead>
               <TableHead>Status</TableHead>
-              {/* <TableHead>Submitted</TableHead> */} {/* Commented out for now */}
+              {/* <TableHead>Submitted</TableHead> */}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {manuscripts.map((manuscript) => {
-              // For debugging date issues, if re-enabled:
-              // console.log(`Processing Manuscript ID: ${manuscript.id}, raw submittedAt:`, manuscript.submittedAt, `(type: ${typeof manuscript.submittedAt})`);
-              
-              // let formattedDate = 'N/A';
-              // if (manuscript.submittedAt) {
-              //   const dateValue = manuscript.submittedAt;
-              //   let dateToFormat: Date | null = null;
-              //   let dateIsValidByIsValidFn = false;
-              //   let dateIsValidByGetTime = false;
-
-              //   try {
-              //     dateToFormat = new Date(dateValue);
-              //     // dateIsValidByIsValidFn = isValid(dateToFormat); // isValid from date-fns
-              //     // Also check with getTime()
-              //     dateIsValidByGetTime = dateToFormat instanceof Date && !isNaN(dateToFormat.getTime());
-
-              //   } catch (initError: any) {
-              //     console.error(`Error initializing Date for manuscript ID ${manuscript.id} with value '${dateValue}'. Error: ${initError.message}`);
-              //   }
-                
-              //   // console.log(`Manuscript ID: ${manuscript.id}, Date object: ${dateToFormat?.toString()}, isValid (date-fns): ${dateIsValidByIsValidFn}, isValid (getTime): ${dateIsValidByGetTime}`);
-
-              //   if (dateToFormat && dateIsValidByGetTime) { // Prioritize getTime check
-              //     try {
-              //       // formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm'); // format from date-fns
-              //     } catch (formatError: any) {
-              //       console.error(`Error in format() for manuscript ID ${manuscript.id}. Date object was: ${dateToFormat.toString()}. isValid (getTime) result: ${dateIsValidByGetTime}. Error: ${formatError.message}. Stack: ${formatError.stack}`);
-              //     }
-              //   } else {
-              //     console.warn(`Date deemed invalid or null for manuscript ID ${manuscript.id}. Original submittedAt: '${dateValue}', Parsed as: ${dateToFormat?.toString()}, isValid (getTime) result: ${dateIsValidByGetTime}`);
-              //   }
-              // } else {
-              //   console.warn(`submittedAt is null, undefined, or empty for manuscript ID: ${manuscript.id}`);
-              // }
-
-              return (
+            {manuscripts.map((manuscript) => (
                 <TableRow key={manuscript.id}>
                   <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
                   <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
@@ -205,9 +174,9 @@ const MyManuscriptView = () => {
                           {manuscript.status}
                       </span>
                   </TableCell>
-                  {/* <TableCell> */}
-                    {/* {formattedDate} */} {/* Commented out for now */}
-                  {/* </TableCell> */}
+                  {/* <TableCell>
+                     {formattedDate}
+                  </TableCell> */}
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 mr-1 sm:mr-2" />
@@ -215,8 +184,8 @@ const MyManuscriptView = () => {
                     </Button>
                   </TableCell>
                 </TableRow>
-              );
-            })}
+              )
+            )}
           </TableBody>
         </Table>
       </CardContent>
@@ -224,16 +193,223 @@ const MyManuscriptView = () => {
   );
 };
 
-const EditProfileView = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">View/Edit Profile</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-foreground/80">Authors will be able to view and update their personal information, institutional affiliations, contact details, and areas of expertise here. Maintaining an up-to-date profile is important for communication.</p>
-    </CardContent>
-  </Card>
-);
+const profileFormSchema = z.object({
+  fullName: z.string().min(3, 'Full name must be at least 3 characters.').max(100),
+  username: z.string().min(3, 'Username must be at least 3 characters.').max(50)
+    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
+  email: z.string().email('Invalid email address.'),
+});
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+const passwordFormSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required.'),
+  newPassword: z.string().min(6, 'New password must be at least 6 characters.'),
+  confirmNewPassword: z.string(),
+}).refine(data => data.newPassword === data.confirmNewPassword, {
+  message: "New passwords don't match",
+  path: ['confirmNewPassword'],
+});
+type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+
+const EditProfileView = () => {
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const { toast } = useToast();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: { fullName: '', username: '', email: '' },
+  });
+
+  const passwordForm = useForm<PasswordFormValues>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      setAuthToken(token);
+      if (token) {
+        fetchUserProfile(token);
+      } else {
+        setIsLoadingProfile(false);
+        toast({ title: "Error", description: "Not authenticated.", variant: "destructive" });
+      }
+    }
+  }, []);
+
+  const fetchUserProfile = async (token: string) => {
+    setIsLoadingProfile(true);
+    try {
+      const response = await fetch('/api/author/profile', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to fetch profile');
+      }
+      const data = await response.json();
+      profileForm.reset(data); // Populate form with fetched data
+      // Update authorName in localStorage if it changed
+      if (typeof window !== 'undefined' && data.fullName) {
+        localStorage.setItem('authorName', data.fullName);
+        window.dispatchEvent(new CustomEvent('authChange')); // Notify header or other components
+      }
+    } catch (error: any) {
+      toast({ title: "Error Fetching Profile", description: error.message, variant: "destructive" });
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  const onProfileSubmit = async (values: ProfileFormValues) => {
+    if (!authToken) return;
+    setIsUpdatingProfile(true);
+    try {
+      const response = await fetch('/api/author/profile', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to update profile');
+      }
+      const updatedData = await response.json();
+      toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
+      profileForm.reset(updatedData); // Reset with new data to reflect changes
+       if (typeof window !== 'undefined' && updatedData.fullName) {
+        localStorage.setItem('authorName', updatedData.fullName);
+        window.dispatchEvent(new CustomEvent('authChange'));
+      }
+    } catch (error: any) {
+      toast({ title: "Error Updating Profile", description: error.message, variant: "destructive" });
+    } finally {
+      setIsUpdatingProfile(false);
+    }
+  };
+
+  const onPasswordSubmit = async (values: PasswordFormValues) => {
+    if (!authToken) return;
+    setIsChangingPassword(true);
+    try {
+      const response = await fetch('/api/author/change-password', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ currentPassword: values.currentPassword, newPassword: values.newPassword }),
+      });
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Failed to change password');
+      }
+      toast({ title: "Password Changed", description: "Your password has been successfully updated." });
+      passwordForm.reset(); // Clear password fields
+    } catch (error: any) {
+      toast({ title: "Error Changing Password", description: error.message, variant: "destructive" });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  if (isLoadingProfile) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">View/Edit Profile</CardTitle>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-10">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="ml-3 text-muted-foreground">Loading profile...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-headline font-semibold text-primary">Personal Information</CardTitle>
+          <CardDescription>Update your personal details here.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...profileForm}>
+            <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
+              <FormField control={profileForm.control} name="fullName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={profileForm.control} name="username" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={profileForm.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <Button type="submit" disabled={isUpdatingProfile} className="bg-green-600 hover:bg-green-700">
+                {isUpdatingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Save Profile Changes
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-headline font-semibold text-primary">Change Password</CardTitle>
+          <CardDescription>Update your account password.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...passwordForm}>
+            <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-6">
+              <FormField control={passwordForm.control} name="currentPassword" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Current Password</FormLabel>
+                  <FormControl><Input type="password" {...field} disabled={isChangingPassword} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={passwordForm.control} name="newPassword" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl><Input type="password" {...field} disabled={isChangingPassword} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={passwordForm.control} name="confirmNewPassword" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm New Password</FormLabel>
+                  <FormControl><Input type="password" {...field} disabled={isChangingPassword} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <Button type="submit" disabled={isChangingPassword} className="bg-orange-500 hover:bg-orange-600">
+                {isChangingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-4 w-4" />}
+                Change Password
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 
 export default function AuthorDashboardPage() {
@@ -253,6 +429,19 @@ export default function AuthorDashboardPage() {
       } else {
         setAuthorName("Author"); 
       }
+
+      // Listen for local storage changes to authorName
+      const handleAuthChange = () => {
+        const updatedName = localStorage.getItem('authorName');
+        if (updatedName) {
+          setAuthorName(updatedName);
+        }
+      };
+      window.addEventListener('authChange', handleAuthChange);
+      return () => {
+        window.removeEventListener('authChange', handleAuthChange);
+      };
+
     }
   }, [router]);
 
