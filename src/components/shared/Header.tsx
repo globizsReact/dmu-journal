@@ -70,7 +70,7 @@ const Header = ({ className }: HeaderProps) => {
             </Link>
             {!isLoggedIn && (
               <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
-                SUBMIT / LOGIN
+               CALL FOR PAPER SUBMISSION
               </Link>
             )}
             {isLoggedIn && !isAdminOrReviewer && (

@@ -258,6 +258,94 @@ export default function SubmitPage() {
     }
   };
 
+  const renderLoginForm = (tabType: ActiveTab) => (
+    <>
+      <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Sign In to Your Account</h2>
+      <Form {...loginForm}>
+        <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-6">
+          <FormField
+            control={loginForm.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username or Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your username or email" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={loginForm.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Enter your password" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="flex items-center justify-between">
+            <FormField
+              control={loginForm.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                  <FormControl>
+                    <Checkbox
+                      id={`remember-me-${tabType}`}
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      disabled={isSubmitting}
+                    />
+                  </FormControl>
+                  <Label htmlFor={`remember-me-${tabType}`} className="text-sm font-normal text-foreground/80 -translate-y-0.5">
+                    Remember me
+                  </Label>
+                </FormItem>
+              )}
+            />
+            <Link href="/forgot-password" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
+              Forgot Password?
+            </Link>
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing In...
+              </>
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+          {/* Only show Sign Up link for Author tab */}
+          {activeTab === 'author' && (
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
+              <Button
+                type="button"
+                variant="link"
+                onClick={() => setFormMode('signup')}
+                className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
+                disabled={isSubmitting}
+              >
+                Sign Up
+              </Button>
+            </p>
+          )}
+        </form>
+      </Form>
+    </>
+  );
 
   return (
     <div className="relative flex flex-col min-h-screen bg-background">
@@ -281,7 +369,14 @@ export default function SubmitPage() {
                 key={tabInfo.key}
                 ref={el => (tabRefs.current[index] = el)}
                 isActive={activeTab === tabInfo.key}
-                onClick={() => setActiveTab(tabInfo.key)}
+                onClick={() => {
+                  setActiveTab(tabInfo.key);
+                  if (tabInfo.key === 'author') { // Keep signup mode for author tab if it was active
+                    // setFormMode('login'); // Or default to login for author too when switching
+                  } else {
+                    setFormMode('login'); // Other tabs only support login
+                  }
+                }}
                 disabled={isSubmitting}
               >
                 {tabInfo.label}
@@ -316,92 +411,7 @@ export default function SubmitPage() {
           <CardContent className="p-6">
             {activeTab === 'author' && (
               <>
-                {formMode === 'login' && (
-                  <>
-                    <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Sign In to Your Account</h2>
-                    <Form {...loginForm}>
-                      <form onSubmit={loginForm.handleSubmit(onSubmitLogin)} className="space-y-6">
-                        <FormField
-                          control={loginForm.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username or Email</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter your username or email" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={loginForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Password</FormLabel>
-                              <FormControl>
-                                <Input type="password" placeholder="Enter your password" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <div className="flex items-center justify-between">
-                          <FormField
-                            control={loginForm.control}
-                            name="rememberMe"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    id="remember-me"
-                                    checked={field.value}
-                                    onCheckedChange={field.onChange}
-                                    disabled={isSubmitting}
-                                  />
-                                </FormControl>
-                                <Label htmlFor="remember-me" className="text-sm font-normal text-foreground/80 -translate-y-0.5">
-                                  Remember me
-                                </Label>
-                              </FormItem>
-                            )}
-                          />
-                          <Link href="/forgot-password" className={`text-sm text-primary hover:underline ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}>
-                            Forgot Password?
-                          </Link>
-                        </div>
-                        <Button
-                          type="submit"
-                          className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Signing In...
-                            </>
-                          ) : (
-                            'Sign In'
-                          )}
-                        </Button>
-                        <p className="text-center text-sm text-muted-foreground">
-                          Don&apos;t have an account?{' '}
-                          <Button
-                            type="button"
-                            variant="link"
-                            onClick={() => setFormMode('signup')}
-                            className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
-                            disabled={isSubmitting}
-                          >
-                            Sign Up
-                          </Button>
-                        </p>
-                      </form>
-                    </Form>
-                  </>
-                )}
-
+                {formMode === 'login' && renderLoginForm('author')}
                 {formMode === 'signup' && (
                    <>
                     <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Create Your Account</h2>
@@ -511,10 +521,10 @@ export default function SubmitPage() {
               </div>
             )}
             {activeTab === 'reviewer' && (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">Reviewer login/registration is currently unavailable.</p>
-                <p className="text-sm text-muted-foreground mt-2">Please check back later.</p>
-              </div>
+              <>
+                {/* Reviewer tab only shows login form */}
+                {renderLoginForm('reviewer')}
+              </>
             )}
           </CardContent>
         </Card>
@@ -527,3 +537,4 @@ export default function SubmitPage() {
     </div>
   );
 }
+
