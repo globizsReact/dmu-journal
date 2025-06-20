@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ShieldCheck } from 'lucide-react'; 
+import { Menu, X, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -26,9 +26,9 @@ const Header = ({ className }: HeaderProps) => {
         setUserRole(role);
       };
 
-      checkAuthStatus(); 
+      checkAuthStatus();
 
-      window.addEventListener('authChange', checkAuthStatus); 
+      window.addEventListener('authChange', checkAuthStatus);
 
       return () => {
         window.removeEventListener('authChange', checkAuthStatus);
@@ -68,15 +68,17 @@ const Header = ({ className }: HeaderProps) => {
             <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
               ABOUT US
             </Link>
-             <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
-               CALL FOR PAPER SUBMISSION
-            </Link>
-            {isLoggedIn && !isAdmin && ( // If logged in and NOT admin, show author dashboard
+            {!isLoggedIn && (
+              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
+                CALL FOR PAPER SUBMISSION
+              </Link>
+            )}
+            {isLoggedIn && !isAdmin && (
               <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
                 AUTHOR DASHBOARD
               </Link>
             )}
-            {isLoggedIn && isAdmin && ( // If logged in AND admin, show admin dashboard
+            {isLoggedIn && isAdmin && (
               <Link href="/admin/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
                 <ShieldCheck className="w-4 h-4 mr-1" /> ADMIN DASHBOARD
               </Link>
@@ -147,13 +149,15 @@ const Header = ({ className }: HeaderProps) => {
         >
           ABOUT US
         </Link>
-        <Link
+        {!isLoggedIn && (
+          <Link
             href="/submit"
             onClick={handleLinkClick}
             className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
           >
            CALL FOR PAPER SUBMISSION
-        </Link>
+          </Link>
+        )}
         {isLoggedIn && !isAdmin && (
           <Link
             href="/author/dashboard"
