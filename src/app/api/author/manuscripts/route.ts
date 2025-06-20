@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
         submittedById: userId,
       },
       orderBy: {
-        createdAt: 'desc',
+        submittedAt: 'desc', // Corrected field name for sorting
       },
       // Select specific fields if needed, or include related data
       // For now, fetching all direct fields of the manuscript
@@ -36,6 +36,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Author Manuscripts API: General error:', error);
+    // Check if it's a Prisma known error and provide more context if possible
+    if (error.code) { // Prisma errors often have a 'code' property
+        console.error(`Author Manuscripts API: Prisma error code: ${error.code}, Meta: ${JSON.stringify(error.meta)}`);
+        return NextResponse.json(
+            { error: 'Database error while fetching manuscripts.', prismaCode: error.code, details: error.message },
+            { status: 500 }
+        );
+    }
     return NextResponse.json(
       { error: 'An unexpected error occurred while fetching manuscripts.', details: error.message },
       { status: 500 }
