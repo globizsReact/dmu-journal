@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter }_ from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import type { Manuscript } from '@prisma/client';
 import { journalCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
