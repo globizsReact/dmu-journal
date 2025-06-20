@@ -65,11 +65,6 @@ const Header = ({ className }: HeaderProps) => {
             <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
               HOME
             </Link>
-            {!isLoggedIn && (
-              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
-               SUBMIT / LOGIN
-              </Link>
-            )}
             <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
               ABOUT US
             </Link>
@@ -145,15 +140,6 @@ const Header = ({ className }: HeaderProps) => {
         >
           HOME
         </Link>
-        {!isLoggedIn && (
-          <Link
-            href="/submit"
-            onClick={handleLinkClick}
-            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
-          >
-            SUBMIT / LOGIN
-          </Link>
-        )}
         <Link
           href="/about"
           onClick={handleLinkClick}
