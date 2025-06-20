@@ -27,8 +27,13 @@ export async function GET(request: NextRequest) {
     const adminId = decodedToken.userId as number; 
     console.log(`Admin All Users API: Authenticated admin user ID: ${adminId}`);
 
+    if (!prisma) {
+      console.error('Admin All Users API: Prisma client is not available. This is a critical configuration error.');
+      return NextResponse.json({ error: 'Database client is not configured.', details: 'Prisma instance is undefined.' }, { status: 500 });
+    }
+
     const users = await prisma.user.findMany({
-      select: { // Select only necessary fields, exclude password_hash
+      select: { 
         id: true,
         fullName: true,
         username: true,
@@ -36,7 +41,6 @@ export async function GET(request: NextRequest) {
         role: true,
         createdAt: true,
         updatedAt: true,
-        // Do NOT include password_hash
       },
       orderBy: {
         createdAt: 'desc', 
@@ -46,18 +50,43 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(users, { status: 200 });
 
-  } catch (error: any) {
-    console.error('Admin All Users API: General error:', error);
-    if (error.code) { 
-        console.error(`Admin All Users API: Prisma error code: ${error.code}, Meta: ${JSON.stringify(error.meta)}`);
-        return NextResponse.json(
-            { error: 'Database error while fetching users.', prismaCode: error.code, details: error.message },
-            { status: 500 }
-        );
+  } catch (error: unknown) { // Changed to unknown for better type safety
+    let responseErrorMessage = 'An unexpected error occurred while fetching users.';
+    let responseErrorDetails = 'No specific details available.';
+    const statusCode = 500;
+
+    // Log the raw error to the server console first
+    console.error('Admin All Users API: Full error object caught:', error); 
+
+    if (error instanceof Error) {
+      responseErrorDetails = error.message; // Capture the original message
+
+      // Check if it's a Prisma-like error by looking for a 'code' property
+      const potentialPrismaError = error as any;
+      if (potentialPrismaError.code) {
+        console.error(`Admin All Users API: Prisma error encountered. Code: ${potentialPrismaError.code}, Meta: ${JSON.stringify(potentialPrismaError.meta)}`);
+        responseErrorMessage = 'Database error while fetching users.';
+        // responseErrorDetails is already set to error.message
+      } else {
+        // Non-Prisma error, but still an Error instance
+        console.error(`Admin All Users API: Non-Prisma error of type ${error.name}: ${error.message}`);
+        if (error.stack) {
+            console.error('Admin All Users API: Stack trace:', error.stack);
+        }
+      }
+    } else {
+      // The error is not an Error instance (e.g., a string or plain object was thrown)
+      console.error('Admin All Users API: Caught an error that is not an instance of Error. Value:', error);
+      try {
+        responseErrorDetails = JSON.stringify(error);
+      } catch {
+        responseErrorDetails = String(error);
+      }
     }
+
     return NextResponse.json(
-      { error: 'An unexpected error occurred while fetching users.', details: error.message },
-      { status: 500 }
+      { error: responseErrorMessage, details: responseErrorDetails },
+      { status: statusCode }
     );
   }
 }
