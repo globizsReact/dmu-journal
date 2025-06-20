@@ -3,7 +3,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookCheck, LogOut, LucideIcon, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookCheck, LogOut, LucideIcon, ShieldAlert, BookIcon } from 'lucide-react'; // Added BookIcon
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +29,14 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   href: string;
+  disabled?: boolean; // For future use with User/Journal Management
 }
 
 const navItems: NavItem[] = [
   { label: 'Dashboard Overview', icon: LayoutDashboard, href: '/admin/dashboard' },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
-  // { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users' }, 
-  // { label: 'Manage Journals', icon: BookCheck, href: '/admin/dashboard/journals' },
+  { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: true }, 
+  { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: true },
 ];
 
 export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDashboardSidebarProps) {
@@ -55,25 +56,27 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
           let isActive = pathname === item.href;
-          if (item.href === '/admin/dashboard' && pathname.startsWith('/admin/dashboard') && pathname !== '/admin/dashboard/manuscripts') {
-             isActive = true;
-             if (navItems.some(nav => nav.href !== item.href && pathname.startsWith(nav.href))) {
-                 isActive = false; 
-             }
+          // Special handling for overview to not stay active if a sub-route is active
+          if (item.href === '/admin/dashboard' && pathname !== '/admin/dashboard' && pathname.startsWith('/admin/dashboard/')) {
+             isActive = false;
           } else if (item.href !== '/admin/dashboard' && pathname.startsWith(item.href)) {
-            isActive = true;
+             isActive = true;
           }
+
 
           return (
             <Link
               key={item.label}
-              href={item.href}
+              href={item.disabled ? "#" : item.href}
               className={cn(
                 "w-full flex items-center gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left",
                 isActive
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "text-foreground hover:bg-muted hover:text-primary"
+                  : "text-foreground hover:bg-muted hover:text-primary",
+                item.disabled && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-foreground"
               )}
+              aria-disabled={item.disabled}
+              onClick={(e) => item.disabled && e.preventDefault()}
             >
               <item.icon className="w-4 h-4" />
               {item.label}

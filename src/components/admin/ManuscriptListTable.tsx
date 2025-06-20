@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import type { Manuscript } from '@prisma/client';
-import { journalCategories } from '@/lib/data'; // To map journalId to name
+import { journalCategories } from '@/lib/data'; 
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -15,10 +15,10 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, Loader2, AlertTriangle } from 'lucide-react';
+import { Eye, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
 import { format, isValid } from 'date-fns';
+import Link from 'next/link';
 
-// Extend Manuscript type to include submittedBy details if fetched
 interface ManuscriptWithAuthor extends Manuscript {
   submittedBy?: {
     fullName: string | null;
@@ -88,7 +88,7 @@ export default function ManuscriptListTable() {
     try {
       const date = new Date(dateString);
       if (isValid(date)) {
-        return format(date, 'PPpp'); // e.g., Jun 20, 2025, 6:40 PM
+        return format(date, 'PPpp'); 
       }
       return 'Invalid Date';
     } catch (e) {
@@ -123,7 +123,7 @@ export default function ManuscriptListTable() {
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <p className="text-destructive text-lg mb-2">Failed to Load Manuscripts</p>
           <p className="text-muted-foreground">{error}</p>
-          {error.includes("Status: 403") && <p className="text-sm mt-2 text-orange-600">You may not have the required 'admin' or 'reviewer' role.</p>}
+          {error.includes("Forbidden") && <p className="text-sm mt-2 text-orange-600">You may not have the required 'admin' role.</p>}
         </CardContent>
       </Card>
     );
@@ -186,9 +186,12 @@ export default function ManuscriptListTable() {
                     {formatSubmittedDate(manuscript.submittedAt)}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => alert(`View details for: ${manuscript.articleTitle}`)}>
-                      <Eye className="w-4 h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Details</span>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`}>
+                        <ExternalLink className="w-3.5 h-3.5 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">View Details</span>
+                        <span className="sm:hidden">Details</span>
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
