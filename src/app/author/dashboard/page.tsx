@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react'; // Added useEffect
-import { useRouter } from 'next/navigation'; // Added useRouter
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import DashboardSidebar from '@/components/author/DashboardSidebar';
@@ -10,9 +10,23 @@ import DashboardStatCard from '@/components/author/DashboardStatCard';
 import type { DashboardStatCardProps } from '@/components/author/DashboardStatCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; 
+import { useToast } from '@/hooks/use-toast';
+import type { Manuscript } from '@prisma/client'; // Import Prisma's Manuscript type
+import { journalCategories } from '@/lib/data'; // To look up journal names
+import { format } from 'date-fns';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from '@/components/ui/button';
+import { Eye } from 'lucide-react';
 
 const dashboardItems: DashboardStatCardProps[] = [
-  { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
+  { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' }, // Value could be dynamic later
   { title: 'MANUSCRIPTS IN REVIEW', value: '0', variant: 'info', viewAllHref: '#' },
   { title: 'ACCEPTED MANUSCRIPTS', value: '0', variant: 'default', viewAllHref: '#' },
   { 
@@ -27,16 +41,151 @@ const dashboardItems: DashboardStatCardProps[] = [
   { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
 ];
 
-const MyManuscriptView = () => (
-  <Card>
-    <CardHeader>
-      <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <p className="text-foreground/80">This section will display a list of all manuscripts submitted by the author, including their status (e.g., under review, revisions required, accepted, published). Authors will be able to track progress and access details for each submission.</p>
-    </CardContent>
-  </Card>
-);
+const MyManuscriptView = () => {
+  const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      setAuthToken(token);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authToken) {
+      // Don't fetch if no token, or handle as unauthorized (though page access should be guarded)
+      setIsLoading(false); // Stop loading if no token
+      return;
+    }
+
+    const fetchManuscripts = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/author/manuscripts', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+          },
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Failed to fetch manuscripts: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setManuscripts(data);
+      } catch (err: any) {
+        console.error("Error fetching manuscripts:", err);
+        setError(err.message || "An unexpected error occurred.");
+        toast({
+          title: "Error Fetching Manuscripts",
+          description: err.message || "Could not load your submissions.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchManuscripts();
+  }, [authToken, toast]);
+
+  const getJournalName = (journalId: string) => {
+    const category = journalCategories.find(cat => cat.id === journalId);
+    return category ? category.name : 'Unknown Journal';
+  };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-foreground/80 text-center py-4">Loading your manuscripts...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-destructive text-center py-4">Error: {error}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (manuscripts.length === 0) {
+     return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-foreground/80 text-center py-4">You have not submitted any manuscripts yet.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[300px]">Article Title</TableHead>
+              <TableHead>Journal</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {manuscripts.map((manuscript) => (
+              <TableRow key={manuscript.id}>
+                <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
+                <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
+                <TableCell>
+                    <span 
+                        className={`px-2 py-1 text-xs font-semibold rounded-full
+                            ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' : 
+                              manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
+                              manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
+                              manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                              'bg-gray-100 text-gray-700'}`}
+                    >
+                        {manuscript.status}
+                    </span>
+                </TableCell>
+                <TableCell>{format(new Date(manuscript.createdAt), 'dd MMM yyyy, HH:mm')}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="outline" size="sm">
+                    <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">View</span>
+                  </Button>
+                  {/* Add more actions like Edit or Withdraw later */}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
 
 const EditProfileView = () => (
   <Card>
@@ -61,18 +210,16 @@ export default function AuthorDashboardPage() {
       const storedName = localStorage.getItem('authorName');
       
       if (!isLoggedIn) {
-        router.push('/submit'); // Redirect to login if not logged in
+        router.push('/submit'); 
       } else if (storedName) {
         setAuthorName(storedName);
       } else {
-        setAuthorName("Author"); // Fallback name if not found
+        setAuthorName("Author"); 
       }
     }
   }, [router]);
 
-  // Prevent rendering content if redirection is imminent or name is not yet loaded.
   if (authorName === "Loading...") {
-    // You might want to return a proper loading skeleton here for better UX
     return (
         <div className="flex flex-col min-h-screen bg-muted">
             <Header />
@@ -83,7 +230,6 @@ export default function AuthorDashboardPage() {
         </div>
     );
   }
-
 
   return (
     <div className="flex flex-col min-h-screen bg-muted">
