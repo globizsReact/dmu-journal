@@ -13,7 +13,7 @@ import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper
 import { useToast } from '@/hooks/use-toast';
 import type { Manuscript } from '@prisma/client'; // Import Prisma's Manuscript type
 import { journalCategories } from '@/lib/data'; // To look up journal names
-import { format, isValid } from 'date-fns'; // Import isValid
+// import { format, isValid } from 'date-fns'; // Commented out for now
 import {
   Table,
   TableBody,
@@ -148,50 +148,46 @@ const MyManuscriptView = () => {
               <TableHead className="w-[300px]">Article Title</TableHead>
               <TableHead>Journal</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Submitted</TableHead>
+              {/* <TableHead>Submitted</TableHead> */} {/* Commented out for now */}
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {manuscripts.map((manuscript) => {
-              // For debugging:
-              console.log(`Processing Manuscript ID: ${manuscript.id}, raw submittedAt:`, manuscript.submittedAt, `(type: ${typeof manuscript.submittedAt})`);
+              // For debugging date issues, if re-enabled:
+              // console.log(`Processing Manuscript ID: ${manuscript.id}, raw submittedAt:`, manuscript.submittedAt, `(type: ${typeof manuscript.submittedAt})`);
               
-              let formattedDate = 'N/A';
-              if (manuscript.submittedAt) {
-                const dateValue = manuscript.submittedAt;
-                let dateToFormat: Date | null = null;
-                let dateIsValidByIsValidFn = false;
-                let dateIsValidByGetTime = false;
+              // let formattedDate = 'N/A';
+              // if (manuscript.submittedAt) {
+              //   const dateValue = manuscript.submittedAt;
+              //   let dateToFormat: Date | null = null;
+              //   let dateIsValidByIsValidFn = false;
+              //   let dateIsValidByGetTime = false;
 
-                try {
-                  dateToFormat = new Date(dateValue);
-                  dateIsValidByIsValidFn = isValid(dateToFormat);
-                  // Also check with getTime()
-                  dateIsValidByGetTime = dateToFormat instanceof Date && !isNaN(dateToFormat.getTime());
+              //   try {
+              //     dateToFormat = new Date(dateValue);
+              //     // dateIsValidByIsValidFn = isValid(dateToFormat); // isValid from date-fns
+              //     // Also check with getTime()
+              //     dateIsValidByGetTime = dateToFormat instanceof Date && !isNaN(dateToFormat.getTime());
 
-                } catch (initError: any) {
-                  console.error(`Error initializing Date for manuscript ID ${manuscript.id} with value '${dateValue}'. Error: ${initError.message}`);
-                  // dateToFormat remains null, dateIsValidByIsValidFn remains false, dateIsValidByGetTime remains false
-                }
+              //   } catch (initError: any) {
+              //     console.error(`Error initializing Date for manuscript ID ${manuscript.id} with value '${dateValue}'. Error: ${initError.message}`);
+              //   }
                 
-                console.log(`Manuscript ID: ${manuscript.id}, Date object: ${dateToFormat?.toString()}, isValid (date-fns): ${dateIsValidByIsValidFn}, isValid (getTime): ${dateIsValidByGetTime}`);
+              //   // console.log(`Manuscript ID: ${manuscript.id}, Date object: ${dateToFormat?.toString()}, isValid (date-fns): ${dateIsValidByIsValidFn}, isValid (getTime): ${dateIsValidByGetTime}`);
 
-                if (dateToFormat && dateIsValidByGetTime) { // Prioritize getTime check
-                  try {
-                    formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm');
-                  } catch (formatError: any) {
-                    console.error(`Error in format() for manuscript ID ${manuscript.id}. Date object was: ${dateToFormat.toString()}. isValid (date-fns) was ${dateIsValidByIsValidFn}. Error: ${formatError.message}. Stack: ${formatError.stack}`);
-                    // formattedDate remains 'N/A'
-                  }
-                } else {
-                  console.warn(`Date deemed invalid or null for manuscript ID ${manuscript.id}. Original submittedAt: '${dateValue}', Parsed as: ${dateToFormat?.toString()}, isValid (date-fns) result: ${dateIsValidByIsValidFn}, isValid (getTime) result: ${dateIsValidByGetTime}`);
-                  // formattedDate remains 'N/A'
-                }
-              } else {
-                console.warn(`submittedAt is null, undefined, or empty for manuscript ID: ${manuscript.id}`);
-                // formattedDate remains 'N/A'
-              }
+              //   if (dateToFormat && dateIsValidByGetTime) { // Prioritize getTime check
+              //     try {
+              //       // formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm'); // format from date-fns
+              //     } catch (formatError: any) {
+              //       console.error(`Error in format() for manuscript ID ${manuscript.id}. Date object was: ${dateToFormat.toString()}. isValid (getTime) result: ${dateIsValidByGetTime}. Error: ${formatError.message}. Stack: ${formatError.stack}`);
+              //     }
+              //   } else {
+              //     console.warn(`Date deemed invalid or null for manuscript ID ${manuscript.id}. Original submittedAt: '${dateValue}', Parsed as: ${dateToFormat?.toString()}, isValid (getTime) result: ${dateIsValidByGetTime}`);
+              //   }
+              // } else {
+              //   console.warn(`submittedAt is null, undefined, or empty for manuscript ID: ${manuscript.id}`);
+              // }
 
               return (
                 <TableRow key={manuscript.id}>
@@ -209,9 +205,9 @@ const MyManuscriptView = () => {
                           {manuscript.status}
                       </span>
                   </TableCell>
-                  <TableCell>
-                    {formattedDate}
-                  </TableCell>
+                  {/* <TableCell> */}
+                    {/* {formattedDate} */} {/* Commented out for now */}
+                  {/* </TableCell> */}
                   <TableCell className="text-right">
                     <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 mr-1 sm:mr-2" />
