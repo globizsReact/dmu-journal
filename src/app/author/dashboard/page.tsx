@@ -13,7 +13,7 @@ import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper
 import { useToast } from '@/hooks/use-toast';
 import type { Manuscript } from '@prisma/client'; // Import Prisma's Manuscript type
 import { journalCategories } from '@/lib/data'; // To look up journal names
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns'; // Import isValid
 import {
   Table,
   TableBody,
@@ -57,8 +57,7 @@ const MyManuscriptView = () => {
 
   useEffect(() => {
     if (!authToken) {
-      // Don't fetch if no token, or handle as unauthorized (though page access should be guarded)
-      setIsLoading(false); // Stop loading if no token
+      setIsLoading(false); 
       return;
     }
 
@@ -154,32 +153,39 @@ const MyManuscriptView = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {manuscripts.map((manuscript) => (
-              <TableRow key={manuscript.id}>
-                <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
-                <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
-                <TableCell>
-                    <span 
-                        className={`px-2 py-1 text-xs font-semibold rounded-full
-                            ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' : 
-                              manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
-                              manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
-                              manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                              'bg-gray-100 text-gray-700'}`}
-                    >
-                        {manuscript.status}
-                    </span>
-                </TableCell>
-                <TableCell>{format(new Date(manuscript.submittedAt), 'dd MMM yyyy, HH:mm')}</TableCell>
-                <TableCell className="text-right">
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">View</span>
-                  </Button>
-                  {/* Add more actions like Edit or Withdraw later */}
-                </TableCell>
-              </TableRow>
-            ))}
+            {manuscripts.map((manuscript) => {
+              // For debugging:
+              // console.log(`Manuscript ID: ${manuscript.id}, submittedAt: `, manuscript.submittedAt, typeof manuscript.submittedAt);
+              const dateToFormat = new Date(manuscript.submittedAt);
+              return (
+                <TableRow key={manuscript.id}>
+                  <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
+                  <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
+                  <TableCell>
+                      <span 
+                          className={`px-2 py-1 text-xs font-semibold rounded-full
+                              ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' : 
+                                manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
+                                manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
+                                manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                                'bg-gray-100 text-gray-700'}`}
+                      >
+                          {manuscript.status}
+                      </span>
+                  </TableCell>
+                  <TableCell>
+                    {/* Check if the date is valid before formatting */}
+                    {isValid(dateToFormat) ? format(dateToFormat, 'dd MMM yyyy, HH:mm') : 'N/A'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">View</span>
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </CardContent>
