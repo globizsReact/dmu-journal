@@ -42,7 +42,8 @@ export default function ManuscriptListTable() {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // Immediate search input
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // Debounced search for API
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10); // Items per page
@@ -73,7 +74,7 @@ export default function ManuscriptListTable() {
       const data: ApiResponse = await response.json();
       setManuscripts(data.manuscripts);
       setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage);
+      setCurrentPage(data.currentPage); // Ensure currentPage is updated from API response
     } catch (err: any) {
       console.error("Error fetching manuscripts for admin:", err);
       setError(err.message || "An unexpected error occurred.");
@@ -87,23 +88,30 @@ export default function ManuscriptListTable() {
     }
   }, [authToken, limit, toast]);
   
+  // Effect to debounce search query
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (authToken) { // Only fetch if token is available
-        fetchManuscripts(1, searchQuery); // Reset to page 1 on new search
+    const timerId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      // When a new search is made, reset to page 1
+      if (searchQuery !== debouncedSearchQuery) {
+         setCurrentPage(1);
       }
-    }, 500); 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, authToken, fetchManuscripts]); // Added authToken
+    }, 500); // 500ms debounce
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchQuery, debouncedSearchQuery]);
 
+  // Effect to fetch manuscripts when debouncedSearchQuery, currentPage, or authToken changes
   useEffect(() => {
     if (authToken) {
-        fetchManuscripts(currentPage, searchQuery);
-    } else if (!isLoading && !authToken) { // Handle case where token is not yet available
-        setIsLoading(false);
-        setError("Authentication token not found. Please log in.");
+      fetchManuscripts(currentPage, debouncedSearchQuery);
+    } else {
+      if (!isLoading) setIsLoading(false);
+      if (!error) setError("Authentication token not found. Please log in.");
+      setManuscripts([]);
     }
-  }, [currentPage, authToken, fetchManuscripts]);
+  }, [debouncedSearchQuery, currentPage, authToken, fetchManuscripts, isLoading, error]);
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +119,7 @@ export default function ManuscriptListTable() {
   };
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       setCurrentPage(newPage);
     }
   };
@@ -131,7 +139,7 @@ export default function ManuscriptListTable() {
     }
   };
 
-  if (isLoading && manuscripts.length === 0) {
+  if (isLoading && manuscripts.length === 0 && !error) {
     return (
       <Card>
         <CardHeader>
@@ -150,7 +158,7 @@ export default function ManuscriptListTable() {
     );
   }
 
-  if (error) {
+  if (error && manuscripts.length === 0) {
     return (
       <Card>
         <CardHeader>

@@ -43,7 +43,8 @@ export default function UserListTable() {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // Immediate search input
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // Debounced search for API
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10); // Items per page
@@ -78,7 +79,7 @@ export default function UserListTable() {
       const data: ApiResponse = await response.json();
       setUsers(data.users);
       setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage);
+      setCurrentPage(data.currentPage); // Ensure currentPage is updated from API response
     } catch (err: any) {
       console.error("Error fetching users for admin:", err);
       setError(err.message || "An unexpected error occurred.");
@@ -92,37 +93,45 @@ export default function UserListTable() {
     }
   }, [authToken, limit, toast]);
 
+  // Effect to debounce search query
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if(authToken) { // Only fetch if token is available
-        fetchUsers(1, searchQuery); // Reset to page 1 on new search
+    const timerId = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+      // When a new search is made, reset to page 1
+      if (searchQuery !== debouncedSearchQuery) {
+        setCurrentPage(1); 
       }
-    }, 500); 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, authToken, fetchUsers]); // Added authToken
+    }, 500); // 500ms debounce
+    return () => {
+      clearTimeout(timerId);
+    };
+  }, [searchQuery, debouncedSearchQuery]); // debouncedSearchQuery in deps to handle manual reset of page if needed
 
+  // Effect to fetch users when debouncedSearchQuery, currentPage, or authToken changes
   useEffect(() => {
     if (authToken) {
-        fetchUsers(currentPage, searchQuery);
-    } else if (!isLoading && !authToken) { // Handle case where token is not yet available
-        setIsLoading(false);
-        setError("Authentication token not found. Please log in.");
+      fetchUsers(currentPage, debouncedSearchQuery);
+    } else {
+      // If no auth token, clear users and show appropriate message (already handled by fetchUsers guard)
+      // but ensure loading is off if not already
+      if (!isLoading) setIsLoading(false);
+      if (!error) setError("Authentication token not found. Please log in.");
+      setUsers([]); // Clear any stale user data
     }
-  }, [currentPage, authToken, fetchUsers]);
-
+  }, [debouncedSearchQuery, currentPage, authToken, fetchUsers, isLoading, error]); // Added isLoading and error to deps for conditional logic
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
 
   const handlePageChange = (newPage: number) => {
-    if (newPage >= 1 && newPage <= totalPages) {
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
       setCurrentPage(newPage);
     }
   };
 
   const handleUserAdded = (newUser: DisplayUser) => {
-    fetchUsers(currentPage, searchQuery); 
+    fetchUsers(currentPage, debouncedSearchQuery); 
     toast({ title: "User Added", description: `${newUser.fullName || newUser.username} has been successfully added.` });
   };
   
@@ -132,12 +141,18 @@ export default function UserListTable() {
   };
 
   const handleUserDeleted = (deletedUserId: number) => {
-    fetchUsers(currentPage > 1 && users.length === 1 ? currentPage -1 : currentPage, searchQuery); 
+    // Determine if we need to go to previous page if last item on current page is deleted
+    const newPage = users.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
+    setCurrentPage(newPage); // Set page first
+    // Fetch users for the potentially new page; if page didn't change, it will re-fetch current
+    // The main useEffect for fetching will pick this up.
+    // For an immediate refresh, uncomment below, but might cause double fetch if not careful.
+    // fetchUsers(newPage, debouncedSearchQuery); 
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
   };
 
 
-  if (isLoading && users.length === 0) {
+  if (isLoading && users.length === 0 && !error) { // Only show full skeleton if truly initial loading
     return (
       <Card>
         <CardHeader>
@@ -161,7 +176,7 @@ export default function UserListTable() {
     );
   }
 
-  if (error) {
+  if (error && users.length === 0) { // Show error prominently if it's the primary state
     return (
       <Card>
         <CardHeader>
@@ -200,7 +215,7 @@ export default function UserListTable() {
         </div>
       </CardHeader>
       <CardContent>
-        {isLoading && (
+        {isLoading && ( // Show inline loader during re-fetches
              <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
              </div>
