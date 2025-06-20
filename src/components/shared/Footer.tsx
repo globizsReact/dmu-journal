@@ -58,7 +58,7 @@ const Footer = ({ className }: FooterProps) => {
         </div>
       </footer>
       <div className={cn("py-3 bg-black text-center text-xs text-gray-400", className)}> {/* Apply className directly */}
-        <p>Design &amp; Developed By: <Link href="#" className="hover:text-accent transition-colors">Globizs</Link></p>
+        <p>Design &amp; Developed By: <Link href="https://globizs.com/" target="_blank" rel="noopener noreferrer" className="hover:text-accent transition-colors">Globizs</Link></p>
       </div>
     </>
   );
