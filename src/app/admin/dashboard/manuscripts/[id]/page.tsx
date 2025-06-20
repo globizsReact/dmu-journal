@@ -13,6 +13,7 @@ import { format, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -47,10 +48,10 @@ export default function ManuscriptDetailsPage() {
   const fetchManuscriptDetails = useCallback(async () => {
     if (!manuscriptId || !authToken) {
       if (!authToken && !isLoading) setError("Authentication token not found."); 
-      setIsLoading(false); 
+      // Removed setIsLoading(false) here as it might be set too early
       return;
     }
-    setIsLoading(true);
+    setIsLoading(true); // Ensure loading is true at the start of fetch
     setError(null);
     try {
       const response = await fetch(`/api/admin/manuscripts/${manuscriptId}`, {
@@ -68,12 +69,12 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken]); // Removed isLoading from dependency array
+  }, [manuscriptId, authToken, toast]); // Removed isLoading, added toast
 
   useEffect(() => {
-    if (manuscriptId && (authToken !== null || localStorage.getItem('authToken'))) {
+    if (manuscriptId && (authToken !== null || (typeof window !== 'undefined' && localStorage.getItem('authToken')))) {
         fetchManuscriptDetails();
-    } else if (manuscriptId && authToken === null && !localStorage.getItem('authToken')) {
+    } else if (manuscriptId && authToken === null && typeof window !== 'undefined' && !localStorage.getItem('authToken')) {
         setError("Authentication token not found. Cannot load manuscript.");
         setIsLoading(false);
     }
@@ -103,9 +104,7 @@ export default function ManuscriptDetailsPage() {
         description: `Manuscript status changed to ${newStatus}.`,
         variant: 'default',
       });
-    } catch (err: any) {
-      console.error("Error updating manuscript status:", err);
-      toast({
+    } catch (err: any)      toast({
         title: "Update Failed",
         description: err.message || "Could not update manuscript status.",
         variant: "destructive",
@@ -190,30 +189,29 @@ export default function ManuscriptDetailsPage() {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <div className="flex justify-between items-start">
-            <div>
-                <CardTitle className="text-2xl md:text-3xl font-headline text-primary mb-1">{manuscript.articleTitle}</CardTitle>
-                <CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+            <div className="flex-grow">
+                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline text-primary mb-1">{manuscript.articleTitle}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
                 Submitted by: {manuscript.submittedBy?.fullName || 'N/A'} ({manuscript.submittedBy?.email || 'N/A'})
                 </CardDescription>
             </div>
-            <Button onClick={() => router.push('/admin/dashboard/manuscripts')} variant="outline" size="sm">
+            <Button onClick={() => router.push('/admin/dashboard/manuscripts')} variant="outline" size="sm" className="w-full sm:w-auto">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to List
             </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Basic Info Section */}
         <section className="p-4 border rounded-md bg-muted/30">
           <h3 className="text-lg font-semibold text-primary mb-3">Overview</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="font-medium text-muted-foreground flex items-center"><FileTextIcon className="w-4 h-4 mr-2 text-sky-600" />Journal Category</p>
               <p>{getJournalName(manuscript.journalCategoryId)}</p>
             </div>
             <div>
               <p className="font-medium text-muted-foreground flex items-center"><Tag className="w-4 h-4 mr-2 text-purple-600" />Current Status</p>
-              <Badge className={`${statusBadgeColor(manuscript.status as ManuscriptStatus)} text-white`}>{manuscript.status}</Badge>
+              <Badge className={cn(statusBadgeColor(manuscript.status as ManuscriptStatus), "text-white")}>{manuscript.status}</Badge>
             </div>
             <div>
               <p className="font-medium text-muted-foreground flex items-center"><CalendarDays className="w-4 h-4 mr-2 text-orange-600" />Submitted At</p>
@@ -244,61 +242,57 @@ export default function ManuscriptDetailsPage() {
 
         <Separator />
 
-        {/* Abstract Section */}
         <section>
-          <h3 className="text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
-          <p className="text-foreground/80 whitespace-pre-wrap leading-relaxed">{manuscript.abstract}</p>
+          <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
+          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{manuscript.abstract}</p>
         </section>
         
-        {/* Keywords Section */}
         {manuscript.keywords && (
           <section>
-            <h3 className="text-lg font-semibold text-primary mb-1">Keywords</h3>
-            <p className="text-foreground/70">{manuscript.keywords}</p>
+            <h3 className="text-md font-semibold text-primary mb-1">Keywords</h3>
+            <p className="text-sm text-foreground/70">{manuscript.keywords}</p>
           </section>
         )}
         
         <Separator />
 
-        {/* Co-Authors Section */}
         {manuscript.coAuthors && manuscript.coAuthors.length > 0 && (
             <section>
-                <h3 className="text-xl font-headline font-semibold text-primary mb-3">Co-Author(s)</h3>
+                <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-3">Co-Author(s)</h3>
                 <div className="space-y-4">
                     {manuscript.coAuthors.map((author, index) => (
                         <div key={index} className="p-3 border rounded-md bg-card shadow-sm">
-                            <p className="font-semibold text-primary/90">{author.title} {author.givenName} {author.lastName}</p>
-                            <p className="text-sm text-muted-foreground flex items-center"><Mail className="w-3.5 h-3.5 mr-1.5"/>{author.email}</p>
-                            <p className="text-sm text-muted-foreground flex items-center"><Building className="w-3.5 h-3.5 mr-1.5"/>{author.affiliation} ({author.country})</p>
+                            <p className="font-semibold text-primary/90 text-md">{author.title} {author.givenName} {author.lastName}</p>
+                            <p className="text-xs text-muted-foreground flex items-center"><Mail className="w-3.5 h-3.5 mr-1.5"/>{author.email}</p>
+                            <p className="text-xs text-muted-foreground flex items-center"><Building className="w-3.5 h-3.5 mr-1.5"/>{author.affiliation} ({author.country})</p>
                         </div>
                     ))}
                 </div>
             </section>
         )}
 
-
-        {/* Action Buttons Section */}
         <Separator />
         <section className="pt-4">
-            <h3 className="text-lg font-semibold text-primary mb-3">Actions</h3>
+            <h3 className="text-md font-semibold text-primary mb-3">Actions</h3>
             <div className="flex flex-col sm:flex-row gap-3">
             {(manuscript.status === 'Submitted' || manuscript.status === 'In Review') && (
                 <>
                 <Button 
                     onClick={() => handleUpdateStatus('Accepted')} 
                     disabled={isUpdatingStatus}
-                    className="bg-green-600 hover:bg-green-700 text-white"
+                    className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                 >
                     {isUpdatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                    Approve Manuscript
+                    Approve
                 </Button>
                 <Button 
                     onClick={() => handleUpdateStatus('Rejected')} 
                     disabled={isUpdatingStatus}
                     variant="destructive"
+                    className="w-full sm:w-auto"
                 >
                     {isUpdatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
-                    Reject Manuscript
+                    Reject
                 </Button>
                 </>
             )}

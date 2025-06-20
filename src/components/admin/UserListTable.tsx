@@ -19,6 +19,7 @@ import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, Search, ChevronLeft, 
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
+import { cn } from '@/lib/utils';
 
 interface DisplayUser {
   id: number;
@@ -93,16 +94,21 @@ export default function UserListTable() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchUsers(1, searchQuery); // Reset to page 1 on new search
-    }, 500); // Debounce search
+      if(authToken) { // Only fetch if token is available
+        fetchUsers(1, searchQuery); // Reset to page 1 on new search
+      }
+    }, 500); 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, fetchUsers]);
+  }, [searchQuery, authToken, fetchUsers]); // Added authToken
 
   useEffect(() => {
     if (authToken) {
         fetchUsers(currentPage, searchQuery);
+    } else if (!isLoading && !authToken) { // Handle case where token is not yet available
+        setIsLoading(false);
+        setError("Authentication token not found. Please log in.");
     }
-  }, [currentPage, authToken, fetchUsers]); // searchQuery removed as it's handled by its own useEffect
+  }, [currentPage, authToken, fetchUsers]);
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,35 +122,35 @@ export default function UserListTable() {
   };
 
   const handleUserAdded = (newUser: DisplayUser) => {
-    // Optimistically add or re-fetch
     fetchUsers(currentPage, searchQuery); 
-    toast({ title: "User Added", description: `${newUser.fullName} has been successfully added.` });
+    toast({ title: "User Added", description: `${newUser.fullName || newUser.username} has been successfully added.` });
   };
   
   const handleUserUpdated = (updatedUser: DisplayUser) => {
     setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-    toast({ title: "User Updated", description: `${updatedUser.fullName}'s details have been updated.` });
+    toast({ title: "User Updated", description: `${updatedUser.fullName || updatedUser.username}'s details have been updated.` });
   };
 
   const handleUserDeleted = (deletedUserId: number) => {
-    // Re-fetch to reflect deletion and potential pagination changes
     fetchUsers(currentPage > 1 && users.length === 1 ? currentPage -1 : currentPage, searchQuery); 
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
   };
 
 
-  if (isLoading && users.length === 0) { // Show full card loading only on initial load
+  if (isLoading && users.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
-            <Button disabled><UserPlus className="mr-2 h-4 w-4" /> Add User</Button>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div className="flex-grow">
+                <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
+                <CardDescription>Manage user accounts.</CardDescription>
+            </div>
+            <Button disabled className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4" /> Add User</Button>
           </div>
-          <CardDescription>Manage user accounts in the system.</CardDescription>
-           <div className="relative mt-2">
+           <div className="relative mt-2 w-full max-w-xs">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search users..." className="pl-8 w-full sm:w-64" disabled />
+            <Input type="search" placeholder="Search users..." className="pl-8 w-full" disabled />
           </div>
         </CardHeader>
         <CardContent className="flex justify-center items-center py-10">
@@ -159,7 +165,7 @@ export default function UserListTable() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Error</CardTitle>
+          <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">Error</CardTitle>
         </CardHeader>
         <CardContent className="text-center py-10">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -174,22 +180,22 @@ export default function UserListTable() {
     <Card>
       <CardHeader>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
+          <div className="flex-grow">
+            <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
             <CardDescription>Manage user accounts. Showing page {currentPage} of {totalPages}.</CardDescription>
           </div>
-          <Button onClick={() => setIsAddUserDialogOpen(true)}>
+          <Button onClick={() => setIsAddUserDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" /> Add New User
           </Button>
         </div>
-        <div className="relative mt-4">
+        <div className="relative mt-4 w-full max-w-md">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search by name, username, or email..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-8 w-full md:w-1/2 lg:w-1/3"
+            className="pl-8 w-full"
           />
         </div>
       </CardHeader>
@@ -203,67 +209,70 @@ export default function UserListTable() {
           <p className="text-foreground/80 text-center py-8">No users found matching your criteria.</p>
         )}
         {!isLoading && users.length > 0 && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">User ID</TableHead>
-                <TableHead>Full Name</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead className="text-right w-[130px]">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell className="font-medium">{user.fullName || 'N/A'}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-0.5 text-xs font-semibold rounded-full capitalize
-                        ${user.role === 'admin' ? 'bg-red-100 text-red-700' :
-                          user.role === 'reviewer' ? 'bg-yellow-100 text-yellow-700' :
-                          user.role === 'author' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'}`}
-                    >
-                      {user.role || 'N/A'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User">
-                      <Pencil className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => setDeletingUser(user)} title="Delete User">
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[700px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px]">ID</TableHead>
+                  <TableHead>Full Name</TableHead>
+                  <TableHead>Username</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="text-right w-[100px] sm:w-[130px]">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>{user.id}</TableCell>
+                    <TableCell className="font-medium">{user.fullName || 'N/A'}</TableCell>
+                    <TableCell>{user.username}</TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(`px-2 py-0.5 text-xs font-semibold rounded-full capitalize
+                          ${user.role === 'admin' ? 'bg-red-100 text-red-700' :
+                            user.role === 'reviewer' ? 'bg-yellow-100 text-yellow-700' :
+                            user.role === 'author' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'}`)}
+                      >
+                        {user.role || 'N/A'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => setDeletingUser(user)} title="Delete User">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
-        {/* Pagination Controls */}
         {!isLoading && totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2 py-4 mt-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || isLoading}
+              className="w-full sm:w-auto"
             >
               <ChevronLeft className="mr-1 h-4 w-4" /> Previous
             </Button>
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
               Page {currentPage} of {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || isLoading}
+              className="w-full sm:w-auto"
             >
               Next <ChevronRight className="ml-1 h-4 w-4" />
             </Button>

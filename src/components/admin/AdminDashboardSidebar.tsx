@@ -3,7 +3,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookCheck, LogOut, LucideIcon, ShieldAlert, BookIcon } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, ShieldAlert } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,9 +20,9 @@ import Link from 'next/link';
 
 interface AdminDashboardSidebarProps {
   adminName: string;
-  activeTab: string; 
-  onTabChange: (tabKey: string) => void; 
   onLogout: () => void; 
+  onLinkClick?: () => void; // Optional: for closing mobile sheet
+  isMobileSheet?: boolean; // Optional: to adjust styles if inside a sheet
 }
 
 interface NavItem {
@@ -39,13 +39,16 @@ const navItems: NavItem[] = [
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: true },
 ];
 
-export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDashboardSidebarProps) {
+export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
 
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col p-4 shadow-md">
+    <aside className={cn(
+        "bg-card flex flex-col p-4 h-full", 
+        isMobileSheet ? "w-full" : "w-64 border-r border-border shadow-md"
+    )}>
       <div className="mb-8 px-2">
         <div className="flex items-center gap-2 mb-1">
           <ShieldAlert className="w-6 h-6 text-orange-500"/>
@@ -56,7 +59,6 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
           let isActive = pathname === item.href;
-          // Special handling for overview to not stay active if a sub-route is active
           if (item.href === '/admin/dashboard' && pathname !== '/admin/dashboard' && pathname.startsWith('/admin/dashboard/')) {
              isActive = false;
           } else if (item.href !== '/admin/dashboard' && pathname.startsWith(item.href)) {
@@ -76,7 +78,13 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
                 item.disabled && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-foreground"
               )}
               aria-disabled={item.disabled}
-              onClick={(e) => item.disabled && e.preventDefault()}
+              onClick={(e) => {
+                  if (item.disabled) {
+                      e.preventDefault();
+                  } else {
+                      onLinkClick?.(); // Call onLinkClick if provided
+                  }
+              }}
             >
               <item.icon className="w-4 h-4" />
               {item.label}
@@ -107,7 +115,7 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={onLogout} className="bg-destructive hover:bg-destructive/90">Logout</AlertDialogAction>
+              <AlertDialogAction onClick={() => { onLogout(); onLinkClick?.(); }} className="bg-destructive hover:bg-destructive/90">Logout</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

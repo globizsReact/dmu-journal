@@ -7,28 +7,26 @@ export default function LoadingManuscriptDetailsPage() {
   return (
     <Card>
       <CardHeader>
-        <Skeleton className="h-8 w-3/4 mb-1" /> {/* Manuscript Title */}
-        <Skeleton className="h-4 w-1/2" /> {/* Submitted by... */}
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-2">
+            <div className="flex-grow">
+                <Skeleton className="h-7 md:h-8 w-3/4 mb-1" /> {/* Manuscript Title */}
+                <Skeleton className="h-4 w-1/2" /> {/* Submitted by... */}
+            </div>
+            <Skeleton className="h-9 w-full sm:w-32 rounded-md" /> {/* Back to List Button */}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Basic Info Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-20" /> {/* Label: Journal */}
-            <Skeleton className="h-5 w-3/4" /> {/* Value */}
-          </div>
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-20" /> {/* Label: Status */}
-            <Skeleton className="h-5 w-1/2" /> {/* Value */}
-          </div>
-          <div className="space-y-1">
-            <Skeleton className="h-4 w-24" /> {/* Label: Submitted At */}
-            <Skeleton className="h-5 w-2/3" /> {/* Value */}
-          </div>
-           <div className="space-y-1">
-            <Skeleton className="h-4 w-24" /> {/* Label: Special Review */}
-            <Skeleton className="h-5 w-16" /> {/* Value */}
-          </div>
+        <div className="p-4 border rounded-md bg-muted/30">
+            <Skeleton className="h-6 w-24 mb-3" /> {/* Overview Title */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-1">
+                    <Skeleton className="h-4 w-20" /> {/* Label */}
+                    <Skeleton className="h-5 w-3/4" /> {/* Value */}
+                </div>
+            ))}
+            </div>
         </div>
 
         <Separator />
@@ -49,7 +47,7 @@ export default function LoadingManuscriptDetailsPage() {
         
         <Separator />
 
-        {/* Authors Section */}
+        {/* Co-Authors Section */}
         <div>
             <Skeleton className="h-6 w-32 mb-3" /> {/* Co-Authors Title */}
             <div className="space-y-3">
@@ -60,22 +58,20 @@ export default function LoadingManuscriptDetailsPage() {
         
         <Separator />
         
-        {/* File Names Section */}
+        {/* File Names Section - Simplified for skeleton */}
         <div>
             <Skeleton className="h-6 w-28 mb-3" /> {/* Files Title */}
-            <div className="space-y-2">
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-1/2" />
-            </div>
         </div>
 
         <Separator />
 
         {/* Action Buttons Section */}
-        <div className="flex justify-end space-x-3 pt-4">
-          <Skeleton className="h-10 w-24" /> {/* Approve Button */}
-          <Skeleton className="h-10 w-24" /> {/* Reject Button */}
+        <div className="pt-4">
+            <Skeleton className="h-5 w-20 mb-3" /> {/* Actions Title */}
+            <div className="flex flex-col sm:flex-row gap-3">
+                <Skeleton className="h-10 w-full sm:w-36" /> {/* Approve Button */}
+                <Skeleton className="h-10 w-full sm:w-36" /> {/* Reject Button */}
+            </div>
         </div>
       </CardContent>
     </Card>

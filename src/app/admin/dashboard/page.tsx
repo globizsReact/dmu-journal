@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Admin Dashboard Overview</CardTitle>
+          <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">Admin Dashboard Overview</CardTitle>
           <CardDescription>Welcome, {adminName}! This is the central hub for managing journals, users, and submissions.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -105,18 +105,18 @@ export default function AdminDashboardPage() {
          <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive flex items-center gap-2">
-              <AlertTriangle size={24} /> Error Loading Statistics
+              <AlertTriangle size={20} /> Error Loading Stats
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-destructive">{statsError}</p>
-            <p className="text-sm text-muted-foreground mt-1">Please try refreshing the page or check if you are logged in correctly.</p>
+            <p className="text-destructive text-sm">{statsError}</p>
+            <p className="text-xs text-muted-foreground mt-1">Please try refreshing or check login.</p>
           </CardContent>
         </Card>
       )}
 
       {!isLoadingStats && !statsError && stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <AdminStatCard 
             title="Total Journals" 
             value={totalJournals} 
@@ -150,15 +150,15 @@ export default function AdminDashboardPage() {
 
        <Card>
         <CardHeader>
-            <CardTitle className="text-xl font-headline text-primary">Quick Actions</CardTitle>
+            <CardTitle className="text-lg md:text-xl font-headline text-primary">Quick Actions</CardTitle>
         </CardHeader>
         <CardContent>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
             Use the sidebar to navigate to specific management sections:
             </p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
+            <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
             <li>View and manage all submitted manuscripts.</li>
-            <li>Oversee user accounts (authors, reviewers, editors). (Future Feature)</li>
+            <li>Oversee user accounts (authors, reviewers, editors).</li>
             <li>Manage journal categories and settings. (Future Feature)</li>
             </ul>
         </CardContent>

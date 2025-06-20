@@ -2,11 +2,14 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu as MenuIcon } from 'lucide-react'; // Added MenuIcon
 import { Toaster } from "@/components/ui/toaster";
+import { Button } from '@/components/ui/button'; // Added Button
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'; // Added Sheet components
+import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -16,8 +19,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [isAuthenticatedAdmin, setIsAuthenticatedAdmin] = useState(false);
   const [adminName, setAdminName] = useState("Admin");
-  const [activeTab, setActiveTab] = useState<string>('dashboard'); // For sidebar, might be controlled by path
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -51,6 +55,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, []);
 
+  // Close mobile sheet on route change
+  useEffect(() => {
+    setIsMobileSheetOpen(false);
+  }, [pathname]);
+
+
   const handleLoginSuccess = () => {
     setIsAuthenticatedAdmin(true);
     const name = localStorage.getItem('authorName');
@@ -64,6 +74,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         localStorage.removeItem('userRole');
         localStorage.removeItem('authorName');
         window.dispatchEvent(new CustomEvent('authChange'));
+        setIsMobileSheetOpen(false); // Close sheet on logout
     }
   };
 
@@ -114,13 +125,35 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </head>
       <body className="font-body antialiased bg-muted text-foreground">
         <div className="flex min-h-screen">
-          <AdminDashboardSidebar
-            adminName={adminName}
-            activeTab={activeTab} 
-            onTabChange={setActiveTab}
-            onLogout={handleLogout}
-          />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
+          {/* Desktop Sidebar */}
+          <div className="hidden md:block">
+            <AdminDashboardSidebar
+              adminName={adminName}
+              onLogout={handleLogout}
+            />
+          </div>
+          
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-auto">
+            {/* Mobile Header and Menu Toggle */}
+            <div className="md:hidden flex items-center justify-between mb-4">
+                <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <MenuIcon className="h-5 w-5" />
+                            <span className="sr-only">Open Menu</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="p-0 w-64">
+                        <AdminDashboardSidebar
+                            adminName={adminName}
+                            onLogout={handleLogout}
+                            onLinkClick={() => setIsMobileSheetOpen(false)} // Close sheet on link click
+                            isMobileSheet={true}
+                        />
+                    </SheetContent>
+                </Sheet>
+                 <span className="text-lg font-semibold text-primary">Admin Dashboard</span>
+            </div>
             {children}
           </main>
         </div>

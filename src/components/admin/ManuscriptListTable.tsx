@@ -16,9 +16,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, Loader2, AlertTriangle, ExternalLink, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, Loader2, AlertTriangle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 interface ManuscriptWithAuthor extends Manuscript {
   submittedBy?: {
@@ -88,16 +89,21 @@ export default function ManuscriptListTable() {
   
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      fetchManuscripts(1, searchQuery); // Reset to page 1 on new search
-    }, 500); // Debounce search
+      if (authToken) { // Only fetch if token is available
+        fetchManuscripts(1, searchQuery); // Reset to page 1 on new search
+      }
+    }, 500); 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, fetchManuscripts]);
+  }, [searchQuery, authToken, fetchManuscripts]); // Added authToken
 
   useEffect(() => {
     if (authToken) {
         fetchManuscripts(currentPage, searchQuery);
+    } else if (!isLoading && !authToken) { // Handle case where token is not yet available
+        setIsLoading(false);
+        setError("Authentication token not found. Please log in.");
     }
-  }, [currentPage, authToken, fetchManuscripts]); // searchQuery removed as it's handled by its own useEffect
+  }, [currentPage, authToken, fetchManuscripts]);
 
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,11 +131,11 @@ export default function ManuscriptListTable() {
     }
   };
 
-  if (isLoading && manuscripts.length === 0) { // Show full card loading only on initial load
+  if (isLoading && manuscripts.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
+          <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
           <CardDescription>Review and manage manuscript submissions.</CardDescription>
            <div className="relative mt-2">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -148,7 +154,7 @@ export default function ManuscriptListTable() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Error</CardTitle>
+          <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">Error</CardTitle>
         </CardHeader>
         <CardContent className="text-center py-10">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
@@ -162,16 +168,16 @@ export default function ManuscriptListTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
+        <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
         <CardDescription>Review and manage manuscript submissions. Showing page {currentPage} of {totalPages}.</CardDescription>
-        <div className="relative mt-4">
+        <div className="relative mt-4 w-full max-w-md">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="Search by title, author, or ID..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="pl-8 w-full md:w-1/2 lg:w-1/3"
+            className="pl-8 w-full"
           />
         </div>
       </CardHeader>
@@ -185,72 +191,74 @@ export default function ManuscriptListTable() {
           <p className="text-foreground/80 text-center py-8">No manuscripts found matching your criteria.</p>
         )}
         {!isLoading && manuscripts.length > 0 && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[250px]">Article Title</TableHead>
-                <TableHead>Submitting Author</TableHead>
-                <TableHead>Journal</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {manuscripts.map((manuscript) => (
-                <TableRow key={manuscript.id}>
-                  <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
-                  <TableCell>
-                    {manuscript.submittedBy?.fullName || 'N/A'}
-                    {manuscript.submittedBy?.email && <span className="block text-xs text-muted-foreground">{manuscript.submittedBy.email}</span>}
-                  </TableCell>
-                  <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`px-2 py-1 text-xs font-semibold rounded-full
-                        ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' :
-                          manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
-                          manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
-                          manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-700'}`}
-                    >
-                      {manuscript.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{formatSubmittedDate(manuscript.submittedAt)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button asChild variant="outline" size="sm">
-                      <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`}>
-                        <ExternalLink className="w-3.5 h-3.5 mr-1 sm:mr-2" />
-                        <span className="hidden sm:inline">View Details</span>
-                        <span className="sm:hidden">Details</span>
-                      </Link>
-                    </Button>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[250px]">Article Title</TableHead>
+                  <TableHead>Submitting Author</TableHead>
+                  <TableHead>Journal</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Submitted</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {manuscripts.map((manuscript) => (
+                  <TableRow key={manuscript.id}>
+                    <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
+                    <TableCell>
+                      {manuscript.submittedBy?.fullName || 'N/A'}
+                      {manuscript.submittedBy?.email && <span className="block text-xs text-muted-foreground">{manuscript.submittedBy.email}</span>}
+                    </TableCell>
+                    <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
+                    <TableCell>
+                      <span
+                        className={cn(`px-2 py-1 text-xs font-semibold rounded-full
+                          ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' :
+                            manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
+                            manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
+                            manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'}`)}
+                      >
+                        {manuscript.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>{formatSubmittedDate(manuscript.submittedAt)}</TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`}>
+                          <ExternalLink className="w-3.5 h-3.5 md:mr-1" />
+                          <span className="hidden md:inline">Details</span>
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
-        {/* Pagination Controls */}
         {!isLoading && totalPages > 1 && (
-          <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-2 py-4 mt-4">
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || isLoading}
+              className="w-full sm:w-auto"
             >
              <ChevronLeft className="mr-1 h-4 w-4" /> Previous
             </Button>
-             <span className="text-sm text-muted-foreground">
+             <span className="text-sm text-muted-foreground whitespace-nowrap">
               Page {currentPage} of {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || isLoading}
+              className="w-full sm:w-auto"
             >
               Next <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
