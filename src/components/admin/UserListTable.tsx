@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, Eye } from 'lucide-react'; // Added Pencil, Trash2
-import { format, isValid } from 'date-fns';
+import { Loader2, AlertTriangle, Pencil, Trash2 } from 'lucide-react'; // Removed Eye icon as it's not used
+// import { format, isValid } from 'date-fns'; // Not needed anymore
 
 // Minimal User type for display, adjust as needed from Prisma schema
 interface DisplayUser {
@@ -24,7 +24,7 @@ interface DisplayUser {
   username: string;
   email: string;
   role: string | null;
-  createdAt: Date;
+  // createdAt: Date; // Removed createdAt
 }
 
 export default function UserListTable() {
@@ -79,24 +79,22 @@ export default function UserListTable() {
     fetchUsers();
   }, [authToken, toast]);
 
-  const formatDisplayDate = (dateString: string | Date | null | undefined): string => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return isValid(date) ? format(date, 'PP') : 'Invalid Date'; // Shorter date format
-    } catch {
-      return 'Error';
-    }
-  };
+  // const formatDisplayDate = (dateString: string | Date | null | undefined): string => { // Not needed anymore
+  //   if (!dateString) return 'N/A';
+  //   try {
+  //     const date = new Date(dateString);
+  //     return isValid(date) ? format(date, 'PP') : 'Invalid Date'; 
+  //   } catch {
+  //     return 'Error';
+  //   }
+  // };
 
   const handleEditUser = (userId: number) => {
-    // Placeholder for edit functionality
     toast({ title: "Edit User", description: `Edit functionality for user ID ${userId} is not yet implemented.`});
     console.log("Edit user:", userId);
   };
 
   const handleDeleteUser = (userId: number) => {
-    // Placeholder for delete functionality
     toast({ title: "Delete User", description: `Delete functionality for user ID ${userId} is not yet implemented.`, variant: "destructive"});
     console.log("Delete user:", userId);
   };
@@ -151,7 +149,6 @@ export default function UserListTable() {
       <CardHeader>
         <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
         <CardDescription>Manage user accounts. Found {users.length} user(s).</CardDescription>
-        {/* TODO: Add "Add New User" button here later */}
       </CardHeader>
       <CardContent>
         <Table>
@@ -162,7 +159,7 @@ export default function UserListTable() {
               <TableHead>Username</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Joined</TableHead>
+              {/* <TableHead>Joined</TableHead> // Removed Joined column */}
               <TableHead className="text-right w-[150px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -184,7 +181,7 @@ export default function UserListTable() {
                         {user.role || 'N/A'}
                     </span>
                   </TableCell>
-                  <TableCell>{formatDisplayDate(user.createdAt)}</TableCell>
+                  {/* <TableCell>{formatDisplayDate(user.createdAt)}</TableCell> // Removed Joined date cell */}
                   <TableCell className="text-right space-x-1">
                     <Button 
                         variant="outline" 
@@ -206,8 +203,6 @@ export default function UserListTable() {
                         <Trash2 className="w-3.5 h-3.5" />
                         <span className="sr-only">Delete User</span>
                     </Button>
-                    {/* Potentially a View Details button if needed */}
-                    {/* <Button variant="ghost" size="icon" className="h-7 w-7" title="View Details (Coming Soon)"><Eye className="w-3.5 h-3.5" /></Button> */}
                   </TableCell>
                 </TableRow>
               )

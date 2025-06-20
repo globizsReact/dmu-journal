@@ -39,23 +39,13 @@ export async function GET(request: NextRequest) {
         username: true,
         email: true,
         role: true,
-        created_at: true, // Changed from createdAt
-        updated_at: true, // Changed from updatedAt
+        // Removed created_at and updated_at
       },
-      orderBy: {
-        created_at: 'desc', // Corrected field name for orderBy
-      },
+      // Removed orderBy clause
     });
     console.log(`Admin All Users API: Found ${users.length} users.`);
 
-    // Map created_at and updated_at to createdAt and updatedAt for consistent client-side usage if needed
-    const formattedUsers = users.map(user => ({
-      ...user,
-      createdAt: user.created_at,
-      updatedAt: user.updated_at,
-    }));
-
-    return NextResponse.json(formattedUsers, { status: 200 });
+    return NextResponse.json(users, { status: 200 });
 
   } catch (error: unknown) { 
     let responseErrorMessage = 'An unexpected error occurred while fetching users.';
@@ -92,4 +82,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
