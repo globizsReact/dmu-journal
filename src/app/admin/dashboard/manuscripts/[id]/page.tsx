@@ -12,13 +12,14 @@ import { Loader2, AlertTriangle, CheckCircle, XCircle, ArrowLeft, User, Mail, Bu
 import { format, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
     fullName: string | null;
     email: string | null;
   } | null;
-  coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[]; // Added coAuthors
+  coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[];
 }
 
 type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Rejected';
@@ -45,8 +46,8 @@ export default function ManuscriptDetailsPage() {
 
   const fetchManuscriptDetails = useCallback(async () => {
     if (!manuscriptId || !authToken) {
-      if (!authToken) setError("Authentication token not found.");
-      setIsLoading(false);
+      if (!authToken && !isLoading) setError("Authentication token not found."); // Set error only if not already loading
+      setIsLoading(false); // Ensure loading is false if we can't fetch
       return;
     }
     setIsLoading(true);
@@ -67,11 +68,19 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken]);
+  }, [manuscriptId, authToken, isLoading]); // Added isLoading to deps to avoid race conditions if needed
 
   useEffect(() => {
-    fetchManuscriptDetails();
-  }, [fetchManuscriptDetails]);
+    // Only fetch if manuscriptId is available and authToken is set (or attempted to be set)
+    if (manuscriptId && (authToken !== null || localStorage.getItem('authToken'))) {
+        fetchManuscriptDetails();
+    } else if (manuscriptId && authToken === null && !localStorage.getItem('authToken')) {
+        // If no token at all and not tried fetching yet
+        setError("Authentication token not found. Cannot load manuscript.");
+        setIsLoading(false);
+    }
+  }, [manuscriptId, authToken, fetchManuscriptDetails]);
+
 
   const handleUpdateStatus = async (newStatus: ManuscriptStatus) => {
     if (!manuscript || !authToken) return;
@@ -90,7 +99,7 @@ export default function ManuscriptDetailsPage() {
         throw new Error(errorData.error || `Failed to update status: ${response.status}`);
       }
       const updatedManuscript = await response.json();
-      setManuscript(updatedManuscript); // Update local state with the response
+      setManuscript(updatedManuscript); 
       toast({
         title: "Status Updated",
         description: `Manuscript status changed to ${newStatus}.`,
@@ -123,8 +132,21 @@ export default function ManuscriptDetailsPage() {
     }
   };
 
+  // This `isLoading` is the client-side loading state for the fetch.
+  // The `loading.tsx` file handles the initial route transition skeleton.
   if (isLoading) {
-    return <LoadingManuscriptDetailsPage />; // Use the specific loading component
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-8 w-3/4 mb-2" />
+          <Skeleton className="h-4 w-1/2" />
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-20">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="ml-4 text-lg text-muted-foreground">Loading manuscript details...</p>
+        </CardContent>
+      </Card>
+    );
   }
 
   if (error) {
@@ -150,7 +172,7 @@ export default function ManuscriptDetailsPage() {
           <CardTitle>Manuscript Not Found</CardTitle>
         </CardHeader>
         <CardContent>
-          <p>The requested manuscript could not be found.</p>
+          <p>The requested manuscript could not be found or you may not have permission to view it.</p>
           <Button onClick={() => router.back()} variant="outline" className="mt-4">
              <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
           </Button>
@@ -297,20 +319,3 @@ export default function ManuscriptDetailsPage() {
     </Card>
   );
 }
-
-// Minimal skeleton for loading state
-function LoadingManuscriptDetailsPage() {
-  return (
-    <Card>
-      <CardHeader>
-        <Skeleton className="h-8 w-3/4 mb-2" />
-        <Skeleton className="h-4 w-1/2" />
-      </CardHeader>
-      <CardContent className="flex justify-center items-center py-20">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4 text-lg text-muted-foreground">Loading manuscript details...</p>
-      </CardContent>
-    </Card>
-  );
-}
-
