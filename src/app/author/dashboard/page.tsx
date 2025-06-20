@@ -158,13 +158,13 @@ const MyManuscriptView = () => {
               console.log(`Manuscript ID: ${manuscript.id}, submittedAt: `, manuscript.submittedAt, typeof manuscript.submittedAt);
               
               let formattedDate = 'N/A';
-              if (manuscript.submittedAt) { // Ensure submittedAt is not null/undefined
+              if (manuscript.submittedAt) {
                 const dateToFormat = new Date(manuscript.submittedAt);
                 if (isValid(dateToFormat)) {
                   try {
                     formattedDate = format(dateToFormat, 'dd MMM yyyy, HH:mm');
-                  } catch (e) {
-                    console.error(`Error formatting date for manuscript ID ${manuscript.id} with value '${manuscript.submittedAt}':`, e);
+                  } catch (e: any) {
+                    console.error(`Error formatting date for manuscript ID ${manuscript.id} with value '${manuscript.submittedAt}'. Error: ${e.message}`);
                     // formattedDate remains 'N/A'
                   }
                 } else {
@@ -293,3 +293,4 @@ export default function AuthorDashboardPage() {
     </div>
   );
 }
+    
