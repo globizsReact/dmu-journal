@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation'; 
+import { useRouter, usePathname } from 'next/navigation';
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2, Menu as MenuIcon } from 'lucide-react'; 
+import { Loader2, Menu as MenuIcon } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
-import { Button } from '@/components/ui/button'; 
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'; 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // Added Avatar
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
@@ -65,16 +65,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     setIsAuthenticatedAdmin(true);
     const name = localStorage.getItem('authorName');
     if (name) setAdminName(name);
-    router.replace(window.location.pathname); 
+    router.replace(window.location.pathname);
   };
-  
+
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
         localStorage.removeItem('authToken');
         localStorage.removeItem('userRole');
         localStorage.removeItem('authorName');
         window.dispatchEvent(new CustomEvent('authChange'));
-        setIsMobileSheetOpen(false); 
+        setIsMobileSheetOpen(false);
     }
   };
 
@@ -139,7 +139,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                           <span className="sr-only">Open Menu</span>
                       </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="p-0 w-64">
+                  <SheetContent
+                    side="left"
+                    className="p-0 w-64"
+                    aria-labelledby="admin-sidebar-title"
+                  >
                       <AdminDashboardSidebar
                           adminName={adminName}
                           onLogout={handleLogout}
@@ -149,7 +153,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   </SheetContent>
               </Sheet>
             </div>
-            {/* Optional: Admin Dashboard title for desktop if needed */}
              <h1 className="text-md font-semibold text-primary hidden sm:block">Admin Dashboard</h1>
           </div>
 
@@ -162,17 +165,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        <div className="flex min-h-[calc(100vh-3.5rem)]"> {/* 3.5rem is h-14 */}
-          {/* Desktop Sidebar */}
+        <div className="flex min-h-[calc(100vh-3.5rem)]">
           <div className="hidden md:block">
             <AdminDashboardSidebar
               adminName={adminName}
               onLogout={handleLogout}
             />
           </div>
-          
+
           <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-auto bg-muted">
-            {/* The old mobile header title is effectively part of the new sticky top header */}
             {children}
           </main>
         </div>

@@ -3,8 +3,8 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon } from 'lucide-react'; // Removed ShieldAlert
-import Image from 'next/image'; // Added Image
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon } from 'lucide-react';
+import Image from 'next/image';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,9 +21,9 @@ import Link from 'next/link';
 
 interface AdminDashboardSidebarProps {
   adminName: string;
-  onLogout: () => void; 
-  onLinkClick?: () => void; 
-  isMobileSheet?: boolean; 
+  onLogout: () => void;
+  onLinkClick?: () => void;
+  isMobileSheet?: boolean;
 }
 
 interface NavItem {
@@ -36,7 +36,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Dashboard Overview', icon: LayoutDashboard, href: '/admin/dashboard' },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
-  { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false }, 
+  { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false },
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: true },
 ];
 
@@ -48,20 +48,20 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
 
   return (
     <aside className={cn(
-        "bg-card flex flex-col p-4 h-full", 
+        "bg-card flex flex-col p-4 h-full",
         isMobileSheet ? "w-full" : "w-64 border-r border-border shadow-md"
     )}>
       <div className="mb-8 px-2 flex items-center gap-3">
-        <Image 
-          src={logoSrc} 
-          alt="DMU Journal Logo" 
-          width={40} 
-          height={40} 
+        <Image
+          src={logoSrc}
+          alt="DMU Journal Logo"
+          width={40}
+          height={40}
           className="rounded-full"
           data-ai-hint="university logo"
         />
         <div>
-          <h2 className="text-lg font-headline font-semibold text-primary leading-tight">Admin Panel</h2>
+          <h2 id="admin-sidebar-title" className="text-lg font-headline font-semibold text-primary leading-tight">Admin Panel</h2>
           <p className="text-xs text-muted-foreground leading-tight">DMU Journal</p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
                   if (item.disabled) {
                       e.preventDefault();
                   } else {
-                      onLinkClick?.(); 
+                      onLinkClick?.();
                   }
               }}
             >
