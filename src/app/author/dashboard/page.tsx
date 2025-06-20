@@ -170,7 +170,7 @@ const MyManuscriptView = () => {
                         {manuscript.status}
                     </span>
                 </TableCell>
-                <TableCell>{format(new Date(manuscript.createdAt), 'dd MMM yyyy, HH:mm')}</TableCell>
+                <TableCell>{format(new Date(manuscript.submittedAt), 'dd MMM yyyy, HH:mm')}</TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm">
                     <Eye className="w-4 h-4 mr-1 sm:mr-2" />
