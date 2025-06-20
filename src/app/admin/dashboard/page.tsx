@@ -2,112 +2,93 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-// Removed Header and Footer imports as they are not used in the new admin layout
+// useRouter and useToast might be needed for actions within the page, but not for initial auth
+// import { useRouter } from 'next/navigation';
+// import { useToast } from '@/hooks/use-toast';
+
 import ManuscriptListTable from '@/components/admin/ManuscriptListTable';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar'; // For types, might be removed if layout provides context
+// AdminDashboardSidebar is now part of AdminLayout
 
 // This page will now be rendered within AdminLayout.tsx
+// AdminLayout handles the authentication and shows AdminLoginForm if not authenticated.
+// So, this page can assume it's only rendered if the user is an authenticated admin.
 
 export default function AdminDashboardPage() {
-  const [adminName, setAdminName] = useState("Loading...");
-  const [isLoadingAuth, setIsLoadingAuth] = useState(true); // Still useful for page-specific content loading
-  const [activeView, setActiveView] = useState<'overview' | 'manuscripts'>('overview');
-  const router = useRouter();
-  const { toast } = useToast();
+  // The activeView state is now primarily managed by URL segments or query params,
+  // and the AdminLayout's sidebar will use these for active link highlighting.
+  // For simplicity, we can still use local state if the content switching happens
+  // purely client-side without URL changes, but URL-based is more robust for deep linking.
 
-  // The primary auth check is now in AdminLayout.tsx
-  // This useEffect can focus on fetching user-specific details for the dashboard content
-  // or ensuring the role is still valid if a direct navigation occurs.
+  // This component now assumes it's rendered *after* AdminLayout confirms admin access.
+  // So, no need for isLoadingAuth here. If specific content inside this page needs loading,
+  // that can be handled with its own loading state.
+
+  const [adminName, setAdminName] = useState("Admin User"); // Or fetch if needed
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const role = localStorage.getItem('userRole');
-      const name = localStorage.getItem('authorName');
+        const name = localStorage.getItem('authorName'); // Assuming admin's name is stored here
+        if (name) {
+            setAdminName(name);
+        }
+    }
+  }, [])
 
-      if (role !== 'admin') {
-        // This should ideally be caught by AdminLayout, but as a safeguard:
-        toast({
-            title: "Access Denied",
-            description: "You do not have permission to view this page. Admin access required.",
-            variant: "destructive",
-        });
-        router.push('/submit'); // Or home page
-        return;
-      }
 
-      if (name) {
-        setAdminName(name);
+  // The ManuscriptListTable itself handles its data fetching and loading/error states.
+  // This page could act as a container for different views.
+  // For now, let's show the overview or manuscripts based on a simplified local state or future routing.
+  // This 'activeView' would be better controlled by the URL path in a full app, e.g., /admin/dashboard/overview vs /admin/dashboard/manuscripts
+
+  // For now, let's assume the path will determine what's shown or we default to overview.
+  // If window.location.pathname includes '/manuscripts', show ManuscriptListTable
+  // This is a simple example; Next.js routing features (nested routes) are better.
+  const [showManuscripts, setShowManuscripts] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // This is a simple client-side check. For robust routing, use Next.js nested routes
+      // e.g. /admin/dashboard/manuscripts would render a ManuscriptsPage component.
+      if (window.location.pathname.includes('/admin/dashboard/manuscripts')) {
+        setShowManuscripts(true);
       } else {
-        setAdminName("Admin User");
+        setShowManuscripts(false);
       }
-      setIsLoadingAuth(false);
-
-      // Update activeView based on current path or internal state
-      // For now, we handle this with buttons/sidebar clicks.
-      // Example: if path is /admin/dashboard/manuscripts, setActiveView('manuscripts')
-      // This can be done by passing the activeTab from AdminLayout, or page reading its own path
     }
-  }, [router, toast]);
-  
-  // This function will be passed to AdminDashboardSidebar now via AdminLayout
-  // The AdminLayout will need to manage a shared state or use routing to set active views.
-  // For this example, we'll manage it internally in this page, but AdminLayout's sidebar will control it.
-  const handleTabChange = (tabKey: string) => {
-    if (tabKey === 'dashboard') {
-      setActiveView('overview');
-    } else if (tabKey === 'viewManuscripts') {
-      setActiveView('manuscripts');
-    }
-    // Potentially update URL here for deep linking if using routing for tabs
-    // router.push(`/admin/dashboard?view=${tabKey}`);
-  };
+  }, []);
 
 
-  // Loading state for this specific page's content, after layout has confirmed admin access
-  if (isLoadingAuth) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mr-3" />
-        <p>Loading dashboard content...</p>
-      </div>
-    );
+  // If the parent AdminLayout is still loading the session, it will show its own loader.
+  // If AdminLayout determined the user is not an admin, it shows AdminLoginForm.
+  // Thus, when this component renders, we are an authenticated admin.
+
+  if (showManuscripts) {
+    return <ManuscriptListTable />;
   }
 
+  // Default to overview
   return (
-    // The AdminDashboardSidebar is now part of AdminLayout.
-    // The main tag here represents the content area to the right of the sidebar.
-    <>
-      {activeView === 'overview' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Admin Dashboard Overview</CardTitle>
-            <CardDescription>Welcome, {adminName}! This is the central hub for managing journals, users, and submissions.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              From here, you can:
-            </p>
-            <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
-              <li>View and manage all submitted manuscripts.</li>
-              <li>Oversee user accounts (authors, reviewers, editors). (Future Feature)</li>
-              <li>Manage journal categories and settings. (Future Feature)</li>
-              <li>View site statistics and reports. (Future Feature)</li>
-            </ul>
-            <p className="mt-6 font-semibold text-primary">
-              Select an option from the sidebar to get started.
-            </p>
-          </CardContent>
-        </Card>
-      )}
-      {activeView === 'manuscripts' && <ManuscriptListTable />}
-      {/* 
-        Future sections:
-        {activeView === 'users' && <UserManagementTable />}
-        {activeView === 'journals' && <JournalManagementPanel />}
-      */}
-    </>
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Admin Dashboard Overview</CardTitle>
+        <CardDescription>Welcome, {adminName}! This is the central hub for managing journals, users, and submissions.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground">
+          From here, you can:
+        </p>
+        <ul className="list-disc list-inside mt-2 space-y-1 text-muted-foreground">
+          <li>View and manage all submitted manuscripts.</li>
+          <li>Oversee user accounts (authors, reviewers, editors). (Future Feature)</li>
+          <li>Manage journal categories and settings. (Future Feature)</li>
+          <li>View site statistics and reports. (Future Feature)</li>
+        </ul>
+        <p className="mt-6 font-semibold text-primary">
+          Select an option from the sidebar to get started.
+        </p>
+      </CardContent>
+    </Card>
   );
 }
