@@ -22,7 +22,7 @@ interface AdminDashboardSidebarProps {
   adminName: string;
   activeTab: string; 
   onTabChange: (tabKey: string) => void; 
-  onLogout: () => void; // New prop for handling logout
+  onLogout: () => void; 
 }
 
 interface NavItem {
@@ -42,8 +42,6 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
   const router = useRouter();
   const pathname = usePathname();
 
-  // The onLogout prop is now passed from AdminLayout to handle actual logout logic
-  // The handleLogout function here is now primarily for triggering the confirmation dialog.
 
   return (
     <aside className="w-64 bg-card border-r border-border flex flex-col p-4 shadow-md">
@@ -56,35 +54,29 @@ export default function AdminDashboardSidebar({ adminName, onLogout }: AdminDash
       </div>
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
-          // Determine if the current path starts with the item's href.
-          // For the base dashboard, it should be an exact match or specific handling if it's a prefix for others.
           let isActive = pathname === item.href;
           if (item.href === '/admin/dashboard' && pathname.startsWith('/admin/dashboard') && pathname !== '/admin/dashboard/manuscripts') {
-             // This makes '/admin/dashboard' active if it's exactly that path,
-             // or if it's /admin/dashboard/* but not another specific nav item path.
-             // You might need to adjust this logic if you add more specific sub-routes like /admin/dashboard/users.
              isActive = true;
              if (navItems.some(nav => nav.href !== item.href && pathname.startsWith(nav.href))) {
-                 isActive = false; // A more specific child route is active
+                 isActive = false; 
              }
           } else if (item.href !== '/admin/dashboard' && pathname.startsWith(item.href)) {
             isActive = true;
           }
 
-
           return (
-            <Link key={item.label} href={item.href} legacyBehavior>
-              <a
-                className={cn(
-                  "w-full flex items-center gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left",
-                  isActive
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                    : "text-foreground hover:bg-muted hover:text-primary"
-                )}
-              >
-                <item.icon className="w-4 h-4" />
-                {item.label}
-              </a>
+            <Link
+              key={item.label}
+              href={item.href}
+              className={cn(
+                "w-full flex items-center gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left",
+                isActive
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : "text-foreground hover:bg-muted hover:text-primary"
+              )}
+            >
+              <item.icon className="w-4 h-4" />
+              {item.label}
             </Link>
           );
         })}
