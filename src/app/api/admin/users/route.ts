@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
         username: true,
         email: true,
         role: true,
-        createdAt: true, // Keep this as createdAt for the select, Prisma maps this
-        updatedAt: true, // Keep this as updatedAt for the select, Prisma maps this
+        created_at: true, // Changed from createdAt
+        updated_at: true, // Changed from updatedAt
       },
       orderBy: {
         created_at: 'desc', // Corrected field name for orderBy
@@ -48,7 +48,14 @@ export async function GET(request: NextRequest) {
     });
     console.log(`Admin All Users API: Found ${users.length} users.`);
 
-    return NextResponse.json(users, { status: 200 });
+    // Map created_at and updated_at to createdAt and updatedAt for consistent client-side usage if needed
+    const formattedUsers = users.map(user => ({
+      ...user,
+      createdAt: user.created_at,
+      updatedAt: user.updated_at,
+    }));
+
+    return NextResponse.json(formattedUsers, { status: 200 });
 
   } catch (error: unknown) { 
     let responseErrorMessage = 'An unexpected error occurred while fetching users.';
@@ -85,3 +92,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
