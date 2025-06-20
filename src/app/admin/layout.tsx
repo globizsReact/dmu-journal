@@ -2,13 +2,14 @@
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
+import { useRouter, usePathname } from 'next/navigation'; 
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2, Menu as MenuIcon } from 'lucide-react'; // Added MenuIcon
+import { Loader2, Menu as MenuIcon } from 'lucide-react'; 
 import { Toaster } from "@/components/ui/toaster";
-import { Button } from '@/components/ui/button'; // Added Button
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'; // Added Sheet components
+import { Button } from '@/components/ui/button'; 
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'; 
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'; // Added Avatar
 import { cn } from '@/lib/utils';
 
 interface AdminLayoutProps {
@@ -55,7 +56,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, []);
 
-  // Close mobile sheet on route change
   useEffect(() => {
     setIsMobileSheetOpen(false);
   }, [pathname]);
@@ -74,9 +74,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         localStorage.removeItem('userRole');
         localStorage.removeItem('authorName');
         window.dispatchEvent(new CustomEvent('authChange'));
-        setIsMobileSheetOpen(false); // Close sheet on logout
+        setIsMobileSheetOpen(false); 
     }
   };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'A';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  }
 
   if (isLoadingSession) {
     return (
@@ -123,8 +128,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased bg-muted text-foreground">
-        <div className="flex min-h-screen">
+      <body className="font-body antialiased bg-background text-foreground">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="md:hidden">
+              <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+                  <SheetTrigger asChild>
+                      <Button variant="outline" size="icon" className="h-8 w-8">
+                          <MenuIcon className="h-4 w-4" />
+                          <span className="sr-only">Open Menu</span>
+                      </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="p-0 w-64">
+                      <AdminDashboardSidebar
+                          adminName={adminName}
+                          onLogout={handleLogout}
+                          onLinkClick={() => setIsMobileSheetOpen(false)}
+                          isMobileSheet={true}
+                      />
+                  </SheetContent>
+              </Sheet>
+            </div>
+            {/* Optional: Admin Dashboard title for desktop if needed */}
+             <h1 className="text-md font-semibold text-primary hidden sm:block">Admin Dashboard</h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-muted-foreground hidden sm:inline">{adminName}</span>
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="https://placehold.co/40x40.png" alt={adminName} data-ai-hint="placeholder avatar" />
+              <AvatarFallback>{getInitials(adminName)}</AvatarFallback>
+            </Avatar>
+          </div>
+        </header>
+
+        <div className="flex min-h-[calc(100vh-3.5rem)]"> {/* 3.5rem is h-14 */}
           {/* Desktop Sidebar */}
           <div className="hidden md:block">
             <AdminDashboardSidebar
@@ -133,27 +171,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             />
           </div>
           
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-auto">
-            {/* Mobile Header and Menu Toggle */}
-            <div className="md:hidden flex items-center justify-between mb-4">
-                <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-                    <SheetTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <MenuIcon className="h-5 w-5" />
-                            <span className="sr-only">Open Menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-64">
-                        <AdminDashboardSidebar
-                            adminName={adminName}
-                            onLogout={handleLogout}
-                            onLinkClick={() => setIsMobileSheetOpen(false)} // Close sheet on link click
-                            isMobileSheet={true}
-                        />
-                    </SheetContent>
-                </Sheet>
-                 <span className="text-lg font-semibold text-primary">Admin Dashboard</span>
-            </div>
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-auto bg-muted">
+            {/* The old mobile header title is effectively part of the new sticky top header */}
             {children}
           </main>
         </div>

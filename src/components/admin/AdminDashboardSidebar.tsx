@@ -3,7 +3,8 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon } from 'lucide-react'; // Removed ShieldAlert
+import Image from 'next/image'; // Added Image
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,8 +22,8 @@ import Link from 'next/link';
 interface AdminDashboardSidebarProps {
   adminName: string;
   onLogout: () => void; 
-  onLinkClick?: () => void; // Optional: for closing mobile sheet
-  isMobileSheet?: boolean; // Optional: to adjust styles if inside a sheet
+  onLinkClick?: () => void; 
+  isMobileSheet?: boolean; 
 }
 
 interface NavItem {
@@ -42,6 +43,7 @@ const navItems: NavItem[] = [
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const logoSrc = '/images/logo_black.png';
 
 
   return (
@@ -49,12 +51,19 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
         "bg-card flex flex-col p-4 h-full", 
         isMobileSheet ? "w-full" : "w-64 border-r border-border shadow-md"
     )}>
-      <div className="mb-8 px-2">
-        <div className="flex items-center gap-2 mb-1">
-          <ShieldAlert className="w-6 h-6 text-orange-500"/>
-          <h2 className="text-xl font-headline font-semibold text-primary">Admin Panel</h2>
+      <div className="mb-8 px-2 flex items-center gap-3">
+        <Image 
+          src={logoSrc} 
+          alt="DMU Journal Logo" 
+          width={40} 
+          height={40} 
+          className="rounded-full"
+          data-ai-hint="university logo"
+        />
+        <div>
+          <h2 className="text-lg font-headline font-semibold text-primary leading-tight">Admin Panel</h2>
+          <p className="text-xs text-muted-foreground leading-tight">DMU Journal</p>
         </div>
-        <p className="text-sm text-muted-foreground truncate" title={adminName}>{adminName}</p>
       </div>
       <nav className="flex-1 space-y-2">
         {navItems.map((item) => {
@@ -82,7 +91,7 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
                   if (item.disabled) {
                       e.preventDefault();
                   } else {
-                      onLinkClick?.(); // Call onLinkClick if provided
+                      onLinkClick?.(); 
                   }
               }}
             >
@@ -93,6 +102,7 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
         })}
       </nav>
       <div className="mt-auto pt-4 border-t border-border">
+         <p className="text-xs text-muted-foreground px-3 mb-2 truncate" title={adminName}>Logged in as: {adminName}</p>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
