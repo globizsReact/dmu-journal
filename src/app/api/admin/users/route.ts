@@ -39,43 +39,38 @@ export async function GET(request: NextRequest) {
         username: true,
         email: true,
         role: true,
-        createdAt: true,
-        updatedAt: true,
+        createdAt: true, // Keep this as createdAt for the select, Prisma maps this
+        updatedAt: true, // Keep this as updatedAt for the select, Prisma maps this
       },
       orderBy: {
-        createdAt: 'desc', 
+        created_at: 'desc', // Corrected field name for orderBy
       },
     });
     console.log(`Admin All Users API: Found ${users.length} users.`);
 
     return NextResponse.json(users, { status: 200 });
 
-  } catch (error: unknown) { // Changed to unknown for better type safety
+  } catch (error: unknown) { 
     let responseErrorMessage = 'An unexpected error occurred while fetching users.';
     let responseErrorDetails = 'No specific details available.';
     const statusCode = 500;
 
-    // Log the raw error to the server console first
     console.error('Admin All Users API: Full error object caught:', error); 
 
     if (error instanceof Error) {
-      responseErrorDetails = error.message; // Capture the original message
+      responseErrorDetails = error.message; 
 
-      // Check if it's a Prisma-like error by looking for a 'code' property
       const potentialPrismaError = error as any;
       if (potentialPrismaError.code) {
         console.error(`Admin All Users API: Prisma error encountered. Code: ${potentialPrismaError.code}, Meta: ${JSON.stringify(potentialPrismaError.meta)}`);
         responseErrorMessage = 'Database error while fetching users.';
-        // responseErrorDetails is already set to error.message
       } else {
-        // Non-Prisma error, but still an Error instance
         console.error(`Admin All Users API: Non-Prisma error of type ${error.name}: ${error.message}`);
         if (error.stack) {
             console.error('Admin All Users API: Stack trace:', error.stack);
         }
       }
     } else {
-      // The error is not an Error instance (e.g., a string or plain object was thrown)
       console.error('Admin All Users API: Caught an error that is not an instance of Error. Value:', error);
       try {
         responseErrorDetails = JSON.stringify(error);
@@ -90,4 +85,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-
