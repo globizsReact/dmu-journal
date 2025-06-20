@@ -71,7 +71,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <html lang="en">
         <head>
-            <title>Loading Admin Panel...</title>
+            <title>Loading Admin Panel - DMU Journal</title>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
             <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
        <html lang="en">
         <head>
-            <title>Admin Login - DMUJ</title>
+            <title>Admin Login - DMU Journal</title>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
             <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
             <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
@@ -107,7 +107,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <html lang="en">
       <head>
-        <title>Admin Dashboard - DMUJ</title>
+        <title>Admin Dashboard - DMU Journal</title>
          <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
