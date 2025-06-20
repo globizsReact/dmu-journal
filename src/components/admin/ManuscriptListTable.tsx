@@ -14,9 +14,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExternalLink, Loader2, AlertTriangle, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -42,8 +41,6 @@ export default function ManuscriptListTable() {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState(''); // Immediate search input
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // Debounced search for API
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10); // Items per page
@@ -55,7 +52,7 @@ export default function ManuscriptListTable() {
     }
   }, []);
 
-  const fetchManuscripts = useCallback(async (page: number, search: string) => {
+  const fetchManuscripts = useCallback(async (page: number) => {
     if (!authToken) {
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
@@ -64,7 +61,7 @@ export default function ManuscriptListTable() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/all-manuscripts?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
+      const response = await fetch(`/api/admin/all-manuscripts?page=${page}&limit=${limit}`, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       if (!response.ok) {
@@ -74,7 +71,7 @@ export default function ManuscriptListTable() {
       const data: ApiResponse = await response.json();
       setManuscripts(data.manuscripts);
       setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage); // Ensure currentPage is updated from API response
+      setCurrentPage(data.currentPage);
     } catch (err: any) {
       console.error("Error fetching manuscripts for admin:", err);
       setError(err.message || "An unexpected error occurred.");
@@ -88,35 +85,16 @@ export default function ManuscriptListTable() {
     }
   }, [authToken, limit, toast]);
   
-  // Effect to debounce search query
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      // When a new search is made, reset to page 1
-      if (searchQuery !== debouncedSearchQuery) {
-         setCurrentPage(1);
-      }
-    }, 500); // 500ms debounce
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [searchQuery, debouncedSearchQuery]);
-
-  // Effect to fetch manuscripts when debouncedSearchQuery, currentPage, or authToken changes
   useEffect(() => {
     if (authToken) {
-      fetchManuscripts(currentPage, debouncedSearchQuery);
+      fetchManuscripts(currentPage);
     } else {
       if (!isLoading) setIsLoading(false);
       if (!error) setError("Authentication token not found. Please log in.");
       setManuscripts([]);
     }
-  }, [debouncedSearchQuery, currentPage, authToken, fetchManuscripts, isLoading, error]);
+  }, [currentPage, authToken, fetchManuscripts, isLoading, error]);
 
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
@@ -145,10 +123,6 @@ export default function ManuscriptListTable() {
         <CardHeader>
           <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
           <CardDescription>Review and manage manuscript submissions.</CardDescription>
-           <div className="relative mt-2">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search manuscripts..." className="pl-8 w-full sm:w-64" disabled />
-          </div>
         </CardHeader>
         <CardContent className="flex justify-center items-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -178,16 +152,6 @@ export default function ManuscriptListTable() {
       <CardHeader>
         <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Submitted Manuscripts</CardTitle>
         <CardDescription>Review and manage manuscript submissions. Showing page {currentPage} of {totalPages}.</CardDescription>
-        <div className="relative mt-4 w-full max-w-md">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search by title, author, or ID..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="pl-8 w-full"
-          />
-        </div>
       </CardHeader>
       <CardContent>
          {isLoading && (
@@ -196,7 +160,7 @@ export default function ManuscriptListTable() {
              </div>
         )}
         {!isLoading && manuscripts.length === 0 && (
-          <p className="text-foreground/80 text-center py-8">No manuscripts found matching your criteria.</p>
+          <p className="text-foreground/80 text-center py-8">No manuscripts found.</p>
         )}
         {!isLoading && manuscripts.length > 0 && (
           <div className="overflow-x-auto">

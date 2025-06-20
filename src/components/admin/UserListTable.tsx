@@ -13,9 +13,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
@@ -43,8 +42,6 @@ export default function UserListTable() {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
-  const [searchQuery, setSearchQuery] = useState(''); // Immediate search input
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(''); // Debounced search for API
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10); // Items per page
@@ -60,7 +57,7 @@ export default function UserListTable() {
     }
   }, []);
 
-  const fetchUsers = useCallback(async (page: number, search: string) => {
+  const fetchUsers = useCallback(async (page: number) => {
     if (!authToken) {
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
@@ -69,7 +66,7 @@ export default function UserListTable() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`, {
+      const response = await fetch(`/api/admin/users?page=${page}&limit=${limit}`, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       if (!response.ok) {
@@ -79,7 +76,7 @@ export default function UserListTable() {
       const data: ApiResponse = await response.json();
       setUsers(data.users);
       setTotalPages(data.totalPages);
-      setCurrentPage(data.currentPage); // Ensure currentPage is updated from API response
+      setCurrentPage(data.currentPage);
     } catch (err: any) {
       console.error("Error fetching users for admin:", err);
       setError(err.message || "An unexpected error occurred.");
@@ -93,36 +90,15 @@ export default function UserListTable() {
     }
   }, [authToken, limit, toast]);
 
-  // Effect to debounce search query
-  useEffect(() => {
-    const timerId = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      // When a new search is made, reset to page 1
-      if (searchQuery !== debouncedSearchQuery) {
-        setCurrentPage(1); 
-      }
-    }, 500); // 500ms debounce
-    return () => {
-      clearTimeout(timerId);
-    };
-  }, [searchQuery, debouncedSearchQuery]); // debouncedSearchQuery in deps to handle manual reset of page if needed
-
-  // Effect to fetch users when debouncedSearchQuery, currentPage, or authToken changes
   useEffect(() => {
     if (authToken) {
-      fetchUsers(currentPage, debouncedSearchQuery);
+      fetchUsers(currentPage);
     } else {
-      // If no auth token, clear users and show appropriate message (already handled by fetchUsers guard)
-      // but ensure loading is off if not already
       if (!isLoading) setIsLoading(false);
       if (!error) setError("Authentication token not found. Please log in.");
-      setUsers([]); // Clear any stale user data
+      setUsers([]);
     }
-  }, [debouncedSearchQuery, currentPage, authToken, fetchUsers, isLoading, error]); // Added isLoading and error to deps for conditional logic
-
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
+  }, [currentPage, authToken, fetchUsers, isLoading, error]);
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
@@ -131,7 +107,7 @@ export default function UserListTable() {
   };
 
   const handleUserAdded = (newUser: DisplayUser) => {
-    fetchUsers(currentPage, debouncedSearchQuery); 
+    fetchUsers(1); // Fetch from page 1 after adding a user
     toast({ title: "User Added", description: `${newUser.fullName || newUser.username} has been successfully added.` });
   };
   
@@ -141,18 +117,17 @@ export default function UserListTable() {
   };
 
   const handleUserDeleted = (deletedUserId: number) => {
-    // Determine if we need to go to previous page if last item on current page is deleted
     const newPage = users.length === 1 && currentPage > 1 ? currentPage - 1 : currentPage;
-    setCurrentPage(newPage); // Set page first
-    // Fetch users for the potentially new page; if page didn't change, it will re-fetch current
-    // The main useEffect for fetching will pick this up.
-    // For an immediate refresh, uncomment below, but might cause double fetch if not careful.
-    // fetchUsers(newPage, debouncedSearchQuery); 
+    if (currentPage !== newPage) {
+      setCurrentPage(newPage);
+    } else {
+      fetchUsers(newPage); // Re-fetch current page if page number doesn't change
+    }
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
   };
 
 
-  if (isLoading && users.length === 0 && !error) { // Only show full skeleton if truly initial loading
+  if (isLoading && users.length === 0 && !error) {
     return (
       <Card>
         <CardHeader>
@@ -163,10 +138,6 @@ export default function UserListTable() {
             </div>
             <Button disabled className="w-full sm:w-auto"><UserPlus className="mr-2 h-4 w-4" /> Add User</Button>
           </div>
-           <div className="relative mt-2 w-full max-w-xs">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input type="search" placeholder="Search users..." className="pl-8 w-full" disabled />
-          </div>
         </CardHeader>
         <CardContent className="flex justify-center items-center py-10">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -176,7 +147,7 @@ export default function UserListTable() {
     );
   }
 
-  if (error && users.length === 0) { // Show error prominently if it's the primary state
+  if (error && users.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -203,25 +174,15 @@ export default function UserListTable() {
             <UserPlus className="mr-2 h-4 w-4" /> Add New User
           </Button>
         </div>
-        <div className="relative mt-4 w-full max-w-md">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search by name, username, or email..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="pl-8 w-full"
-          />
-        </div>
       </CardHeader>
       <CardContent>
-        {isLoading && ( // Show inline loader during re-fetches
+        {isLoading && (
              <div className="flex justify-center items-center py-10">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
              </div>
         )}
         {!isLoading && users.length === 0 && (
-          <p className="text-foreground/80 text-center py-8">No users found matching your criteria.</p>
+          <p className="text-foreground/80 text-center py-8">No users found.</p>
         )}
         {!isLoading && users.length > 0 && (
           <div className="overflow-x-auto">

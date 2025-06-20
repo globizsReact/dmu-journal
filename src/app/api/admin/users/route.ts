@@ -30,20 +30,9 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const searchQuery = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const skip = (page - 1) * limit;
-
-    const whereClause = searchQuery
-      ? {
-          OR: [
-            { fullName: { contains: searchQuery, mode: 'insensitive' as const } },
-            { username: { contains: searchQuery, mode: 'insensitive' as const } },
-            { email: { contains: searchQuery, mode: 'insensitive' as const } },
-          ],
-        }
-      : {};
 
     if (!prisma) {
       console.error('Admin All Users API: Prisma client is not available.');
@@ -51,7 +40,6 @@ export async function GET(request: NextRequest) {
     }
 
     const users = await prisma.user.findMany({
-      where: whereClause,
       select: {
         id: true,
         fullName: true,
@@ -62,11 +50,11 @@ export async function GET(request: NextRequest) {
       skip: skip,
       take: limit,
       orderBy: {
-        id: 'asc', // Or any other consistent ordering
+        id: 'asc', 
       },
     });
 
-    const totalCount = await prisma.user.count({ where: whereClause });
+    const totalCount = await prisma.user.count();
     const totalPages = Math.ceil(totalCount / limit);
 
     console.log(`Admin All Users API: Found ${users.length} users for page ${page}, total ${totalCount}.`);
@@ -78,6 +66,13 @@ export async function GET(request: NextRequest) {
     console.error('Admin All Users API: Full error object caught:', error);
     if (error instanceof Error) {
       responseErrorDetails = error.message;
+      if ((error as any).code) { // Prisma errors often have a code
+        console.error('Admin All Users API: Prisma Error Code:', (error as any).code);
+        responseErrorDetails += ` (Prisma Code: ${(error as any).code})`;
+      }
+      if (error.stack) {
+        console.error('Admin All Users API: Stack Trace:', error.stack);
+      }
     }
     return NextResponse.json(
       { error: responseErrorMessage, details: responseErrorDetails },
@@ -124,7 +119,7 @@ export async function POST(request: NextRequest) {
         password_hash: hashedPassword,
         role,
       },
-      select: { id: true, fullName: true, username: true, email: true, role: true } // Don't return password_hash
+      select: { id: true, fullName: true, username: true, email: true, role: true }
     });
 
     return NextResponse.json(newUser, { status: 201 });

@@ -16,28 +16,11 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const searchQuery = searchParams.get('search') || '';
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '10', 10);
     const skip = (page - 1) * limit;
 
-    const whereClause = searchQuery
-      ? {
-          OR: [
-            { articleTitle: { contains: searchQuery, mode: 'insensitive' as const } },
-            { id: { contains: searchQuery, mode: 'insensitive' as const } }, // Assuming ID is string, adjust if numeric
-            { submittedBy: { 
-                OR: [
-                    { fullName: { contains: searchQuery, mode: 'insensitive' as const } },
-                    { email: { contains: searchQuery, mode: 'insensitive' as const } },
-                ]
-            } },
-          ],
-        }
-      : {};
-
     const manuscripts = await prisma.manuscript.findMany({
-      where: whereClause,
       include: {
         submittedBy: {
           select: {
@@ -53,7 +36,7 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    const totalCount = await prisma.manuscript.count({ where: whereClause });
+    const totalCount = await prisma.manuscript.count();
     const totalPages = Math.ceil(totalCount / limit);
 
     console.log(`Admin All Manuscripts API: Found ${manuscripts.length} manuscripts for page ${page}, total ${totalCount}.`);

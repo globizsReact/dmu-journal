@@ -2,7 +2,7 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserPlus, Search } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 
 export default function LoadingAdminUsersPage() {
   return (
@@ -17,10 +17,6 @@ export default function LoadingAdminUsersPage() {
                  <UserPlus className="mr-2 h-4 w-4 text-muted-foreground" /> 
                  <span className="text-muted-foreground">Add User</span>
             </Skeleton>
-        </div>
-        <div className="relative mt-4 w-full max-w-xs"> {/* Search Input Container */}
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Skeleton className="h-10 pl-8 w-full rounded-md" /> {/* Search Input */}
         </div>
       </CardHeader>
       <CardContent>

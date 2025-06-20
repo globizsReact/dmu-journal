@@ -2,7 +2,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search } from 'lucide-react';
 
 export default function LoadingAdminManuscriptsPage() {
   return (
@@ -10,10 +9,6 @@ export default function LoadingAdminManuscriptsPage() {
       <CardHeader>
         <Skeleton className="h-7 md:h-8 w-3/4 sm:w-1/2 mb-1" /> {/* Title: All Submitted Manuscripts */}
         <Skeleton className="h-4 w-full sm:w-2/3" /> {/* Description */}
-        <div className="relative mt-4 w-full max-w-xs"> {/* Search Input Container */}
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Skeleton className="h-10 pl-8 w-full rounded-md" /> {/* Search Input */}
-        </div>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
