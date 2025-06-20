@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         );
       }
-      console.log('Login API: User found:', { id: user.id, username: user.username, email: user.email });
+      console.log('Login API: User found:', { id: user.id, username: user.username, email: user.email, role: user.role });
 
       console.log('Login API: Comparing password...');
       const isPasswordValid = await comparePassword(password, user.password_hash);
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       const token = generateToken({
         userId: user.id,
         username: user.username,
-        role: user.role,
+        role: user.role, // Ensure role is included in the token
       });
       console.log('Login API: Token generated.');
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
             fullName: user.fullName,
             username: user.username,
             email: user.email,
-            role: user.role,
+            role: user.role, // Ensure role is sent back to client
           },
         },
         { status: 200 }

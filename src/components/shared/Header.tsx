@@ -4,9 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ShieldCheck } from 'lucide-react'; // Added ShieldCheck for Admin
 import { cn } from '@/lib/utils';
-import { useRouter } from 'next/navigation'; // Not strictly needed here anymore, but kept for consistency
 
 interface HeaderProps {
   className?: string;
@@ -15,22 +14,24 @@ interface HeaderProps {
 const Header = ({ className }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const logoSrc = '/images/logo.png';
-  // const router = useRouter(); // Not used in current logic
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const authorSession = localStorage.getItem('isAuthorLoggedIn');
-      setIsLoggedIn(authorSession === 'true');
-
-      const handleAuthChange = () => {
+      const checkAuthStatus = () => {
         const authorSession = localStorage.getItem('isAuthorLoggedIn');
+        const role = localStorage.getItem('userRole');
         setIsLoggedIn(authorSession === 'true');
+        setUserRole(role);
       };
-      window.addEventListener('authChange', handleAuthChange);
+
+      checkAuthStatus(); // Initial check
+
+      window.addEventListener('authChange', checkAuthStatus); // Listen for auth changes
 
       return () => {
-        window.removeEventListener('authChange', handleAuthChange);
+        window.removeEventListener('authChange', checkAuthStatus);
       };
     }
   }, []);
@@ -38,6 +39,8 @@ const Header = ({ className }: HeaderProps) => {
   const handleLinkClick = () => {
     setIsOpen(false);
   };
+
+  const isAdminOrReviewer = userRole === 'admin' || userRole === 'reviewer';
 
   return (
     <>
@@ -67,12 +70,17 @@ const Header = ({ className }: HeaderProps) => {
             </Link>
             {!isLoggedIn && (
               <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
-                CALL FOR PAPER SUBMISSION
+                SUBMIT / LOGIN
               </Link>
             )}
-            {isLoggedIn && (
+            {isLoggedIn && !isAdminOrReviewer && (
               <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
-                DASHBOARD
+                AUTHOR DASHBOARD
+              </Link>
+            )}
+            {isLoggedIn && isAdminOrReviewer && (
+              <Link href="/admin/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
+                <ShieldCheck className="w-4 h-4 mr-1" /> ADMIN DASHBOARD
               </Link>
             )}
           </nav>
@@ -107,7 +115,7 @@ const Header = ({ className }: HeaderProps) => {
         <div className="flex items-center justify-between mb-6">
             <Link href="/" onClick={handleLinkClick} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
               <Image
-                src={logoSrc} // Using the consistent logoSrc for mobile drawer as well
+                src={logoSrc}
                 alt="Dhanamanjuri University Logo"
                 width={32}
                 height={32}
@@ -147,16 +155,25 @@ const Header = ({ className }: HeaderProps) => {
             onClick={handleLinkClick}
             className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
           >
-            CALL FOR PAPER SUBMISSION
+            SUBMIT / LOGIN
           </Link>
         )}
-        {isLoggedIn && (
+        {isLoggedIn && !isAdminOrReviewer && (
           <Link
             href="/author/dashboard"
             onClick={handleLinkClick}
             className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
           >
-            DASHBOARD
+            AUTHOR DASHBOARD
+          </Link>
+        )}
+         {isLoggedIn && isAdminOrReviewer && (
+          <Link
+            href="/admin/dashboard"
+            onClick={handleLinkClick}
+            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          >
+            <ShieldCheck className="w-4 h-4 mr-1 inline-block" /> ADMIN DASHBOARD
           </Link>
         )}
       </nav>

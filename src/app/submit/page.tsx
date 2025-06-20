@@ -175,8 +175,8 @@ export default function SubmitPage() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('isAuthorLoggedIn', 'true');
           localStorage.setItem('authToken', data.token);
-          localStorage.setItem('authorName', data.user.fullName || 'Author'); 
-          localStorage.setItem('authorRole', data.user.role || 'author');
+          localStorage.setItem('authorName', data.user.fullName || 'User'); 
+          localStorage.setItem('userRole', data.user.role || 'author'); // Store generic userRole
 
           if (values.rememberMe && values.username) {
             localStorage.setItem('rememberAuthorLogin', 'true');
@@ -191,7 +191,12 @@ export default function SubmitPage() {
           title: "Login Successful",
           description: "Redirecting to your dashboard...",
         });
-        router.push('/author/dashboard');
+        // Redirect based on role
+        if (data.user.role === 'admin' || data.user.role === 'reviewer') {
+          router.push('/admin/dashboard');
+        } else {
+          router.push('/author/dashboard');
+        }
       } else {
         toast({
           title: "Login Failed",
@@ -232,8 +237,8 @@ export default function SubmitPage() {
           description: 'You can now sign in with your new credentials.',
           variant: 'default',
         });
-        setFormMode('login'); // Switch to login form
-        signupForm.reset(); // Reset signup form fields
+        setFormMode('login'); 
+        signupForm.reset(); 
       } else {
         toast({
           title: 'Sign Up Failed',
@@ -522,5 +527,3 @@ export default function SubmitPage() {
     </div>
   );
 }
-
-    
