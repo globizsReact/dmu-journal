@@ -1,4 +1,4 @@
-
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,9 +13,9 @@ model User {
   fullName      String
   username      String   @unique
   email         String   @unique
-  password_hash String
-  role          String   @default("author")
-  created_at    DateTime @default(now()) @map("created_at")
+  password_hash String   // Field name in Prisma model
+  role          String?  @default("author")
+  created_at    DateTime @default(now()) @map("created_at") // Maps to 'created_at' column in DB
 
-  @@map("users")
+  @@map("users") // Explicitly maps this model to the "users" table in your database
 }
