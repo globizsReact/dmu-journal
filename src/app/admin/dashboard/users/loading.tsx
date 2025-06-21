@@ -21,7 +21,7 @@ export default function LoadingAdminUsersPage() {
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <Table className="min-w-[600px]">
+          <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-[80px]"><Skeleton className="h-5 w-12" /></TableHead>
@@ -29,6 +29,7 @@ export default function LoadingAdminUsersPage() {
                 <TableHead><Skeleton className="h-5 w-24" /></TableHead>
                 <TableHead><Skeleton className="h-5 w-40" /></TableHead>
                 <TableHead><Skeleton className="h-5 w-16" /></TableHead>
+                <TableHead><Skeleton className="h-5 w-24" /></TableHead> {/* Status/Action Column */}
                 <TableHead className="text-right w-[100px]"><Skeleton className="h-5 w-20 ml-auto" /></TableHead>
               </TableRow>
             </TableHeader>
@@ -40,6 +41,7 @@ export default function LoadingAdminUsersPage() {
                   <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-36" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-7 w-20 rounded-md" /></TableCell> {/* Status/Action Cell */}
                   <TableCell className="text-right space-x-1">
                     <Skeleton className="h-7 w-7 inline-block rounded-md" />
                     <Skeleton className="h-7 w-7 inline-block rounded-md" />

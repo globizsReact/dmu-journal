@@ -47,7 +47,16 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      // NEW: Check if user's actual role matches the expected role from the tab
+      // Check for inactive (unverified) reviewer trying to log in
+      if (expectedRole === 'reviewer' && user.role === 'reviewer_inactive') {
+        console.log(`Login API: Inactive reviewer login attempt for: ${username}`);
+        return NextResponse.json(
+          { error: 'Your reviewer account is pending approval by an administrator.' },
+          { status: 403 } // 403 Forbidden is appropriate
+        );
+      }
+
+      // Check if user's actual role matches the expected role from the tab
       if (user.role !== expectedRole) {
           console.log(`Login API: Role mismatch. User role: '${user.role}', expected: '${expectedRole}'.`);
           const userRoleCapitalized = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'a different role';

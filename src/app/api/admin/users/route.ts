@@ -110,6 +110,10 @@ export async function POST(request: NextRequest) {
     }
 
     const hashedPassword = await hashPassword(password);
+    
+    // When an admin creates a reviewer, set their role to 'reviewer_inactive'
+    // so they must be approved before they can log in.
+    const finalRole = role === 'reviewer' ? 'reviewer_inactive' : role;
 
     const newUser = await prisma.user.create({
       data: {
@@ -117,7 +121,7 @@ export async function POST(request: NextRequest) {
         username,
         email,
         password_hash: hashedPassword,
-        role,
+        role: finalRole,
       },
       select: { id: true, fullName: true, username: true, email: true, role: true }
     });

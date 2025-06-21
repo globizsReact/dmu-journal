@@ -14,11 +14,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 
 interface DisplayUser {
   id: number;
@@ -49,6 +50,7 @@ export default function UserListTable() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<DisplayUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<DisplayUser | null>(null);
+  const [approvingUserId, setApprovingUserId] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -106,6 +108,36 @@ export default function UserListTable() {
       setUsers([]);
     }
   }, [currentPage, authToken, fetchUsers]);
+
+  const handleApproveUser = async (userToApprove: DisplayUser) => {
+    if (!authToken) {
+        toast({ title: 'Authentication Error', description: 'Cannot perform action.', variant: 'destructive'});
+        return;
+    }
+    setApprovingUserId(userToApprove.id);
+    try {
+        const response = await fetch(`/api/admin/users/${userToApprove.id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`,
+            },
+            body: JSON.stringify({ role: 'reviewer' }),
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+            toast({ title: 'User Approved', description: `${userToApprove.username} is now a verified reviewer.` });
+            fetchUsers(currentPage); // Refetch to show updated status
+        } else {
+            throw new Error(data.error || 'Failed to approve user.');
+        }
+    } catch (err: any) {
+        toast({ title: 'Approval Failed', description: err.message, variant: 'destructive' });
+    } finally {
+        setApprovingUserId(null);
+    }
+  };
 
 
   const handlePageChange = (newPage: number) => {
@@ -175,7 +207,7 @@ export default function UserListTable() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex-grow">
             <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
-            <CardDescription>Manage user accounts. To change a user's role, use the Edit button. Showing page {currentPage} of {totalPages}.</CardDescription>
+            <CardDescription>Manage user accounts. Reviewers must be verified before they can log in. Showing page {currentPage} of {totalPages}.</CardDescription>
           </div>
           <Button onClick={() => setIsAddUserDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" /> Add New User
@@ -193,7 +225,7 @@ export default function UserListTable() {
         )}
         {!isLoading && !error && users.length > 0 && (
           <div className="overflow-x-auto">
-            <Table className="min-w-[800px]">
+            <Table className="min-w-[900px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
@@ -201,6 +233,7 @@ export default function UserListTable() {
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Status / Action</TableHead>
                   <TableHead className="text-right w-[100px] sm:w-[130px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -215,12 +248,37 @@ export default function UserListTable() {
                       <span
                         className={cn(`px-2 py-0.5 text-xs font-semibold rounded-full capitalize
                           ${user.role === 'admin' ? 'bg-red-100 text-red-700' :
-                            user.role === 'reviewer' ? 'bg-yellow-100 text-yellow-700' :
+                            user.role === 'reviewer' || user.role === 'reviewer_inactive' ? 'bg-yellow-100 text-yellow-700' :
                             user.role === 'author' ? 'bg-blue-100 text-blue-700' :
                             'bg-gray-100 text-gray-700'}`)}
                       >
-                        {user.role || 'N/A'}
+                        {user.role === 'reviewer_inactive' ? 'Reviewer' : user.role}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                        {user.role === 'reviewer_inactive' && (
+                            <Button 
+                                onClick={() => handleApproveUser(user)} 
+                                size="sm" 
+                                disabled={approvingUserId === user.id || isLoading}
+                                className="bg-green-600 hover:bg-green-700 text-white h-7 px-2 text-xs"
+                            >
+                                {approvingUserId === user.id ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : null}
+                                Approve
+                            </Button>
+                        )}
+                        {user.role === 'reviewer' && (
+                            <Badge variant="secondary" className="border-green-600 text-green-700 bg-green-100 font-medium">
+                                <CheckCircle2 className="w-3.5 h-3.5 mr-1"/>
+                                Verified
+                            </Badge>
+                        )}
+                         {user.role === 'author' && (
+                           <Badge variant="secondary">N/A</Badge>
+                        )}
+                         {user.role === 'admin' && (
+                           <Badge variant="secondary" className="border-red-600 text-red-700 bg-red-100">System Admin</Badge>
+                        )}
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User" disabled={isLoading}>
