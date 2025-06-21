@@ -45,6 +45,18 @@ export default function AllJournalsPage() {
     fetchJournals();
   }, []);
 
+  const journalCategoriesWithCounts = useMemo(() => {
+    const counts = journalEntries.reduce((acc, entry) => {
+        acc[entry.categoryId] = (acc[entry.categoryId] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    return journalCategories.map(category => ({
+        ...category,
+        publishedArticlesCount: counts[category.id] || 0,
+    }));
+  }, [journalEntries]);
+
   const groupedJournals = useMemo(() => {
     if (isLoading || error) return {};
     const groups: Record<string, JournalEntry[]> = {};
@@ -180,7 +192,7 @@ export default function AllJournalsPage() {
               </Link>
               <Separator className="mb-2"/>
               <nav className="space-y-1">
-                {journalCategories.map(category => (
+                {journalCategoriesWithCounts.map(category => (
                   <SubjectBrowseItem key={category.id} category={category} />
                 ))}
               </nav>
