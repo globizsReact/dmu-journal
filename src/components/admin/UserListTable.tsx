@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
@@ -267,18 +267,29 @@ export default function UserListTable() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center justify-start">
-                        {user.role === 'admin' ? (
-                          <span className="text-xs text-muted-foreground">-</span>
-                        ) : updatingRoleId === user.id ? (
+                        {updatingRoleId === user.id ? (
                           <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        ) : (
+                        ) : user.role === 'author' ? (
                           <Switch
                             id={`reviewer-switch-${user.id}`}
-                            checked={user.role === 'reviewer'}
-                            onCheckedChange={(isChecked) => handleReviewerApprovalChange(user, isChecked)}
+                            checked={false} // An author is not yet a reviewer
+                            onCheckedChange={(isChecked) => {
+                              // Only trigger update when switching ON
+                              if (isChecked) {
+                                handleReviewerApprovalChange(user, true);
+                              }
+                            }}
                             disabled={isLoading || updatingRoleId !== null}
                             aria-label={`Approve ${user.username} as reviewer`}
                           />
+                        ) : user.role === 'reviewer' ? (
+                           <div className="flex items-center gap-2 text-green-600">
+                             <CheckCircle2 className="h-4 w-4" />
+                             <span className="text-xs font-medium">Approved</span>
+                           </div>
+                        ) : (
+                          // For admin role or any other case
+                          <span className="text-xs text-muted-foreground">-</span>
                         )}
                       </div>
                     </TableCell>
