@@ -176,6 +176,7 @@ export default function SubmitPage() {
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
+          // This key is specifically for author, for general login state, use authToken
           if (data.user.role === 'author') {
             localStorage.setItem('isAuthorLoggedIn', 'true');
           } else {
@@ -224,7 +225,7 @@ export default function SubmitPage() {
     }
   };
 
-  const onSubmitSignup = async (values: SignupFormValues) => {
+  const onSubmitAuthorSignup = async (values: SignupFormValues) => {
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/signup', {
@@ -266,6 +267,49 @@ export default function SubmitPage() {
     }
   };
 
+   const onSubmitReviewerSignup = async (values: SignupFormValues) => {
+    setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/reviewer/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: values.fullName,
+          username: values.username,
+          email: values.email,
+          password: values.password,
+        }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: 'Account Created Successfully!',
+          description: 'Your account is pending admin approval. You will be notified once verified.',
+          variant: 'default',
+          duration: 6000,
+        });
+        setFormMode('login'); 
+        signupForm.reset(); 
+      } else {
+        toast({
+          title: 'Sign Up Failed',
+          description: data.error || 'An unknown error occurred. Please try again.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Reviewer signup error:', error);
+      toast({
+        title: 'Sign Up Error',
+        description: 'Could not connect to the server. Please try again later.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
   const renderLoginForm = (tabType: ActiveTab) => (
     <>
       <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Sign In to Your Account</h2>
@@ -335,8 +379,7 @@ export default function SubmitPage() {
               'Sign In'
             )}
           </Button>
-          {/* Only show Sign Up link for Author tab */}
-          {activeTab === 'author' && (
+          {(tabType === 'author' || tabType === 'reviewer') && (
             <p className="text-center text-sm text-muted-foreground">
               Don&apos;t have an account?{' '}
               <Button
@@ -353,6 +396,110 @@ export default function SubmitPage() {
         </form>
       </Form>
     </>
+  );
+
+  const renderSignupForm = (
+    onSubmitHandler: (values: SignupFormValues) => void,
+    onBackToLogin: () => void
+  ) => (
+     <>
+      <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Create Your Account</h2>
+      <Form {...signupForm}>
+        <form onSubmit={signupForm.handleSubmit(onSubmitHandler)} className="space-y-4">
+          <FormField
+            control={signupForm.control}
+            name="fullName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Full Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter your full name" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={signupForm.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username</FormLabel>
+                <FormControl>
+                  <Input placeholder="Choose a username" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={signupForm.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email Address</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Enter your email" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={signupForm.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Create a password" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={signupForm.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Confirm Password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="Confirm your password" {...field} disabled={isSubmitting} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground mt-6"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Account...
+              </>
+            ) : (
+              'Sign Up'
+            )}
+          </Button>
+          <p className="text-center text-sm text-muted-foreground pt-2">
+            Already have an account?{' '}
+            <Button
+              type="button"
+              variant="link"
+              onClick={onBackToLogin}
+              className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
+              disabled={isSubmitting}
+            >
+              Sign In
+            </Button>
+          </p>
+        </form>
+      </Form>
+     </>
   );
 
   return (
@@ -379,11 +526,7 @@ export default function SubmitPage() {
                 isActive={activeTab === tabInfo.key}
                 onClick={() => {
                   setActiveTab(tabInfo.key);
-                  if (tabInfo.key === 'author') { // Keep signup mode for author tab if it was active
-                    // setFormMode('login'); // Or default to login for author too when switching
-                  } else {
-                    setFormMode('login'); // Other tabs only support login
-                  }
+                  setFormMode('login'); // Reset to login mode when switching tabs
                 }}
                 disabled={isSubmitting}
               >
@@ -420,106 +563,7 @@ export default function SubmitPage() {
             {activeTab === 'author' && (
               <>
                 {formMode === 'login' && renderLoginForm('author')}
-                {formMode === 'signup' && (
-                   <>
-                    <h2 className="text-lg font-semibold text-center mb-4 text-foreground">Create Your Account</h2>
-                    <Form {...signupForm}>
-                      <form onSubmit={signupForm.handleSubmit(onSubmitSignup)} className="space-y-4">
-                        <FormField
-                          control={signupForm.control}
-                          name="fullName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Enter your full name" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="username"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl>
-                                <Input placeholder="Choose a username" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="email"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Email Address</FormLabel>
-                              <FormControl>
-                                <Input type="email" placeholder="Enter your email" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="password"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Password</FormLabel>
-                              <FormControl>
-                                <Input type="password" placeholder="Create a password" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={signupForm.control}
-                          name="confirmPassword"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Confirm Password</FormLabel>
-                              <FormControl>
-                                <Input type="password" placeholder="Confirm your password" {...field} disabled={isSubmitting} />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        <Button
-                          type="submit"
-                          className="w-full bg-[#1A8A6D] hover:bg-[#166F57] text-primary-foreground mt-6"
-                          disabled={isSubmitting}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Creating Account...
-                            </>
-                          ) : (
-                            'Sign Up'
-                          )}
-                        </Button>
-                        <p className="text-center text-sm text-muted-foreground pt-2">
-                          Already have an account?{' '}
-                          <Button
-                            type="button"
-                            variant="link"
-                            onClick={() => setFormMode('login')}
-                            className={`font-medium text-primary hover:underline p-0 h-auto ${isSubmitting ? 'pointer-events-none opacity-50' : ''}`}
-                            disabled={isSubmitting}
-                          >
-                            Sign In
-                          </Button>
-                        </p>
-                      </form>
-                    </Form>
-                   </>
-                )}
+                {formMode === 'signup' && renderSignupForm(onSubmitAuthorSignup, () => setFormMode('login'))}
               </>
             )}
             {activeTab === 'editor' && (
@@ -530,8 +574,8 @@ export default function SubmitPage() {
             )}
             {activeTab === 'reviewer' && (
               <>
-                {/* Reviewer tab only shows login form */}
-                {renderLoginForm('reviewer')}
+                {formMode === 'login' && renderLoginForm('reviewer')}
+                {formMode === 'signup' && renderSignupForm(onSubmitReviewerSignup, () => setFormMode('login'))}
               </>
             )}
           </CardContent>
