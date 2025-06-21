@@ -19,6 +19,8 @@ import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface DisplayUser {
   id: number;
@@ -49,6 +51,7 @@ export default function UserListTable() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<DisplayUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<DisplayUser | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -63,11 +66,10 @@ export default function UserListTable() {
   }, []);
 
   const fetchUsers = useCallback(async (page: number) => {
-    // This check is slightly redundant if useEffect handles it, but good for direct calls
     if (!authToken) {
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
-      setUsers([]); // Clear users if no token
+      setUsers([]); 
       return;
     }
     setIsLoading(true);
@@ -92,20 +94,16 @@ export default function UserListTable() {
         description: err.message || "Could not load user list.",
         variant: "destructive",
       });
-      setUsers([]); // Clear users on error
+      setUsers([]); 
     } finally {
       setIsLoading(false);
     }
   }, [authToken, limit, toast]);
 
   useEffect(() => {
-    // This effect runs when currentPage, authToken, or fetchUsers function reference changes.
     if (authToken) {
       fetchUsers(currentPage);
     } else {
-      // If authToken is not present (e.g., after logout or initial load without token),
-      // ensure loading is false, set an error, and clear users.
-      // This handles the case where authToken might become null after being set.
       setIsLoading(false);
       setError("Authentication token not found. Please log in.");
       setUsers([]);
@@ -120,7 +118,7 @@ export default function UserListTable() {
   };
 
   const handleUserAdded = (newUser: DisplayUser) => {
-    fetchUsers(1); // Fetch from page 1 after adding a user
+    fetchUsers(1); 
     toast({ title: "User Added", description: `${newUser.fullName || newUser.username} has been successfully added.` });
   };
   
@@ -137,6 +135,44 @@ export default function UserListTable() {
       fetchUsers(newPage); 
     }
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
+  };
+  
+  const handleReviewerApprovalChange = async (user: DisplayUser, isApproved: boolean) => {
+    if (!authToken || user.role === 'admin') return;
+
+    setUpdatingRoleId(user.id);
+    const newRole = isApproved ? 'reviewer' : 'author';
+
+    try {
+      const response = await fetch(`/api/admin/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ role: newRole }),
+      });
+
+      const updatedUser = await response.json();
+
+      if (response.ok) {
+        setUsers(prevUsers => prevUsers.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+        toast({
+          title: 'User Role Updated',
+          description: `${user.username}'s role has been updated to ${newRole}.`,
+        });
+      } else {
+        throw new Error(updatedUser.error || 'Failed to update role.');
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Update Failed',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setUpdatingRoleId(null);
+    }
   };
 
 
@@ -199,7 +235,7 @@ export default function UserListTable() {
         )}
         {!isLoading && !error && users.length > 0 && (
           <div className="overflow-x-auto">
-            <Table className="min-w-[700px]">
+            <Table className="min-w-[800px]">
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[80px]">ID</TableHead>
@@ -207,6 +243,7 @@ export default function UserListTable() {
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
+                  <TableHead>Approve as Reviewer</TableHead>
                   <TableHead className="text-right w-[100px] sm:w-[130px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -227,6 +264,23 @@ export default function UserListTable() {
                       >
                         {user.role || 'N/A'}
                       </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-start">
+                        {user.role === 'admin' ? (
+                          <span className="text-xs text-muted-foreground">-</span>
+                        ) : updatingRoleId === user.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        ) : (
+                          <Switch
+                            id={`reviewer-switch-${user.id}`}
+                            checked={user.role === 'reviewer'}
+                            onCheckedChange={(isChecked) => handleReviewerApprovalChange(user, isChecked)}
+                            disabled={isLoading || updatingRoleId !== null}
+                            aria-label={`Approve ${user.username} as reviewer`}
+                          />
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User" disabled={isLoading}>
@@ -298,4 +352,3 @@ export default function UserListTable() {
     </Card>
   );
 }
-    
