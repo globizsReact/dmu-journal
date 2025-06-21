@@ -1,33 +1,29 @@
 
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
-}
-
 model User {
-  id            Int      @id @default(autoincrement())
-  fullName      String
-  username      String   @unique
-  email         String   @unique
-  password_hash String
-  role          String?  @default("author") // Roles: "author", "reviewer", "admin"
-  created_at    DateTime @default(now())
-
-  submittedManuscripts Manuscript[] @relation("SubmittedBy")
-
-  @@map("users")
+  id                   Int      @id @default(autoincrement())
+  fullName             String?
+  username             String   @unique
+  email                String   @unique
+  password_hash        String
+  role                 String   @default("author")
+  submittedManuscripts Manuscript[] @relation("SubmittedByUser")
 }
 
 model Manuscript {
   id                    String    @id @default(cuid())
   articleTitle          String
-  abstract              String    @db.Text
-  keywords              String // Comma-separated
-  journalCategoryId     String    // Corresponds to id in journalCategories from lib/data.ts
+  abstract              String
+  keywords              String
+  journalCategoryId     String
   isSpecialReview       Boolean   @default(false)
   
   coverLetterFileName   String?
@@ -35,15 +31,16 @@ model Manuscript {
   supplementaryFilesName String?
   
   authorAgreement       Boolean
-  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
-
-  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
+  coAuthors             Json
+  
+  status                String    @default("Submitted")
   submittedAt           DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
+  
+  submittedBy           User      @relation("SubmittedByUser", fields: [submittedById], references: [id])
   submittedById         Int
-  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
 
-  @@index([submittedById])
-  @@map("manuscripts")
+  // Fields for tracking views, downloads, citations
+  views                 Int       @default(0)
+  downloads             Int       @default(0)
+  citations             Int       @default(0)
 }
