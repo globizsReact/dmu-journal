@@ -65,7 +65,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     setIsAuthenticatedAdmin(true);
     const name = localStorage.getItem('authorName');
     if (name) setAdminName(name);
-    router.replace(window.location.pathname);
   };
 
   const handleLogout = () => {
@@ -182,3 +181,4 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     </html>
   );
 }
+    
