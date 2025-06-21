@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
           fetchStats(token);
         } else {
           setIsLoadingStats(false);
-          setStatsError("Authentication token not found.");
+          // Don't set an error here, the parent layout will handle the redirect.
         }
     }
   }, []);
@@ -79,6 +79,18 @@ export default function AdminDashboardPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          // Token is invalid or user is not an admin.
+          // Clear auth state and let the AdminLayout handle redirecting to login.
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('authorName');
+            window.dispatchEvent(new CustomEvent('authChange'));
+          }
+          // Stop further processing for this component
+          return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to fetch stats: ${response.status}`);
       }
