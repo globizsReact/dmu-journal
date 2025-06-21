@@ -181,7 +181,6 @@ const AssignedManuscriptsView = () => {
                   <TableCell>{format(new Date(ms.submittedAt), "dd MMM yyyy")}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
-                       {/* This link will be broken until we create the page, but let's add it for future work */}
                       <Link href={`/reviewer/view-manuscript/${ms.id}`}> 
                         <Eye className="w-4 h-4 mr-1 sm:mr-2" />
                         <span className="hidden sm:inline">Review</span>
