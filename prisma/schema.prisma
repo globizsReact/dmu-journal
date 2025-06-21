@@ -1,7 +1,4 @@
 
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,39 +9,45 @@ datasource db {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
-  fullName      String?
-  username      String       @unique
-  email         String       @unique
+  id            Int      @id @default(autoincrement())
+  fullName      String
+  username      String   @unique
+  email         String   @unique
   password_hash String
-  role          String?      @default("author")
-  manuscripts   Manuscript[]
+  role          String?  @default("author") // Roles: "author", "reviewer", "admin"
+  created_at    DateTime @default(now())
+
+  submittedManuscripts Manuscript[] @relation("SubmittedBy")
+
+  @@map("users")
 }
 
 model Manuscript {
-  id String @id @default(cuid())
-  articleTitle           String
-  abstract               String @db.Text
-  keywords               String
-  journalCategoryId      String
-  isSpecialReview        Boolean   @default(false)
+  id                    String    @id @default(cuid())
+  articleTitle          String
+  abstract              String    @db.Text
+  keywords              String // Comma-separated
+  journalCategoryId     String    // Corresponds to id in journalCategories from lib/data.ts
+  isSpecialReview       Boolean   @default(false)
   
-  coverLetterFileName    String?
-  manuscriptFileName     String
+  coverLetterFileName   String?
+  manuscriptFileName    String
   supplementaryFilesName String?
   
-  authorAgreement        Boolean
-  coAuthors              String? @db.Text // Changed from Json to String (as Text)
-  
-  status                 String    @default("Submitted")
-  submittedAt            DateTime  @default(now())
+  authorAgreement       Boolean
+  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
 
-  // New fields for tracking
-  views                  Int       @default(0)
-  downloads              Int       @default(0)
-  citations              Int       @default(0)
+  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
+  submittedAt           DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
-  // Relation to User
-  submittedById          Int
-  submittedBy            User      @relation(fields: [submittedById], references: [id])
+  submittedById         Int
+  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
+
+  views                 Int       @default(0)
+  downloads             Int       @default(0)
+  citations             Int       @default(0)
+
+  @@index([submittedById])
+  @@map("manuscripts")
 }
