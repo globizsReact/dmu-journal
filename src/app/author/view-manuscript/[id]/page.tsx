@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
+import DashboardSidebar from '@/components/author/DashboardSidebar';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -24,7 +25,7 @@ interface ManuscriptDetails extends Manuscript {
   coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[];
 }
 
-type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Rejected';
+type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Published' | 'Suspended' | 'Rejected';
 
 
 export default function AuthorManuscriptDetailsPage() {
@@ -37,13 +38,24 @@ export default function AuthorManuscriptDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | undefined>(undefined);
+  
+  const [authorName, setAuthorName] = useState("Author");
+  const activeTab = 'myManuscript';
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
+      const name = localStorage.getItem('authorName');
       setAuthToken(token || null);
+      if (name) setAuthorName(name);
     }
   }, []);
+
+  const handleSidebarNav = (tab: string) => {
+    // This is a simplified navigation. It sends the user back to the main dashboard.
+    // A more advanced implementation might use query params to select the tab.
+    router.push('/author/dashboard');
+  };
 
   const fetchManuscriptDetails = useCallback(async () => {
     if (!manuscriptId || !authToken) {
@@ -105,6 +117,8 @@ export default function AuthorManuscriptDetailsPage() {
       case 'Submitted': return 'bg-blue-500 hover:bg-blue-600';
       case 'In Review': return 'bg-yellow-500 hover:bg-yellow-600';
       case 'Accepted': return 'bg-green-500 hover:bg-green-600';
+      case 'Published': return 'bg-emerald-600 hover:bg-emerald-700';
+      case 'Suspended': return 'bg-orange-500 hover:bg-orange-600';
       case 'Rejected': return 'bg-red-500 hover:bg-red-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
@@ -235,13 +249,19 @@ export default function AuthorManuscriptDetailsPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-muted/20">
-        <Header />
-        <main className="flex-1 container mx-auto py-8 px-4">
-            {renderContent()}
+    <div className="flex flex-col min-h-screen bg-muted">
+      <Header />
+      <div className="flex flex-col lg:flex-row flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
+        <DashboardSidebar
+          authorName={authorName}
+          activeTab={activeTab}
+          onTabChange={handleSidebarNav}
+        />
+        <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
+          {renderContent()}
         </main>
-        <Footer />
+      </div>
+      <Footer />
     </div>
   );
 }
-

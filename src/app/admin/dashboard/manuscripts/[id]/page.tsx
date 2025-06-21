@@ -8,7 +8,7 @@ import { journalCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, CheckCircle, XCircle, ArrowLeft, User, Mail, Building, FileTextIcon, CalendarDays, Sparkles, Tag, FileIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, XCircle, ArrowLeft, User, Mail, Building, FileTextIcon, CalendarDays, Sparkles, Tag, FileIcon, BookUp, ShieldOff } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,7 @@ interface ManuscriptDetails extends Manuscript {
   coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[];
 }
 
-type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Rejected';
+type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Published' | 'Suspended';
 
 
 export default function ManuscriptDetailsPage() {
@@ -190,7 +190,8 @@ export default function ManuscriptDetailsPage() {
       case 'Submitted': return 'bg-blue-500 hover:bg-blue-600';
       case 'In Review': return 'bg-yellow-500 hover:bg-yellow-600';
       case 'Accepted': return 'bg-green-500 hover:bg-green-600';
-      case 'Rejected': return 'bg-red-500 hover:bg-red-600';
+      case 'Published': return 'bg-emerald-600 hover:bg-emerald-700';
+      case 'Suspended': return 'bg-orange-500 hover:bg-orange-600';
       default: return 'bg-gray-500 hover:bg-gray-600';
     }
   };
@@ -284,33 +285,33 @@ export default function ManuscriptDetailsPage() {
         <section className="pt-4">
             <h3 className="text-md font-semibold text-primary mb-3">Actions</h3>
             <div className="flex flex-col sm:flex-row gap-3">
-            {(manuscript.status === 'Submitted' || manuscript.status === 'In Review') && (
+            {manuscript.status === 'Submitted' || manuscript.status === 'In Review' ? (
                 <>
-                <Button 
-                    onClick={() => handleUpdateStatus('Accepted')} 
-                    disabled={!!loadingStatus}
-                    className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
-                >
-                    {loadingStatus === 'Accepted' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                    Approve
-                </Button>
-                <Button 
-                    onClick={() => handleUpdateStatus('Rejected')} 
-                    disabled={!!loadingStatus}
-                    variant="destructive"
-                    className="w-full sm:w-auto"
-                >
-                    {loadingStatus === 'Rejected' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
-                    Reject
-                </Button>
+                    <Button onClick={() => handleUpdateStatus('Accepted')} disabled={!!loadingStatus} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
+                        {loadingStatus === 'Accepted' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                        Accept
+                    </Button>
+                    <Button onClick={() => handleUpdateStatus('Suspended')} disabled={!!loadingStatus} className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto">
+                        {loadingStatus === 'Suspended' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
+                        Suspend
+                    </Button>
                 </>
-            )}
-            {manuscript.status === 'Accepted' && (
-                <p className="text-green-600 font-semibold">This manuscript has been accepted.</p>
-            )}
-            {manuscript.status === 'Rejected' && (
-                <p className="text-red-600 font-semibold">This manuscript has been rejected.</p>
-            )}
+            ) : manuscript.status === 'Accepted' ? (
+                <>
+                    <Button onClick={() => handleUpdateStatus('Published')} disabled={!!loadingStatus} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                        {loadingStatus === 'Published' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookUp className="mr-2 h-4 w-4" />}
+                        Publish
+                    </Button>
+                    <Button onClick={() => handleUpdateStatus('Suspended')} disabled={!!loadingStatus} className="bg-orange-500 hover:bg-orange-600 text-white w-full sm:w-auto">
+                        {loadingStatus === 'Suspended' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
+                        Suspend
+                    </Button>
+                </>
+            ) : manuscript.status === 'Published' ? (
+                <p className="text-emerald-600 font-semibold">This manuscript has been published.</p>
+            ) : manuscript.status === 'Suspended' ? (
+                <p className="text-orange-600 font-semibold">This manuscript has been suspended.</p>
+            ) : null}
             </div>
         </section>
 

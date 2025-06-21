@@ -30,6 +30,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const dashboardItems: DashboardStatCardProps[] = [
   { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
@@ -165,12 +166,15 @@ const MyManuscriptView = () => {
                   <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
                   <TableCell>
                       <span 
-                          className={`px-2 py-1 text-xs font-semibold rounded-full
-                              ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' : 
-                                manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
-                                manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
-                                manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                'bg-gray-100 text-gray-700'}`}
+                          className={cn('px-2 py-1 text-xs font-semibold rounded-full', {
+                            'bg-blue-100 text-blue-700': manuscript.status === 'Submitted',
+                            'bg-yellow-100 text-yellow-700': manuscript.status === 'In Review',
+                            'bg-green-100 text-green-700': manuscript.status === 'Accepted',
+                            'bg-emerald-100 text-emerald-700': manuscript.status === 'Published',
+                            'bg-orange-100 text-orange-700': manuscript.status === 'Suspended',
+                            'bg-red-100 text-red-700': manuscript.status === 'Rejected', // Fallback for old data
+                            'bg-gray-100 text-gray-700': !['Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'].includes(manuscript.status)
+                          })}
                       >
                           {manuscript.status}
                       </span>

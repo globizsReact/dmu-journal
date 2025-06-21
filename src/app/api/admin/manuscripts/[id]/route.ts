@@ -5,7 +5,7 @@ import { verifyToken } from '@/lib/authUtils';
 import { z } from 'zod';
 
 const manuscriptStatusUpdateSchema = z.object({
-  status: z.enum(['Submitted', 'In Review', 'Accepted', 'Rejected']),
+  status: z.enum(['Submitted', 'In Review', 'Accepted', 'Published', 'Suspended']),
 });
 
 // GET a single manuscript by ID
