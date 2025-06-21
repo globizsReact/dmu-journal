@@ -42,6 +42,7 @@ export default function ReviewerDashboardSidebar({ reviewerName, activeTab, onTa
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('isAuthorLoggedIn');
       localStorage.removeItem('authToken');
       localStorage.removeItem('authorName');
       localStorage.removeItem('userRole');

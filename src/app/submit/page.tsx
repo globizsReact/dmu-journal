@@ -176,7 +176,12 @@ export default function SubmitPage() {
 
       if (response.ok) {
         if (typeof window !== 'undefined') {
-          localStorage.setItem('isAuthorLoggedIn', 'true');
+          if (data.user.role === 'author') {
+            localStorage.setItem('isAuthorLoggedIn', 'true');
+          } else {
+            localStorage.removeItem('isAuthorLoggedIn');
+          }
+          
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'User'); 
           localStorage.setItem('userRole', data.user.role || 'author');
