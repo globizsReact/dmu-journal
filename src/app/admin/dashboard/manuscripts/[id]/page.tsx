@@ -35,7 +35,7 @@ export default function ManuscriptDetailsPage() {
   const [manuscript, setManuscript] = useState<ManuscriptDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [loadingStatus, setLoadingStatus] = useState<ManuscriptStatus | null>(null);
   const [authToken, setAuthToken] = useState<string | undefined>(undefined); // Initialize as undefined
 
   useEffect(() => {
@@ -48,10 +48,7 @@ export default function ManuscriptDetailsPage() {
   const fetchManuscriptDetails = useCallback(async () => {
     // Guard clause: ensure manuscriptId and authToken (state) are present.
     if (!manuscriptId || !authToken) {
-      // This function should only be called when both are available.
-      // If called otherwise, it's a logic error in the calling useEffect.
-      // To be safe, we can set an error or simply return.
-      if (!authToken) { // Check specifically for authToken missing
+      if (!authToken) {
          setError("Authentication token not available for fetching details.");
          setIsLoading(false);
       }
@@ -76,27 +73,21 @@ export default function ManuscriptDetailsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [manuscriptId, authToken]); // Removed isLoading
+  }, [manuscriptId, authToken]); 
 
   useEffect(() => {
     if (manuscriptId && authToken) {
-      // If we have both manuscriptId and a valid authToken string, proceed to fetch.
       fetchManuscriptDetails();
     } else if (manuscriptId && authToken === null) {
-      // If manuscriptId is present, but authToken state is explicitly null
-      // (meaning the initial localStorage check completed and found no token, or token was cleared),
-      // then set an error and ensure loading is stopped.
       setError("Authentication token not found. Cannot load manuscript.");
       setIsLoading(false);
     }
-    // If manuscriptId is not yet available, or if authToken is `undefined` (initial state),
-    // this effect will do nothing and wait. It will re-run when manuscriptId or authToken changes.
   }, [manuscriptId, authToken, fetchManuscriptDetails]);
 
 
   const handleUpdateStatus = async (newStatus: ManuscriptStatus) => {
     if (!manuscript || !authToken) return;
-    setIsUpdatingStatus(true);
+    setLoadingStatus(newStatus);
     try {
       const response = await fetch(`/api/admin/manuscripts/${manuscriptId}`, {
         method: 'PUT',
@@ -124,7 +115,7 @@ export default function ManuscriptDetailsPage() {
         variant: "destructive",
       });
     } finally {
-      setIsUpdatingStatus(false);
+      setLoadingStatus(null);
     }
   };
 
@@ -297,19 +288,19 @@ export default function ManuscriptDetailsPage() {
                 <>
                 <Button 
                     onClick={() => handleUpdateStatus('Accepted')} 
-                    disabled={isUpdatingStatus}
+                    disabled={!!loadingStatus}
                     className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto"
                 >
-                    {isUpdatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                    {loadingStatus === 'Accepted' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
                     Approve
                 </Button>
                 <Button 
                     onClick={() => handleUpdateStatus('Rejected')} 
-                    disabled={isUpdatingStatus}
+                    disabled={!!loadingStatus}
                     variant="destructive"
                     className="w-full sm:w-auto"
                 >
-                    {isUpdatingStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
+                    {loadingStatus === 'Rejected' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
                     Reject
                 </Button>
                 </>
