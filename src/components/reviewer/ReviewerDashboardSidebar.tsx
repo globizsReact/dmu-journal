@@ -1,9 +1,9 @@
+
 "use client";
 
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { LayoutDashboard, FileText, BadgeCheck, LogOut, LucideIcon } from 'lucide-react';
-import Image from 'next/image';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,114 +16,101 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 
 interface ReviewerDashboardSidebarProps {
   reviewerName: string;
-  onLogout: () => void;
-  onLinkClick?: () => void;
-  isMobileSheet?: boolean;
+  activeTab: string;
+  onTabChange: (tabKey: string) => void;
 }
 
 interface NavItem {
   label: string;
   icon: LucideIcon;
-  href: string;
-  disabled?: boolean;
+  tabKey?: string;
+  isLogout?: boolean;
 }
 
 const navItems: NavItem[] = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/reviewer/dashboard' },
-  { label: 'Assigned Manuscripts', icon: FileText, href: '/reviewer/dashboard/manuscripts', disabled: true },
-  { label: 'Review Guidelines', icon: BadgeCheck, href: '/reviewer/dashboard/guidelines', disabled: true },
+  { label: 'Dashboard', icon: LayoutDashboard, tabKey: 'dashboard' },
+  { label: 'Assigned Manuscripts', icon: FileText, tabKey: 'assignedManuscripts' },
+  { label: 'Review Guidelines', icon: BadgeCheck, tabKey: 'guidelines' },
+  { label: 'Logout', icon: LogOut, isLogout: true },
 ];
 
-export default function ReviewerDashboardSidebar({ reviewerName, onLogout, onLinkClick, isMobileSheet = false }: ReviewerDashboardSidebarProps) {
-  const pathname = usePathname();
-  const logoSrc = '/images/logo_black.png';
+export default function ReviewerDashboardSidebar({ reviewerName, activeTab, onTabChange }: ReviewerDashboardSidebarProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authorName');
+      localStorage.removeItem('userRole');
+      localStorage.removeItem('rememberAuthorLogin');
+      localStorage.removeItem('rememberedUsername');
+      window.dispatchEvent(new CustomEvent('authChange'));
+    }
+    router.push('/submit');
+  };
 
   return (
-    <aside className={cn(
-        "bg-card flex flex-col p-4 h-full",
-        isMobileSheet ? "w-full" : "w-64 border-r border-border shadow-md"
-    )}>
-      <div className="mb-8 px-2 flex items-center gap-3">
-        <Image
-          src={logoSrc}
-          alt="DMU Journal Logo"
-          width={40}
-          height={40}
-          className="rounded-full"
-          data-ai-hint="university logo"
-        />
-        <div>
-          <h2 id="reviewer-sidebar-title" className="text-lg font-headline font-semibold text-primary leading-tight">Reviewer Panel</h2>
-          <p className="text-xs text-muted-foreground leading-tight">DMU Journal</p>
-        </div>
+    <aside className="w-full lg:w-64 self-start">
+      <div className="mb-6 px-3">
+        <h2 className="text-xl font-headline font-semibold text-primary">Reviewer</h2>
+        <p className="text-sm text-muted-foreground">{reviewerName}</p>
       </div>
-      <nav className="flex-1 space-y-2">
+      <nav className="space-y-2 px-3 pb-3">
         {navItems.map((item) => {
-          let isActive = pathname === item.href;
-          if (item.href !== '/reviewer/dashboard' && pathname.startsWith(item.href)) {
-             isActive = true;
+          const isActive = item.tabKey === activeTab && !item.isLogout;
+
+          if (item.isLogout) {
+            return (
+              <AlertDialog key={item.label}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className={cn(
+                      "w-full flex items-center justify-start gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors",
+                      "text-destructive-foreground bg-destructive hover:bg-destructive/90 hover:text-destructive-foreground"
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.label}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to log out from the reviewer panel?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            );
           }
 
           return (
-            <Link
+            <button
               key={item.label}
-              href={item.disabled ? "#" : item.href}
+              onClick={() => item.tabKey && onTabChange(item.tabKey)}
               className={cn(
                 "w-full flex items-center gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left",
                 isActive
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                  : "text-foreground hover:bg-muted hover:text-primary",
-                item.disabled && "opacity-50 cursor-not-allowed hover:bg-transparent hover:text-foreground"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                  : "text-foreground hover:bg-primary/10 hover:text-primary"
               )}
-              aria-disabled={item.disabled}
-              onClick={(e) => {
-                  if (item.disabled) {
-                      e.preventDefault();
-                      // Optional: toast('This feature is coming soon!');
-                  } else {
-                      onLinkClick?.();
-                  }
-              }}
+              disabled={!item.tabKey}
             >
               <item.icon className="w-4 h-4" />
               {item.label}
-            </Link>
+            </button>
           );
         })}
       </nav>
-      <div className="mt-auto pt-4 border-t border-border">
-         <p className="text-xs text-muted-foreground px-3 mb-2 truncate" title={reviewerName}>Logged in as: {reviewerName}</p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full flex items-center justify-start gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors",
-                "text-destructive hover:bg-destructive/10"
-              )}
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to log out from the reviewer panel?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => { onLogout(); onLinkClick?.(); }} className="bg-destructive hover:bg-destructive/90">Logout</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
     </aside>
   );
 }
