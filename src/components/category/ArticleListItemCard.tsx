@@ -28,7 +28,7 @@ const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItem
       <div className="flex-grow">
         <p className="text-sm text-muted-foreground mb-1">Article Number - {entry.id}</p>
         <p className="text-sm text-primary font-medium mb-1">{categoryName}</p>
-        <h3 className="text-xl font-headline font-semibold text-primary mb-2 group-hover:text-accent transition-colors">
+        <h3 className="text-xl font-headline font-semibold text-primary mb-2">
           <Link href={`/journal/${entry.id}`}>
             {entry.title}
           </Link>
