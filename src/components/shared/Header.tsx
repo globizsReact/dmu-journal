@@ -1,10 +1,9 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, X, ShieldCheck } from 'lucide-react';
+import { Menu, X, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
@@ -41,6 +40,7 @@ const Header = ({ className }: HeaderProps) => {
   };
 
   const isAdmin = userRole === 'admin';
+  const isReviewer = userRole === 'reviewer';
 
   return (
     <>
@@ -73,9 +73,14 @@ const Header = ({ className }: HeaderProps) => {
                 CALL FOR PAPER SUBMISSION
               </Link>
             )}
-            {isLoggedIn && !isAdmin && (
+            {isLoggedIn && !isAdmin && !isReviewer && (
               <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
                 AUTHOR DASHBOARD
+              </Link>
+            )}
+            {isLoggedIn && isReviewer && (
+              <Link href="/reviewer/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
+                <BadgeCheck className="w-4 h-4 mr-1" /> REVIEWER DASHBOARD
               </Link>
             )}
             {isLoggedIn && isAdmin && (
@@ -158,13 +163,22 @@ const Header = ({ className }: HeaderProps) => {
            CALL FOR PAPER SUBMISSION
           </Link>
         )}
-        {isLoggedIn && !isAdmin && (
+        {isLoggedIn && !isAdmin && !isReviewer && (
           <Link
             href="/author/dashboard"
             onClick={handleLinkClick}
             className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
           >
             AUTHOR DASHBOARD
+          </Link>
+        )}
+        {isLoggedIn && isReviewer && (
+          <Link
+            href="/reviewer/dashboard"
+            onClick={handleLinkClick}
+            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          >
+            <BadgeCheck className="w-4 h-4 mr-1 inline-block" /> REVIEWER DASHBOARD
           </Link>
         )}
          {isLoggedIn && isAdmin && (

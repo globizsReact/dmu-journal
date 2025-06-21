@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react'; 
@@ -176,7 +175,7 @@ export default function SubmitPage() {
           localStorage.setItem('isAuthorLoggedIn', 'true');
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'User'); 
-          localStorage.setItem('userRole', data.user.role || 'author'); // Store generic userRole
+          localStorage.setItem('userRole', data.user.role || 'author');
 
           if (values.rememberMe && values.username) {
             localStorage.setItem('rememberAuthorLogin', 'true');
@@ -191,9 +190,11 @@ export default function SubmitPage() {
           title: "Login Successful",
           description: "Redirecting to your dashboard...",
         });
-        // Redirect based on role
-        if (data.user.role === 'admin' || data.user.role === 'reviewer') {
+        
+        if (data.user.role === 'admin') {
           router.push('/admin/dashboard');
+        } else if (data.user.role === 'reviewer') {
+          router.push('/reviewer/dashboard');
         } else {
           router.push('/author/dashboard');
         }
@@ -537,4 +538,3 @@ export default function SubmitPage() {
     </div>
   );
 }
-
