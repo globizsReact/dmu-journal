@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -22,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Eye, Loader2, Save, KeyRound } from 'lucide-react';
+import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -497,20 +496,22 @@ export default function AuthorDashboardPage() {
     );
   }
 
-  const dashboardItems: DashboardStatCardProps[] = [
-    { title: 'NEW SUBMISSION', value: isLoadingStats ? '...' : (stats?.submitted ?? 0).toString(), variant: 'default', viewAllHref: '#' },
-    { title: 'MANUSCRIPTS IN REVIEW', value: isLoadingStats ? '...' : (stats?.inReview ?? 0).toString(), variant: 'info', viewAllHref: '#' },
-    { title: 'ACCEPTED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.accepted ?? 0).toString(), variant: 'default', viewAllHref: '#' },
+  const dashboardItems: (DashboardStatCardProps & { key: string })[] = [
+    { key: 'submitted', title: 'New Submissions', value: isLoadingStats ? '...' : (stats?.submitted ?? 0).toString(), icon: FilePlus, description: "Manuscripts you've submitted.", colorClass: "text-blue-500" },
+    { key: 'inReview', title: 'Manuscripts In Review', value: isLoadingStats ? '...' : (stats?.inReview ?? 0).toString(), icon: FileClock, description: "Currently under peer review.", colorClass: "text-orange-500" },
+    { key: 'accepted', title: 'Accepted Manuscripts', value: isLoadingStats ? '...' : (stats?.accepted ?? 0).toString(), icon: FileCheck2, description: "Approved for publication.", colorClass: "text-green-500" },
     { 
-      title: 'PAYMENTS DUE', 
+      key: 'payments',
+      title: 'Payments Due', 
       value: '₹0.00', 
-      variant: 'success', 
-      viewAllHref: '#', 
+      icon: IndianRupee,
+      description: "Outstanding publication fees.",
+      colorClass: "text-purple-500",
       actionButton: { text: 'Pay Now', href: '#'} 
     },
-    { title: 'PUBLISHED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.published ?? 0).toString(), variant: 'info', viewAllHref: '#' },
-    { title: 'SUSPENDED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.suspended ?? 0).toString(), variant: 'default', viewAllHref: '#' },
-    { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
+    { key: 'published', title: 'Published Manuscripts', value: isLoadingStats ? '...' : (stats?.published ?? 0).toString(), icon: BookUp, description: "Officially published articles.", colorClass: "text-emerald-600" },
+    { key: 'suspended', title: 'Suspended Manuscripts', value: isLoadingStats ? '...' : (stats?.suspended ?? 0).toString(), icon: FileX2, description: "Submissions needing attention.", colorClass: "text-yellow-600" },
+    { key: 'waiver', title: 'Waiver Requests', value: '0', icon: HelpCircle, description: "Requests for fee waivers.", colorClass: "text-pink-500" },
   ];
 
   return (
@@ -528,11 +529,12 @@ export default function AuthorDashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {dashboardItems.map((item) => (
                   <DashboardStatCard
-                    key={item.title}
+                    key={item.key}
                     title={item.title}
                     value={item.value}
-                    variant={item.variant}
-                    viewAllHref={item.viewAllHref}
+                    icon={item.icon}
+                    description={item.description}
+                    colorClass={item.colorClass}
                     actionButton={item.actionButton}
                   />
                 ))}

@@ -1,14 +1,15 @@
-
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import type { LucideIcon } from 'lucide-react';
 
 export interface DashboardStatCardProps {
   title: string;
   value: string;
-  variant: 'default' | 'info' | 'success';
-  viewAllHref: string;
+  icon: LucideIcon;
+  description: string;
+  colorClass?: string;
   actionButton?: {
     text: string;
     href: string;
@@ -18,43 +19,28 @@ export interface DashboardStatCardProps {
 export default function DashboardStatCard({
   title,
   value,
-  variant,
-  viewAllHref,
+  icon: Icon,
+  description,
+  colorClass = "text-primary",
   actionButton,
 }: DashboardStatCardProps) {
-  let cardClasses = 'text-white rounded-none'; // Added rounded-none
-  let titleClasses = 'opacity-90';
-  let valueClasses = 'text-3xl md:text-4xl font-bold';
-  let viewAllLinkClasses = 'text-white/80 hover:text-white';
-  let actionButtonClasses = '';
-
-  if (variant === 'default') {
-    cardClasses = cn(cardClasses, 'bg-slate-600'); 
-  } else if (variant === 'info') {
-    cardClasses = cn(cardClasses, 'bg-blue-600'); 
-  } else if (variant === 'success') {
-    cardClasses = cn(cardClasses, 'bg-green-600'); 
-    actionButtonClasses = 'bg-white text-green-700 hover:bg-slate-100 font-semibold shadow-sm';
-  }
-
   return (
-    <Card className={cn("shadow-lg flex flex-col justify-between", cardClasses)}>
-      <CardHeader className="pt-3 pb-1 px-3">
-        <p className={cn("text-xs uppercase tracking-wider font-medium", titleClasses)}>{title}</p>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+        <Icon className={cn("h-5 w-5", colorClass)} />
       </CardHeader>
-      <CardContent className="text-center py-2 px-3 flex items-center justify-center">
-        <p className={valueClasses}>{value}</p>
+      <CardContent>
+        <div className={cn("text-2xl font-bold", colorClass)}>{value}</div>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </CardContent>
-      <CardFooter className={cn("flex items-center pt-1 pb-3 px-3", actionButton ? "justify-between" : "justify-center")}>
-        <Button asChild variant="link" className={cn("p-0 h-auto text-sm", viewAllLinkClasses)}>
-          <Link href={viewAllHref}>View All</Link>
-        </Button>
-        {actionButton && (
-          <Button asChild size="sm" className={cn(actionButtonClasses, "ml-2")}>
+      {actionButton && (
+        <CardFooter className="pt-2 pb-4">
+          <Button asChild size="sm" className="w-full">
             <Link href={actionButton.href}>{actionButton.text}</Link>
           </Button>
-        )}
-      </CardFooter>
+        </CardFooter>
+      )}
     </Card>
   );
 }
