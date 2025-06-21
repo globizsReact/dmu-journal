@@ -31,22 +31,7 @@ import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-
-const dashboardItems: DashboardStatCardProps[] = [
-  { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
-  { title: 'MANUSCRIPTS IN REVIEW', value: '0', variant: 'info', viewAllHref: '#' },
-  { title: 'ACCEPTED MANUSCRIPTS', value: '0', variant: 'default', viewAllHref: '#' },
-  { 
-    title: 'PAYMENTS DUE', 
-    value: '₹0.00', 
-    variant: 'success', 
-    viewAllHref: '#', 
-    actionButton: { text: 'Pay Now', href: '#'} 
-  },
-  { title: 'PUBLISHED MANUSCRIPTS', value: '0', variant: 'info', viewAllHref: '#' },
-  { title: 'SUSPENDED MANUSCRIPTS', value: '0', variant: 'default', viewAllHref: '#' },
-  { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
-];
+import { format } from 'date-fns';
 
 const MyManuscriptView = () => {
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
@@ -152,18 +137,23 @@ const MyManuscriptView = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[300px]">Article Title</TableHead>
-              <TableHead>Journal</TableHead>
+              <TableHead className="w-[40%]">Article</TableHead>
               <TableHead>Status</TableHead>
-              {/* <TableHead>Submitted</TableHead> */}
+              <TableHead>Submitted</TableHead>
+              <TableHead>Views</TableHead>
+              <TableHead>Downloads</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {manuscripts.map((manuscript) => (
                 <TableRow key={manuscript.id}>
-                  <TableCell className="font-medium">{manuscript.articleTitle}</TableCell>
-                  <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
+                   <TableCell className="font-medium">
+                      {manuscript.articleTitle}
+                      <span className="block text-xs text-muted-foreground mt-1">
+                          {getJournalName(manuscript.journalCategoryId)}
+                      </span>
+                  </TableCell>
                   <TableCell>
                       <span 
                           className={cn('px-2 py-1 text-xs font-semibold rounded-full', {
@@ -172,16 +162,18 @@ const MyManuscriptView = () => {
                             'bg-green-100 text-green-700': manuscript.status === 'Accepted',
                             'bg-emerald-100 text-emerald-700': manuscript.status === 'Published',
                             'bg-orange-100 text-orange-700': manuscript.status === 'Suspended',
-                            'bg-red-100 text-red-700': manuscript.status === 'Rejected', // Fallback for old data
+                            'bg-red-100 text-red-700': manuscript.status === 'Rejected',
                             'bg-gray-100 text-gray-700': !['Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'].includes(manuscript.status)
                           })}
                       >
                           {manuscript.status}
                       </span>
                   </TableCell>
-                  {/* <TableCell>
-                     {formattedDate}
-                  </TableCell> */}
+                  <TableCell>
+                     {format(new Date(manuscript.submittedAt), 'dd MMM yyyy')}
+                  </TableCell>
+                  <TableCell>{manuscript.views ?? 0}</TableCell>
+                  <TableCell>{manuscript.downloads ?? 0}</TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
                         <Link href={`/author/view-manuscript/${manuscript.id}`}>
@@ -423,11 +415,24 @@ export default function AuthorDashboardPage() {
   const [authorName, setAuthorName] = useState("Loading...");
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const router = useRouter();
+  const { toast } = useToast();
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  
+  const [stats, setStats] = useState<{
+    submitted: number;
+    inReview: number;
+    accepted: number;
+    published: number;
+    suspended: number;
+  } | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const isLoggedIn = localStorage.getItem('isAuthorLoggedIn') === 'true';
       const storedName = localStorage.getItem('authorName');
+      const token = localStorage.getItem('authToken');
+      setAuthToken(token);
       
       if (!isLoggedIn) {
         router.push('/submit'); 
@@ -436,8 +441,13 @@ export default function AuthorDashboardPage() {
       } else {
         setAuthorName("Author"); 
       }
+      
+      if (token) {
+        fetchAuthorStats(token);
+      } else {
+        setIsLoadingStats(false);
+      }
 
-      // Listen for local storage changes to authorName
       const handleAuthChange = () => {
         const updatedName = localStorage.getItem('authorName');
         if (updatedName) {
@@ -448,9 +458,32 @@ export default function AuthorDashboardPage() {
       return () => {
         window.removeEventListener('authChange', handleAuthChange);
       };
-
     }
   }, [router]);
+
+  const fetchAuthorStats = async (token: string) => {
+    setIsLoadingStats(true);
+    try {
+        const response = await fetch('/api/author/stats', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Failed to fetch stats');
+        }
+        const data = await response.json();
+        setStats(data);
+    } catch (error: any) {
+        console.error("Error fetching stats:", error);
+        toast({
+          title: "Could Not Load Stats",
+          description: error.message,
+          variant: "destructive"
+        })
+    } finally {
+        setIsLoadingStats(false);
+    }
+  };
 
   if (authorName === "Loading...") {
     return (
@@ -463,6 +496,22 @@ export default function AuthorDashboardPage() {
         </div>
     );
   }
+
+  const dashboardItems: DashboardStatCardProps[] = [
+    { title: 'NEW SUBMISSION', value: isLoadingStats ? '...' : (stats?.submitted ?? 0).toString(), variant: 'default', viewAllHref: '#' },
+    { title: 'MANUSCRIPTS IN REVIEW', value: isLoadingStats ? '...' : (stats?.inReview ?? 0).toString(), variant: 'info', viewAllHref: '#' },
+    { title: 'ACCEPTED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.accepted ?? 0).toString(), variant: 'default', viewAllHref: '#' },
+    { 
+      title: 'PAYMENTS DUE', 
+      value: '₹0.00', 
+      variant: 'success', 
+      viewAllHref: '#', 
+      actionButton: { text: 'Pay Now', href: '#'} 
+    },
+    { title: 'PUBLISHED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.published ?? 0).toString(), variant: 'info', viewAllHref: '#' },
+    { title: 'SUSPENDED MANUSCRIPTS', value: isLoadingStats ? '...' : (stats?.suspended ?? 0).toString(), variant: 'default', viewAllHref: '#' },
+    { title: 'WAIVER REQUESTS', value: '0', variant: 'default', viewAllHref: '#' },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-muted">
@@ -502,4 +551,3 @@ export default function AuthorDashboardPage() {
     </div>
   );
 }
-    
