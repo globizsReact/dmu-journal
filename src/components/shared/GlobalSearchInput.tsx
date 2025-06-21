@@ -1,19 +1,25 @@
+
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search } from 'lucide-react';
-import { journalEntries } from '@/lib/data';
-import type { JournalEntry } from '@/lib/types';
+import { Search, Loader2 } from 'lucide-react';
+
+interface SearchSuggestion {
+    id: string;
+    title: string;
+    excerpt: string;
+    authors: string[];
+}
 
 const GlobalSearchInput = () => {
   const [query, setQuery] = useState('');
-  const [suggestions, setSuggestions] = useState<JournalEntry[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1); // For keyboard navigation
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,26 +29,41 @@ const GlobalSearchInput = () => {
     setSuggestions([]);
     setShowSuggestions(false);
     setActiveIndex(-1);
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    if (query.trim().length > 1) {
-      const lowerCaseQuery = query.toLowerCase();
-      const filteredSuggestions = journalEntries
-        .filter(
-          (entry) =>
-            entry.title.toLowerCase().includes(lowerCaseQuery) ||
-            entry.excerpt.toLowerCase().includes(lowerCaseQuery) ||
-            (entry.authors && entry.authors.some(author => author.toLowerCase().includes(lowerCaseQuery)))
-        )
-        .slice(0, 5); // Limit to 5 suggestions
-      setSuggestions(filteredSuggestions);
-      setShowSuggestions(true);
-    } else {
-      setSuggestions([]);
-      setShowSuggestions(false);
-    }
-    setActiveIndex(-1); // Reset active index on query change
+    const handler = setTimeout(() => {
+      if (query.trim().length > 1) {
+        const fetchSuggestions = async () => {
+          setIsLoading(true);
+          try {
+            const response = await fetch(`/api/public/manuscripts/search?query=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setSuggestions(data.suggestions || []);
+            setShowSuggestions(true);
+          } catch (error) {
+            console.error("Failed to fetch search suggestions:", error);
+            setSuggestions([]);
+            setShowSuggestions(true); 
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        fetchSuggestions();
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setIsLoading(false);
+      }
+    }, 300); // 300ms debounce delay
+
+    return () => {
+      clearTimeout(handler);
+    };
   }, [query]);
 
   useEffect(() => {
@@ -59,6 +80,7 @@ const GlobalSearchInput = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
+    setActiveIndex(-1); 
   };
 
   const handleSuggestionClick = (suggestionId: string) => {
@@ -79,21 +101,15 @@ const GlobalSearchInput = () => {
         if (activeIndex >= 0 && activeIndex < suggestions.length) {
           handleSuggestionClick(suggestions[activeIndex].id);
         } else if (suggestions.length > 0) {
-          // Default to first suggestion if no active index (e.g. typed and pressed enter)
           handleSuggestionClick(suggestions[0].id);
         }
       } else if (e.key === 'Escape') {
         setShowSuggestions(false);
         setActiveIndex(-1);
       }
-    } else if (e.key === 'Enter' && query.trim() && suggestions.length === 0) {
-        // Potentially navigate to a "no results found" page or display a more prominent message.
-        // For now, it just keeps the input focused.
-        e.preventDefault(); 
     }
   };
-  
-  // Scroll suggestion into view
+
   useEffect(() => {
     if (activeIndex !== -1 && showSuggestions) {
       const suggestionElement = document.getElementById(`suggestion-${activeIndex}`);
@@ -101,10 +117,13 @@ const GlobalSearchInput = () => {
     }
   }, [activeIndex, showSuggestions]);
 
-
   return (
     <div className="relative w-full md:w-auto md:max-w-sm" ref={searchContainerRef}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10 pointer-events-none" />
+      {isLoading ? (
+        <Loader2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10 animate-spin" />
+      ) : (
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground z-10 pointer-events-none" />
+      )}
       <Input
         ref={inputRef}
         type="search"
@@ -120,17 +139,17 @@ const GlobalSearchInput = () => {
         aria-controls="suggestions-listbox"
         aria-activedescendant={activeIndex !== -1 ? `suggestion-${activeIndex}` : undefined}
       />
-      {showSuggestions && (
-        <Card 
-            className="absolute top-full mt-1.5 w-full max-h-96 overflow-y-auto shadow-lg z-50 bg-card border border-border"
-            role="listbox"
-            id="suggestions-listbox"
+      {showSuggestions && !isLoading && (
+        <Card
+          className="absolute top-full mt-1.5 w-full max-h-96 overflow-y-auto shadow-lg z-50 bg-card border border-border"
+          role="listbox"
+          id="suggestions-listbox"
         >
           <CardContent className="p-0">
             {suggestions.length > 0 ? (
               <ul className="divide-y divide-border">
                 {suggestions.map((entry, index) => (
-                  <li 
+                  <li
                     key={entry.id}
                     id={`suggestion-${index}`}
                     role="option"
@@ -146,7 +165,7 @@ const GlobalSearchInput = () => {
                       <h4 className={`text-sm font-medium ${activeIndex === index ? 'text-accent-foreground' : 'text-primary'}`}>
                         {entry.title}
                       </h4>
-                      <p className={`text-xs  truncate ${activeIndex === index ? 'text-accent-foreground/80' : 'text-muted-foreground'}`}>
+                      <p className={`text-xs truncate ${activeIndex === index ? 'text-accent-foreground/80' : 'text-muted-foreground'}`}>
                         {entry.excerpt}
                       </p>
                       {entry.authors && entry.authors.length > 0 && (
