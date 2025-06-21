@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -500,6 +501,9 @@ export default function AuthorDashboardPage() {
     { key: 'submitted', title: 'New Submissions', value: isLoadingStats ? '...' : (stats?.submitted ?? 0).toString(), icon: FilePlus, description: "Manuscripts you've submitted.", colorClass: "text-blue-500" },
     { key: 'inReview', title: 'Manuscripts In Review', value: isLoadingStats ? '...' : (stats?.inReview ?? 0).toString(), icon: FileClock, description: "Currently under peer review.", colorClass: "text-orange-500" },
     { key: 'accepted', title: 'Accepted Manuscripts', value: isLoadingStats ? '...' : (stats?.accepted ?? 0).toString(), icon: FileCheck2, description: "Approved for publication.", colorClass: "text-green-500" },
+    { key: 'published', title: 'Published Manuscripts', value: isLoadingStats ? '...' : (stats?.published ?? 0).toString(), icon: BookUp, description: "Officially published articles.", colorClass: "text-emerald-600" },
+    { key: 'suspended', title: 'Suspended Manuscripts', value: isLoadingStats ? '...' : (stats?.suspended ?? 0).toString(), icon: FileX2, description: "Submissions needing attention.", colorClass: "text-yellow-600" },
+    { key: 'waiver', title: 'Waiver Requests', value: '0', icon: HelpCircle, description: "Requests for fee waivers.", colorClass: "text-pink-500" },
     { 
       key: 'payments',
       title: 'Payments Due', 
@@ -509,9 +513,6 @@ export default function AuthorDashboardPage() {
       colorClass: "text-purple-500",
       actionButton: { text: 'Pay Now', href: '#'} 
     },
-    { key: 'published', title: 'Published Manuscripts', value: isLoadingStats ? '...' : (stats?.published ?? 0).toString(), icon: BookUp, description: "Officially published articles.", colorClass: "text-emerald-600" },
-    { key: 'suspended', title: 'Suspended Manuscripts', value: isLoadingStats ? '...' : (stats?.suspended ?? 0).toString(), icon: FileX2, description: "Submissions needing attention.", colorClass: "text-yellow-600" },
-    { key: 'waiver', title: 'Waiver Requests', value: '0', icon: HelpCircle, description: "Requests for fee waivers.", colorClass: "text-pink-500" },
   ];
 
   return (
