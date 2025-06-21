@@ -37,7 +37,7 @@ const dashboardItems: DashboardStatCardProps[] = [
   { title: 'ACCEPTED MANUSCRIPTS', value: '0', variant: 'default', viewAllHref: '#' },
   { 
     title: 'PAYMENTS DUE', 
-    value: '$0.00', 
+    value: '₹0.00', 
     variant: 'success', 
     viewAllHref: '#', 
     actionButton: { text: 'Pay Now', href: '#'} 
