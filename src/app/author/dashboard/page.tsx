@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -29,6 +29,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
 
 const dashboardItems: DashboardStatCardProps[] = [
   { title: 'NEW SUBMISSION', value: '0', variant: 'default', viewAllHref: '#' },
@@ -178,9 +179,11 @@ const MyManuscriptView = () => {
                      {formattedDate}
                   </TableCell> */}
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">View</span>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/author/view-manuscript/${manuscript.id}`}>
+                            <Eye className="w-4 h-4 mr-1 sm:mr-2" />
+                            <span className="hidden sm:inline">View</span>
+                        </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
