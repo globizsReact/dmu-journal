@@ -31,14 +31,14 @@ export interface JournalEntry {
   date: string; 
   categoryId: string;
   excerpt: string; 
-  authors?: string[]; 
+  authors?: string[] | { name: string }[];
+  coAuthors?: { name: string }[]; // Keep this for prisma relation if needed
   doiSuffix?: string; 
   imagePath?: string; 
   imageHint?: string; 
   views?: number;
   downloads?: number;
   citations?: number;
-  keywords?: string[];
+  keywords?: string[] | string;
   articleType?: string; // e.g., "Full Length Research Paper"
 }
-

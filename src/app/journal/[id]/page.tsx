@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -13,46 +13,92 @@ import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import LoadingJournalPage from './loading'; // Import the skeleton component
+import { useToast } from '@/hooks/use-toast';
 
 export default function JournalPage() {
   const params = useParams();
   const id = params.id as string;
+  const { toast } = useToast();
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [category, setCategory] = useState<JournalCategory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const fetchJournalData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/public/manuscripts/${id}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to fetch journal entry: ${response.status}`);
+      }
+      const data = await response.json();
+      setEntry(data.manuscript);
+      setCategory(data.category);
+    } catch (err: any) {
+      console.error(`Error fetching journal entry with ID ${id}:`, err);
+      setError(err.message || 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id]);
+
+  const handleIncrement = useCallback(async (type: 'views' | 'downloads' | 'citations') => {
+    if (!id) return;
+
+    // Optimistic UI update
+    setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) + 1 } : null);
+    
+    // Give user feedback for interactive clicks
+    if (type === 'downloads') {
+      toast({ title: "Downloading...", description: "Your PDF download will begin shortly (mock)." });
+    }
+    if (type === 'citations') {
+      toast({ title: "Citation Copied", description: "Citation details copied to clipboard (mock)." });
+    }
+
+    try {
+      const response = await fetch(`/api/public/manuscripts/${id}/increment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type })
+      });
+      if (!response.ok) {
+        // Revert on API error
+        setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) - 1 } : null);
+      }
+    } catch (error) {
+      console.error(`Failed to increment ${type} count`, error);
+      // Revert on network error
+      setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) - 1 } : null);
+    }
+  }, [id, toast]);
+
   useEffect(() => {
     if (id) {
-      const fetchJournalData = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-          const response = await fetch(`/api/public/manuscripts/${id}`);
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || `Failed to fetch journal entry: ${response.status}`);
-          }
-          const data = await response.json();
-          setEntry(data.manuscript);
-          setCategory(data.category);
-        } catch (err: any) {
-          console.error(`Error fetching journal entry with ID ${id}:`, err);
-          setError(err.message || 'An unexpected error occurred.');
-        } finally {
-          setIsLoading(false);
-        }
-      };
       fetchJournalData();
     } else {
         setIsLoading(false);
         setError("No journal ID provided in the URL.");
     }
-  }, [id]);
+  }, [id, fetchJournalData]);
+  
+  // Effect for incrementing view count
+  useEffect(() => {
+    if (id && !isLoading && entry) { // Ensure entry is loaded before trying to increment
+        const viewCounted = sessionStorage.getItem(`viewed_${id}`);
+        if (!viewCounted) {
+            handleIncrement('views');
+            sessionStorage.setItem(`viewed_${id}`, 'true');
+        }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, isLoading, entry]); // handleIncrement is memoized and safe
+
 
   if (isLoading) {
-    // Show the dedicated loading skeleton
     return <LoadingJournalPage />; 
   }
 
@@ -91,7 +137,6 @@ export default function JournalPage() {
     <div className="flex flex-col min-h-screen bg-muted/40">
       <Header />
 
-      {/* Hero Section */}
       <section className="relative py-16 md:py-20 text-primary-foreground bg-secondary">
         {category.imagePath && (
             <Image
@@ -104,7 +149,7 @@ export default function JournalPage() {
                 priority
             />
         )}
-        <div className="absolute inset-0 bg-primary/70 z-0"></div> {/* Dark overlay */}
+        <div className="absolute inset-0 bg-primary/70 z-0"></div>
         <div className="relative z-10 container mx-auto px-4 text-center">
           <p className="text-lg md:text-xl font-medium opacity-90">Journal Of {category.name}</p>
           <h1 className="text-3xl md:text-5xl font-headline font-bold mt-2 mb-3 text-white">
@@ -121,7 +166,6 @@ export default function JournalPage() {
         </div>
       </section>
 
-      {/* Sub-Navigation Bar */}
       <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-30">
         <div className="container mx-auto px-4 h-14">
           <div className="flex items-center justify-center h-full overflow-x-auto whitespace-nowrap">
@@ -142,8 +186,8 @@ export default function JournalPage() {
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl"> {/* Added max-w-5xl here */}
-        <JournalView entry={entry} category={category} />
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
+        <JournalView entry={entry} category={category} onIncrement={handleIncrement} />
          <div className="mt-12 text-center">
             <Button asChild variant="outline">
                 <Link href={`/category/${category.slug}`} className="inline-flex items-center">
