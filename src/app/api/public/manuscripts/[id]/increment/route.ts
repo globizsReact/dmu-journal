@@ -12,39 +12,32 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   const manuscriptId = params.id;
-
   try {
     const body = await request.json();
     const validation = incrementSchema.safeParse(body);
 
     if (!validation.success) {
-      return NextResponse.json({ error: 'Invalid increment type.' }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
     const { type } = validation.data;
 
-    // Use Prisma's atomic increment operation
-    const updatedManuscript = await prisma.manuscript.update({
+    await prisma.manuscript.update({
       where: { id: manuscriptId },
       data: {
         [type]: {
           increment: 1,
         },
       },
-      select: { // Only return the updated counts
-        views: true,
-        downloads: true,
-        citations: true,
-      }
     });
 
-    return NextResponse.json({ message: `${type} count incremented successfully.`, counts: updatedManuscript }, { status: 200 });
+    return NextResponse.json({ message: `${type} count incremented successfully.` }, { status: 200 });
 
   } catch (error: any) {
     if (error.code === 'P2025') { // Prisma error for record not found
       return NextResponse.json({ error: 'Manuscript not found' }, { status: 404 });
     }
-    console.error(`Failed to increment count for manuscript ${manuscriptId}:`, error);
+    console.error(`Error incrementing count for manuscript ${manuscriptId}:`, error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }

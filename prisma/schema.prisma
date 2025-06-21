@@ -1,6 +1,5 @@
-
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -9,20 +8,20 @@ generator client {
 }
 
 model User {
-  id                   Int      @id @default(autoincrement())
-  fullName             String?
-  username             String   @unique
-  email                String   @unique
-  password_hash        String
-  role                 String   @default("author")
-  submittedManuscripts Manuscript[] @relation("SubmittedByUser")
+  id            Int      @id @default(autoincrement())
+  fullName      String?
+  username      String   @unique
+  email         String   @unique
+  password_hash String
+  role          String?  @default("author")
+  manuscripts   Manuscript[]
 }
 
 model Manuscript {
   id                    String    @id @default(cuid())
   articleTitle          String
-  abstract              String
-  keywords              String
+  abstract              String    @db.Text
+  keywords              String?
   journalCategoryId     String
   isSpecialReview       Boolean   @default(false)
   
@@ -30,16 +29,15 @@ model Manuscript {
   manuscriptFileName    String
   supplementaryFilesName String?
   
-  authorAgreement       Boolean
-  coAuthors             Json
+  authorAgreement       Boolean   @default(false)
+  coAuthors             Json?
   
   status                String    @default("Submitted")
   submittedAt           DateTime  @default(now())
   
-  submittedBy           User      @relation("SubmittedByUser", fields: [submittedById], references: [id])
+  submittedBy           User      @relation(fields: [submittedById], references: [id])
   submittedById         Int
 
-  // Fields for tracking views, downloads, citations
   views                 Int       @default(0)
   downloads             Int       @default(0)
   citations             Int       @default(0)
