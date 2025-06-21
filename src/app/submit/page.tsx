@@ -166,7 +166,10 @@ export default function SubmitPage() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          role: activeTab, // Pass the active tab's role to the API
+        }),
       });
 
       const data = await response.json();

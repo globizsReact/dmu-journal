@@ -8,12 +8,12 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     console.log('Login API: Request body:', body);
-    const { username, password } = body; // Username can be actual username or email
+    const { username, password, role: expectedRole } = body; // Username can be actual username or email
 
-    if (!username || !password) {
-      console.log('Login API: Missing username/email or password');
+    if (!username || !password || !expectedRole) {
+      console.log('Login API: Missing username, password, or expected role');
       return NextResponse.json(
-        { error: 'Username/email and password are required' },
+        { error: 'Username/email, password, and role are required' },
         { status: 400 }
       );
     }
@@ -45,6 +45,16 @@ export async function POST(request: NextRequest) {
           { error: 'Admin accounts must use the designated admin login page.' },
           { status: 403 }
         );
+      }
+      
+      // NEW: Check if user's actual role matches the expected role from the tab
+      if (user.role !== expectedRole) {
+          console.log(`Login API: Role mismatch. User role: '${user.role}', expected: '${expectedRole}'.`);
+          const userRoleCapitalized = user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'a different role';
+          return NextResponse.json(
+              { error: `This account is a ${userRoleCapitalized} account. Please select the correct tab to sign in.` },
+              { status: 403 } // 403 Forbidden is appropriate here
+          );
       }
 
       console.log('Login API: Comparing password...');
