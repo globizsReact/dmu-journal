@@ -1,5 +1,5 @@
 
-import * as React from 'react'; // Added import
+import * as React from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -38,13 +38,13 @@ export default function LoadingJournalPage() {
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         <div className="bg-card shadow-lg rounded-lg p-6 md:p-8">
           <Skeleton className="h-6 w-1/4 mb-6" /> {/* Article Type Badge */}
 
           <div className="flex flex-col md:flex-row gap-8">
             {/* Left Sidebar - Stats */}
-            <aside className="w-full md:w-1/5 lg:w-1/6 space-y-6">
+            <aside className="w-full md:w-24 lg:w-28 flex-shrink-0 flex flex-row justify-center items-center space-x-4 md:flex-col md:items-start md:space-y-6 md:space-x-0">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="text-center md:text-left">
                   <Skeleton className="h-3 w-12 mx-auto md:mx-0 mb-1" />
@@ -54,19 +54,20 @@ export default function LoadingJournalPage() {
             </aside>
 
             {/* Right Main Content - Article Details */}
-            <section className="w-full md:w-4/5 lg:w-5/6">
-              <Skeleton className="h-8 w-3/4 mb-2" /> {/* Title */}
-              <Skeleton className="h-4 w-1/3 mb-1" /> {/* Article Number */}
-              <Skeleton className="h-5 w-1/2 mb-3" /> {/* Journal of Category */}
-              
-              <div className="flex flex-col sm:flex-row gap-4 items-start">
-                <div className="flex-grow space-y-1">
-                  <Skeleton className="h-3 w-full" /> 
-                  <Skeleton className="h-3 w-5/6" />
+            <section className="w-full md:flex-1">
+              <div className='flex flex-col sm:flex-row gap-4 items-start'>
+                <div className="w-full sm:w-2/3 space-y-2">
+                  <Skeleton className="h-8 w-full" /> {/* Title */}
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-4 w-1/3 mt-2" /> {/* Article Number */}
+                  <Skeleton className="h-5 w-1/2 mt-1" /> {/* Journal of Category */}
+                   <div className="pt-2 space-y-1">
+                    <Skeleton className="h-3 w-full" /> 
+                    <Skeleton className="h-3 w-5/6" />
+                  </div>
                 </div>
-                <div className="w-full sm:w-1/3 md:w-1/4 lg:w-1/5 flex-shrink-0 mt-4 sm:mt-0">
+                <div className="w-full sm:w-1/3 flex-shrink-0 mt-4 sm:mt-0">
                   <Skeleton className="aspect-[4/3] w-full rounded-md" />
-                  <Skeleton className="h-3 w-2/3 mx-auto mt-1" />
                 </div>
               </div>
             </section>

@@ -6,13 +6,13 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import JournalView from '@/components/journal/JournalView';
-import { getJournalById, journalCategories } from '@/lib/data'; // Removed getCategoryBySlug as it's not directly used here
 import type { JournalEntry, JournalCategory } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide-react'; // Removed LayoutList as it wasn't used
+import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide-react';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
+import LoadingJournalPage from './loading'; // Import the skeleton component
 
 export default function JournalPage() {
   const params = useParams();
@@ -21,37 +21,52 @@ export default function JournalPage() {
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [category, setCategory] = useState<JournalCategory | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
-      const foundEntry = getJournalById(id);
-      if (foundEntry) {
-        setEntry(foundEntry);
-        const foundCategory = journalCategories.find(cat => cat.id === foundEntry.categoryId);
-        setCategory(foundCategory || null);
-      } else {
-        console.error("Journal entry not found");
-      }
-      // Simulate a small delay or remove if data loading is faster
-      const timer = setTimeout(() => setIsLoading(false), 150); 
-      return () => clearTimeout(timer);
+      const fetchJournalData = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+          const response = await fetch(`/api/public/manuscripts/${id}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Failed to fetch journal entry: ${response.status}`);
+          }
+          const data = await response.json();
+          setEntry(data.manuscript);
+          setCategory(data.category);
+        } catch (err: any) {
+          console.error(`Error fetching journal entry with ID ${id}:`, err);
+          setError(err.message || 'An unexpected error occurred.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchJournalData();
     } else {
         setIsLoading(false);
+        setError("No journal ID provided in the URL.");
     }
   }, [id]);
 
   if (isLoading) {
-    // Delegate to loading.tsx for full page skeleton
-    return null; 
+    // Show the dedicated loading skeleton
+    return <LoadingJournalPage />; 
   }
 
-  if (!entry || !category) {
+  if (error || !entry || !category) {
      return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />
         <main className="flex-1 container mx-auto px-4 py-8 text-center">
-          <h1 className="text-4xl font-headline text-destructive mb-4">Journal Entry or Category Not Found</h1>
-          <p className="text-muted-foreground mb-6">The journal entry or its category could not be found.</p>
+          <h1 className="text-4xl font-headline text-destructive mb-4">
+            {error ? 'An Error Occurred' : 'Journal Entry Not Found'}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            {error || 'The journal entry or its category could not be found.'}
+          </p>
           <Button asChild>
             <Link href="/" className="flex items-center justify-center">
               <ArrowLeft className="w-4 h-4 mr-2" /> Go Back to Home
