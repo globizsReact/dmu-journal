@@ -1,24 +1,52 @@
 
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import AlphabetFilter from '@/components/shared/AlphabetFilter';
 import SubjectBrowseItem from '@/components/journals/SubjectBrowseItem';
-import { journalCategories, journalEntries } from '@/lib/data';
+import { journalCategories } from '@/lib/data';
 import type { JournalEntry } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
 import { ChevronRight } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const metadataLine = "Abbreviation: J. Biophys. Struct. Biol. Language: English ISSN: 2141-2200 DOI: 10.5897/JBSB Start Year: 2009 Published Articles: 25";
 
 export default function AllJournalsPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchJournals = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/public/manuscripts');
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to fetch journals');
+        }
+        const data: JournalEntry[] = await response.json();
+        setJournalEntries(data);
+      } catch (err: any) {
+        console.error("Failed to fetch journal entries:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchJournals();
+  }, []);
 
   const groupedJournals = useMemo(() => {
+    if (isLoading || error) return {};
     const groups: Record<string, JournalEntry[]> = {};
     const filtered = selectedLetter
       ? journalEntries.filter(entry => entry.title.toUpperCase().startsWith(selectedLetter))
@@ -32,9 +60,69 @@ export default function AllJournalsPage() {
       groups[firstLetter].push(entry);
     });
     return groups;
-  }, [selectedLetter]);
+  }, [selectedLetter, journalEntries, isLoading, error]);
 
   const sortedGroupKeys = Object.keys(groupedJournals).sort();
+  
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div>
+          {[...Array(2)].map((_, gIdx) => (
+              <div key={gIdx} className="mb-8">
+                  <Skeleton className="h-8 w-10 mb-4 pb-2" />
+                  <ul className="space-y-3">
+                      {[...Array(3)].map((_, i) => (
+                          <li key={i} className="flex items-center">
+                              <Skeleton className="w-4 h-4 rounded-full mr-2" />
+                              <Skeleton className="h-5 flex-1" />
+                          </li>
+                      ))}
+                  </ul>
+              </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+       return <p className="text-center text-destructive py-8 text-lg">Error loading journals: {error}</p>;
+    }
+    
+    if (sortedGroupKeys.length > 0) {
+      return sortedGroupKeys.map(letter => (
+        <div key={letter} className="mb-8">
+          <h3 className="text-2xl font-headline font-semibold text-primary/80 mb-4 pb-2 border-b border-border">
+            {letter}
+          </h3>
+          <ul className="space-y-3">
+            {groupedJournals[letter].map(entry => (
+              <li key={entry.id} className="text-foreground/80 hover:text-primary transition-colors">
+                <Link href={`/journal/${entry.id}`} className="flex items-center group">
+                   <ChevronRight className="w-4 h-4 text-muted-foreground mr-2 group-hover:text-primary transition-colors shrink-0" />
+                   <span className="font-body">{entry.title}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+
+    if (selectedLetter && sortedGroupKeys.length === 0) {
+        return (
+             <p className="text-center text-muted-foreground py-8 text-lg">
+                No journals starting with the letter &quot;{selectedLetter}&quot; found.
+            </p>
+        );
+    }
+    
+    return (
+      <p className="text-center text-muted-foreground py-8 text-lg">
+        No published journals found.
+      </p>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -80,7 +168,7 @@ export default function AllJournalsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           {/* Left Sidebar */}
-          <aside className="w-full md:w-1/3 lg:w-1/4"> {/* Adjusted width */}
+          <aside className="w-full md:w-1/3 lg:w-1/4">
             <div className="bg-card p-4 rounded-lg shadow">
               <h2 className="text-xl font-headline font-semibold text-primary mb-3">Browse By Subject</h2>
               <Link
@@ -100,40 +188,14 @@ export default function AllJournalsPage() {
           </aside>
 
           {/* Right Content Pane */}
-          <section className="w-full md:w-2/3 lg:w-3/4"> {/* Adjusted width */}
+          <section className="w-full md:w-2/3 lg:w-3/4">
             <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
               Journals By Title
             </h2>
             <AlphabetFilter selectedLetter={selectedLetter} onSelectLetter={setSelectedLetter} />
             
-            {sortedGroupKeys.length > 0 ? (
-              sortedGroupKeys.map(letter => (
-                <div key={letter} className="mb-8">
-                  <h3 className="text-2xl font-headline font-semibold text-primary/80 mb-4 pb-2 border-b border-border">
-                    {letter}
-                  </h3>
-                  <ul className="space-y-3">
-                    {groupedJournals[letter].map(entry => (
-                      <li key={entry.id} className="text-foreground/80 hover:text-primary transition-colors">
-                        <Link href={`/journal/${entry.id}`} className="flex items-center group">
-                           <ChevronRight className="w-4 h-4 text-muted-foreground mr-2 group-hover:text-primary transition-colors shrink-0" />
-                           <span className="font-body">{entry.title}</span>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-muted-foreground py-8 text-lg">
-                No journals found for the selected filter.
-              </p>
-            )}
-            {selectedLetter && sortedGroupKeys.length === 0 && (
-                 <p className="text-center text-muted-foreground py-8 text-lg">
-                    No journals starting with the letter &quot;{selectedLetter}&quot; found.
-                </p>
-            )}
+            {renderContent()}
+            
           </section>
         </div>
       </main>
