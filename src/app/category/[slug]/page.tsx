@@ -4,14 +4,14 @@
 import * as React from 'react';
 import type { ReactNode } from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
 import { getCategoryBySlug, getJournalsByCategoryId } from '@/lib/data';
 import type { JournalCategory, JournalEntry } from '@/lib/types';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList } from 'lucide-react';
+import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -259,11 +259,13 @@ const CategoryIssuesContent = ({ category }: { category: JournalCategory | null 
 export default function CategoryPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
 
   const [category, setCategory] = useState<JournalCategory | null>(null);
   const [allCategoryJournals, setAllCategoryJournals] = useState<JournalEntry[]>([]);
   const [displayedEntries, setDisplayedEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<string>("Most Recent");
   const [activeTab, setActiveTab] = useState<TabKey>('OVERVIEW');
   
@@ -271,21 +273,40 @@ export default function CategoryPage() {
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   useEffect(() => {
-    if (slug) {
-      const foundCategory = getCategoryBySlug(slug);
-      if (foundCategory) {
-        setCategory(foundCategory);
-        const baseJournals = getJournalsByCategoryId(foundCategory.id);
-        setAllCategoryJournals(baseJournals);
-      } else {
-        console.error("Category not found");
-        setCategory(null);
-        setAllCategoryJournals([]);
-      }
-      // Set loading to false after attempting to load category and journals
-      const timer = setTimeout(() => setIsLoading(false), 200); // Simulate small delay
-      return () => clearTimeout(timer);
+    if (!slug) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    setAllCategoryJournals([]); // Reset on slug change
+
+    const foundCategory = getCategoryBySlug(slug);
+    setCategory(foundCategory || null);
+
+    if (foundCategory) {
+      const fetchJournals = async () => {
+        try {
+          const response = await fetch(`/api/public/manuscripts/by-category/${foundCategory.id}`);
+          if (!response.ok) {
+            const errData = await response.json();
+            throw new Error(errData.error || 'Failed to fetch journal entries.');
+          }
+          const data: JournalEntry[] = await response.json();
+          setAllCategoryJournals(data);
+        } catch (err: any) {
+          console.error("Error fetching journal entries:", err);
+          setError(err.message || "An error occurred.");
+          setAllCategoryJournals([]); // Ensure it's empty on error
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchJournals();
     } else {
+      console.error("Category not found for slug:", slug);
+      setError("Category not found.");
       setIsLoading(false);
     }
   }, [slug]);
@@ -298,7 +319,8 @@ export default function CategoryPage() {
       } else if (selectedView === "Most View") {
         sortedJournals.sort((a, b) => (b.views || 0) - (a.views || 0));
       } else if (selectedView === "Most Shared") {
-        sortedJournals.sort((a, b) => (b.shares || 0) - (a.shares || 0));
+         // Use downloads as a proxy for shares since 'shares' doesn't exist in the model
+        sortedJournals.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
       }
       setDisplayedEntries(sortedJournals);
     } else {
@@ -308,33 +330,38 @@ export default function CategoryPage() {
 
 
   useEffect(() => {
-    if (isLoading || !category) {
-      setUnderlineStyle({ width: 0, left: 0 }); // Reset or hide underline
+    if (!category) {
+      setUnderlineStyle({ width: 0, left: 0 });
       return;
     }
 
     const activeTabIndex = TABS_CONFIG.findIndex(tab => tab.key === activeTab);
-    if (activeTabIndex !== -1 && tabRefs.current[activeTabIndex]) {
-      const activeTabElement = tabRefs.current[activeTabIndex];
-      // Use a timeout to ensure the DOM has settled for accurate measurements
+    const activeTabElement = tabRefs.current[activeTabIndex];
+    if (activeTabElement) {
       const timeoutId = setTimeout(() => {
-        if (activeTabElement) { // Double check ref in case of quick changes
-          setUnderlineStyle({
-            width: activeTabElement.offsetWidth,
-            left: activeTabElement.offsetLeft,
-          });
-        }
+        setUnderlineStyle({
+          width: activeTabElement.offsetWidth,
+          left: activeTabElement.offsetLeft,
+        });
       }, 0);
       return () => clearTimeout(timeoutId);
     }
-  }, [activeTab, category, isLoading]); // Removed TABS_CONFIG from here as it's stable
+  }, [activeTab, category]); 
 
+  // The main `loading.tsx` file handles the full-page skeleton.
+  // This hook handles the case where the category itself is not found after loading.
+  useEffect(() => {
+    if (!isLoading && !category) {
+      router.push('/'); // Or a dedicated 404 page
+    }
+  }, [isLoading, category, router]);
 
-  if (isLoading) {
+  if (isLoading || !category) {
+    // Show a minimal loader or rely on the main loading.tsx.
+    // Returning the loading.tsx skeleton here prevents a flash of unstyled content.
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        {/* Simplified skeleton for page structure before tabs are interactive */}
         <section className="py-10 md:py-16 bg-secondary">
           <div className="container mx-auto px-4">
             <Skeleton className="h-6 w-1/4 mb-2" />
@@ -344,36 +371,16 @@ export default function CategoryPage() {
         <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
           <div className="container mx-auto px-4">
             <div className="flex flex-wrap justify-center md:justify-start items-center py-3 gap-4">
-              <Skeleton className="h-8 w-20" /> {/* Home link skeleton */}
-              {[...Array(5)].map((_, i) => ( // Skeletons for tab buttons
-                <Skeleton key={i} className="h-8 w-24" />
-              ))}
+              <Skeleton className="h-8 w-20" />
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-24" />)}
             </div>
           </div>
         </nav>
         <main className="flex-1 container mx-auto px-4 py-8">
-           <Skeleton className="h-8 w-3/5 mb-4" />
-           <Skeleton className="h-4 w-full mb-2" />
-           <Skeleton className="h-4 w-full mb-2" />
-           <Skeleton className="h-64 w-full mt-4" />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!category) {
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-1 container mx-auto px-4 py-8 text-center">
-          <h1 className="text-4xl font-headline text-destructive mb-4">Category Not Found</h1>
-          <p className="text-muted-foreground mb-6">The journal category you're looking for doesn't exist.</p>
-          <Button asChild>
-            <Link href="/" className="flex items-center justify-center">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Go Back to Home
-            </Link>
-          </Button>
+           <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="ml-4 text-lg">Loading Category...</p>
+           </div>
         </main>
         <Footer />
       </div>
@@ -460,22 +467,29 @@ export default function CategoryPage() {
 
             <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
             
-            <div className="space-y-8">
-              {displayedEntries.length > 0 ? (
-                displayedEntries.map((entry) => (
-                  <ArticleListItemCard 
-                    key={entry.id} 
-                    entry={entry} 
-                    categoryName={category.name}
-                  />
-                ))
-              ) : (
-                 allCategoryJournals.length > 0 && selectedView ? 
-                  <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for the current filter.</p>
-                  :
+            {isLoading ? (
+              <div className="flex justify-center items-center py-10">
+                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                 <p className="ml-3 text-muted-foreground">Loading entries...</p>
+              </div>
+            ) : error ? (
+              <p className="text-center text-destructive py-8 text-lg">{error}</p>
+            ) : (
+              <div className="space-y-8">
+                {displayedEntries.length > 0 ? (
+                  displayedEntries.map((entry) => (
+                    <ArticleListItemCard 
+                      key={entry.id} 
+                      entry={entry} 
+                      categoryName={category.name}
+                    />
+                  ))
+                ) : (
                   <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
-              )}
-            </div>
+                )}
+              </div>
+            )}
+
 
             <div className="mt-12 text-center">
                 <Button asChild variant="outline">
@@ -506,4 +520,3 @@ export default function CategoryPage() {
     </div>
   );
 }
-    
