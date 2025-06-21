@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react'; 
@@ -191,9 +192,7 @@ export default function SubmitPage() {
           description: "Redirecting to your dashboard...",
         });
         
-        if (data.user.role === 'admin') {
-          router.push('/admin/dashboard');
-        } else if (data.user.role === 'reviewer') {
+        if (data.user.role === 'reviewer') {
           router.push('/reviewer/dashboard');
         } else {
           router.push('/author/dashboard');

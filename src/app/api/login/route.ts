@@ -38,6 +38,15 @@ export async function POST(request: NextRequest) {
       }
       console.log('Login API: User found:', { id: user.id, username: user.username, email: user.email, role: user.role });
 
+      // Block admins from using the general login form
+      if (user.role === 'admin') {
+        console.log('Login API: Admin login attempt blocked from general login form.');
+        return NextResponse.json(
+          { error: 'Admin accounts must use the designated admin login page.' },
+          { status: 403 }
+        );
+      }
+
       console.log('Login API: Comparing password...');
       const isPasswordValid = await comparePassword(password, user.password_hash);
 

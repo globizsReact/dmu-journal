@@ -48,7 +48,7 @@ export default function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) 
   const onSubmit = async (values: LoginFormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
@@ -56,7 +56,7 @@ export default function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) 
 
       const data = await response.json();
 
-      if (response.ok && data.user && data.user.role === 'admin') {
+      if (response.ok) {
         if (typeof window !== 'undefined') {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'Admin');
@@ -68,12 +68,6 @@ export default function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) 
           description: "Welcome to the Admin Panel.",
         });
         onLoginSuccess(); // Callback to inform parent layout
-      } else if (response.ok && data.user && data.user.role !== 'admin') {
-        toast({
-          title: "Access Denied",
-          description: "You do not have admin privileges.",
-          variant: "destructive",
-        });
       } else {
         toast({
           title: "Login Failed",
