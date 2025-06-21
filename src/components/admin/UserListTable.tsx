@@ -14,13 +14,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
 import { cn } from '@/lib/utils';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 
 interface DisplayUser {
   id: number;
@@ -51,7 +49,6 @@ export default function UserListTable() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<DisplayUser | null>(null);
   const [deletingUser, setDeletingUser] = useState<DisplayUser | null>(null);
-  const [updatingRoleId, setUpdatingRoleId] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -136,45 +133,6 @@ export default function UserListTable() {
     }
     toast({ title: "User Deleted", description: "The user has been successfully deleted.", variant: 'default' });
   };
-  
-  const handleReviewerApprovalChange = async (user: DisplayUser, isApproved: boolean) => {
-    if (!authToken || user.role === 'admin') return;
-
-    setUpdatingRoleId(user.id);
-    const newRole = isApproved ? 'reviewer' : 'author';
-
-    try {
-      const response = await fetch(`/api/admin/users/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`,
-        },
-        body: JSON.stringify({ role: newRole }),
-      });
-
-      const updatedUser = await response.json();
-
-      if (response.ok) {
-        setUsers(prevUsers => prevUsers.map(u => u.id === user.id ? { ...u, role: newRole } : u));
-        toast({
-          title: 'User Role Updated',
-          description: `${user.username}'s role has been updated to ${newRole}.`,
-        });
-      } else {
-        throw new Error(updatedUser.error || 'Failed to update role.');
-      }
-    } catch (err: any) {
-      toast({
-        title: 'Update Failed',
-        description: err.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setUpdatingRoleId(null);
-    }
-  };
-
 
   if (isLoading && users.length === 0 && !error && authToken) {
     return (
@@ -217,7 +175,7 @@ export default function UserListTable() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="flex-grow">
             <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">All Users</CardTitle>
-            <CardDescription>Manage user accounts. Showing page {currentPage} of {totalPages}.</CardDescription>
+            <CardDescription>Manage user accounts. To change a user's role, use the Edit button. Showing page {currentPage} of {totalPages}.</CardDescription>
           </div>
           <Button onClick={() => setIsAddUserDialogOpen(true)} className="w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" /> Add New User
@@ -243,7 +201,6 @@ export default function UserListTable() {
                   <TableHead>Username</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
-                  <TableHead>Approve as Reviewer</TableHead>
                   <TableHead className="text-right w-[100px] sm:w-[130px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -264,34 +221,6 @@ export default function UserListTable() {
                       >
                         {user.role || 'N/A'}
                       </span>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-start">
-                        {updatingRoleId === user.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        ) : user.role === 'author' ? (
-                          <Switch
-                            id={`reviewer-switch-${user.id}`}
-                            checked={false} // An author is not yet a reviewer
-                            onCheckedChange={(isChecked) => {
-                              // Only trigger update when switching ON
-                              if (isChecked) {
-                                handleReviewerApprovalChange(user, true);
-                              }
-                            }}
-                            disabled={isLoading || updatingRoleId !== null}
-                            aria-label={`Approve ${user.username} as reviewer`}
-                          />
-                        ) : user.role === 'reviewer' ? (
-                           <div className="flex items-center gap-2 text-green-600">
-                             <CheckCircle2 className="h-4 w-4" />
-                             <span className="text-xs font-medium">Approved</span>
-                           </div>
-                        ) : (
-                          // For admin role or any other case
-                          <span className="text-xs text-muted-foreground">-</span>
-                        )}
-                      </div>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User" disabled={isLoading}>
