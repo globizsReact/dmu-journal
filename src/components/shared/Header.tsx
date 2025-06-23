@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -19,9 +20,9 @@ const Header = ({ className }: HeaderProps) => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const checkAuthStatus = () => {
-        const authorSession = localStorage.getItem('isAuthorLoggedIn');
+        const token = localStorage.getItem('authToken');
         const role = localStorage.getItem('userRole');
-        setIsLoggedIn(authorSession === 'true');
+        setIsLoggedIn(!!token); // Check for token presence for any role
         setUserRole(role);
       };
 

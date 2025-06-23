@@ -15,15 +15,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Reviewer access required' }, { status: 403 });
     }
 
-    // In a real-world scenario, you would fetch manuscripts specifically assigned to this reviewer.
-    // As a placeholder, we are fetching all manuscripts that are in a reviewable state.
+    // Return all manuscripts for the reviewer to manage
     const manuscripts = await prisma.manuscript.findMany({
-      where: {
-        OR: [
-          { status: 'Submitted' },
-          { status: 'In Review' },
-        ],
-      },
       orderBy: {
         submittedAt: 'desc',
       },

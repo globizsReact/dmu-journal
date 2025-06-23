@@ -15,20 +15,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Reviewer access required' }, { status: 403 });
     }
 
-    // Since there's no direct assignment model, we'll count manuscripts that are in a reviewable state.
-    const reviewableManuscripts = await prisma.manuscript.count({
+    const totalManuscripts = await prisma.manuscript.count();
+
+    const pendingReviews = await prisma.manuscript.count({
       where: {
-        OR: [
-          { status: 'Submitted' },
-          { status: 'In Review' },
-        ],
+        status: { in: ['Submitted', 'In Review'] }
       },
     });
 
+    const completedReviews = await prisma.manuscript.count({
+        where: {
+          status: { in: ['Accepted', 'Published', 'Suspended'] }
+        },
+    });
+
+
     const stats = {
-      totalAssigned: reviewableManuscripts,
-      pendingReviews: reviewableManuscripts, // Placeholder logic: all reviewable are pending for any reviewer
-      completedReviews: 0, // Placeholder logic: cannot track completions without schema changes
+      totalManuscripts,
+      pendingReviews,
+      completedReviews,
     };
 
     return NextResponse.json(stats, { status: 200 });

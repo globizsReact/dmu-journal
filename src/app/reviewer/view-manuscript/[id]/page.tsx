@@ -25,7 +25,7 @@ interface ManuscriptDetails extends Manuscript {
 }
 
 type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Published' | 'Suspended';
-type ReviewerActionStatus = 'In Review' | 'Accepted' | 'Suspended';
+type ReviewerActionStatus = 'In Review' | 'Accepted' | 'Suspended' | 'Published';
 
 export default function ReviewerManuscriptDetailsPage() {
   const params = useParams();
@@ -211,6 +211,8 @@ export default function ReviewerManuscriptDetailsPage() {
       );
     }
 
+    const canPublish = manuscript.status === 'Accepted';
+
     return (
       <Card className="shadow-lg">
         <CardHeader>
@@ -270,6 +272,12 @@ export default function ReviewerManuscriptDetailsPage() {
                             {loadingStatus === 'Suspended' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldOff className="mr-2 h-4 w-4" />}
                             Suspend Manuscript
                         </Button>
+                        {canPublish && (
+                            <Button onClick={() => handleUpdateStatus('Published')} disabled={!!loadingStatus} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
+                                {loadingStatus === 'Published' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <BookUp className="mr-2 h-4 w-4" />}
+                                Publish
+                            </Button>
+                        )}
                     </div>
                 )}
             </section>

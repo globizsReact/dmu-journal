@@ -40,9 +40,9 @@ const ReviewerStatCard: React.FC<ReviewerStatCardProps> = ({ title, value, icon:
 // Dashboard View
 const ReviewerDashboardView = ({ stats, isLoading }: { stats: any, isLoading: boolean }) => {
   const statItems = [
-    { key: 'totalAssigned', title: 'Total Assigned Manuscripts', value: isLoading ? '...' : stats?.totalAssigned ?? 0, icon: FileText, colorClass: 'text-blue-500', description: "All manuscripts needing review." },
-    { key: 'pendingReviews', title: 'Pending Reviews', value: isLoading ? '...' : stats?.pendingReviews ?? 0, icon: Clock, colorClass: 'text-orange-500', description: "Manuscripts awaiting your review." },
-    { key: 'completedReviews', title: 'Completed Reviews', value: isLoading ? '...' : stats?.completedReviews ?? 0, icon: CheckSquare, colorClass: 'text-green-500', description: "Manuscripts you have reviewed." },
+    { key: 'totalManuscripts', title: 'Total Manuscripts', value: isLoading ? '...' : stats?.totalManuscripts ?? 0, icon: FileText, colorClass: 'text-blue-500', description: "All manuscripts in the system." },
+    { key: 'pendingReviews', title: 'Pending Reviews', value: isLoading ? '...' : stats?.pendingReviews ?? 0, icon: Clock, colorClass: 'text-orange-500', description: "Manuscripts awaiting review." },
+    { key: 'completedReviews', title: 'Completed Reviews', value: isLoading ? '...' : stats?.completedReviews ?? 0, icon: CheckSquare, colorClass: 'text-green-500', description: "Reviewed or published manuscripts." },
   ];
 
   return (
@@ -78,7 +78,7 @@ const ReviewerDashboardView = ({ stats, isLoading }: { stats: any, isLoading: bo
         </CardHeader>
         <CardContent>
             <p className="text-sm text-muted-foreground">
-              The "Assigned Manuscripts" section contains articles for you to review.
+              The "All Manuscripts" section contains articles for you to review.
             </p>
         </CardContent>
       </Card>
@@ -154,7 +154,7 @@ const AssignedManuscriptsView = () => {
   if (isLoading) {
     return (
       <Card>
-        <CardHeader><CardTitle>Loading Assigned Manuscripts...</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Loading All Manuscripts...</CardTitle></CardHeader>
         <CardContent className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary"/></CardContent>
       </Card>
     );
@@ -172,14 +172,14 @@ const AssignedManuscriptsView = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">Assigned Manuscripts</CardTitle>
+        <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">All Manuscripts</CardTitle>
         <CardDescription>
-          The following manuscripts are available for your review. In this demo, all submitted articles are shown.
+          Browse and manage all manuscripts in the system.
         </CardDescription>
       </CardHeader>
       <CardContent>
         {manuscripts.length === 0 ? (
-          <p className="text-center text-muted-foreground py-8">No manuscripts are currently available for review.</p>
+          <p className="text-center text-muted-foreground py-8">No manuscripts found in the system.</p>
         ) : (
           <Table>
             <TableHeader>
