@@ -28,6 +28,11 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        journalCategory: {
+          select: {
+            name: true,
+          },
+        },
       },
       orderBy: {
         submittedAt: 'desc',

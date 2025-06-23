@@ -3,7 +3,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Manuscript } from '@prisma/client';
-import { journalCategories } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -24,6 +23,9 @@ interface ManuscriptWithAuthor extends Manuscript {
   submittedBy?: {
     fullName: string | null;
     email: string | null;
+  } | null;
+  journalCategory?: {
+    name: string;
   } | null;
 }
 
@@ -109,11 +111,6 @@ export default function ManuscriptListTable() {
     }
   };
 
-  const getJournalName = (journalId: string) => {
-    const category = journalCategories.find(cat => cat.id === journalId);
-    return category ? category.name : 'Unknown Journal';
-  };
-
   const formatSubmittedDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return 'N/A';
     try {
@@ -190,7 +187,7 @@ export default function ManuscriptListTable() {
                       {manuscript.submittedBy?.fullName || 'N/A'}
                       {manuscript.submittedBy?.email && <span className="block text-xs text-muted-foreground">{manuscript.submittedBy.email}</span>}
                     </TableCell>
-                    <TableCell>{getJournalName(manuscript.journalCategoryId)}</TableCell>
+                    <TableCell>{manuscript.journalCategory?.name || 'Unknown Journal'}</TableCell>
                     <TableCell>
                       <span
                         className={cn(`px-2 py-1 text-xs font-semibold rounded-full
