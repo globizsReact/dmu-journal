@@ -20,21 +20,25 @@ export async function GET(request: NextRequest) {
     
     console.log(`Admin Stats API: Authenticated admin user ID: ${decodedToken.userId}`);
 
-    const totalUsers = await prisma.user.count();
-    const totalSubmittedManuscripts = await prisma.manuscript.count();
-    const pendingManuscripts = await prisma.manuscript.count({
-      where: {
-        OR: [
-          { status: 'Submitted' },
-          { status: 'In Review' },
-        ],
-      },
-    });
+    const [totalUsers, totalSubmittedManuscripts, pendingManuscripts, totalJournals] = await Promise.all([
+        prisma.user.count(),
+        prisma.manuscript.count(),
+        prisma.manuscript.count({
+          where: {
+            OR: [
+              { status: 'Submitted' },
+              { status: 'In Review' },
+            ],
+          },
+        }),
+        prisma.journalCategory.count(),
+    ]);
 
     const stats = {
       totalUsers,
       totalSubmittedManuscripts,
       pendingManuscripts,
+      totalJournals,
     };
 
     console.log('Admin Stats API: Counts fetched successfully:', stats);

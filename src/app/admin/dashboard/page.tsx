@@ -4,14 +4,13 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Users, FileText, BookOpen, Clock3, Loader2, AlertTriangle } from 'lucide-react';
-import { journalCategories } from '@/lib/data'; // For total journals count
-import { Skeleton } from '@/components/ui/skeleton'; // Import Skeleton
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatData {
   totalUsers: number;
   totalSubmittedManuscripts: number;
   pendingManuscripts: number;
-  // totalJournals can be derived client-side for now
+  totalJournals: number;
 }
 
 interface AdminStatCardProps {
@@ -38,12 +37,12 @@ const AdminStatCard: React.FC<AdminStatCardProps> = ({ title, value, icon: Icon,
 const StatCardSkeleton: React.FC = () => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <Skeleton className="h-4 w-20" /> {/* Stat Title */}
-      <Skeleton className="h-5 w-5 rounded-full" /> {/* Icon */}
+      <Skeleton className="h-4 w-20" />
+      <Skeleton className="h-5 w-5 rounded-full" />
     </CardHeader>
     <CardContent>
-      <Skeleton className="h-7 w-12 mb-1" /> {/* Stat Value */}
-      <Skeleton className="h-3 w-24" /> {/* Stat Description */}
+      <Skeleton className="h-7 w-12 mb-1" />
+      <Skeleton className="h-3 w-24" />
     </CardContent>
   </Card>
 );
@@ -66,7 +65,6 @@ export default function AdminDashboardPage() {
           fetchStats(token);
         } else {
           setIsLoadingStats(false);
-          // Don't set an error here, the parent layout will handle the redirect.
         }
     }
   }, []);
@@ -80,15 +78,12 @@ export default function AdminDashboardPage() {
       });
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
-          // Token is invalid or user is not an admin.
-          // Clear auth state and let the AdminLayout handle redirecting to login.
           if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userRole');
             localStorage.removeItem('authorName');
             window.dispatchEvent(new CustomEvent('authChange'));
           }
-          // Stop further processing for this component
           return;
         }
         const errorData = await response.json();
@@ -103,8 +98,6 @@ export default function AdminDashboardPage() {
       setIsLoadingStats(false);
     }
   };
-
-  const totalJournals = journalCategories.length;
 
   return (
     <div className="space-y-6">
@@ -146,7 +139,7 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <AdminStatCard 
             title="Total Journals" 
-            value={totalJournals} 
+            value={stats.totalJournals} 
             icon={BookOpen}
             description="Number of journal categories."
             colorClass="text-blue-500"
@@ -186,7 +179,7 @@ export default function AdminDashboardPage() {
             <ul className="list-disc list-inside mt-2 space-y-1 text-sm text-muted-foreground">
             <li>View and manage all submitted manuscripts.</li>
             <li>Oversee user accounts (authors, reviewers, editors).</li>
-            <li>Manage journal categories and settings. (Future Feature)</li>
+            <li>Manage journal categories and settings.</li>
             </ul>
         </CardContent>
       </Card>
