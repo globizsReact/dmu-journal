@@ -1,20 +1,16 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { User } from '@prisma/client';
 
-interface SearchSuggestion {
-  id: string;
-  title: string;
-  excerpt: string;
-  authors: string[];
+interface CoAuthor {
+    title: string;
+    givenName: string;
+    lastName: string;
+    email: string;
+    affiliation: string;
+    country: string;
 }
-
-// A simple function to generate an excerpt from content
-const createExcerpt = (content: string, maxLength: number = 100): string => {
-  if (!content) return '';
-  if (content.length <= maxLength) return content;
-  return content.substring(0, maxLength).trim() + '...';
-};
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -27,53 +23,51 @@ export async function GET(request: NextRequest) {
   try {
     const manuscripts = await prisma.manuscript.findMany({
       where: {
-        status: 'Accepted', // Only search published manuscripts
+        status: 'Published',
         OR: [
-          {
-            articleTitle: {
-              contains: query, // `mode: 'insensitive'` removed for MySQL compatibility
-            },
-          },
-          {
-            abstract: {
-              contains: query, // `mode: 'insensitive'` removed for MySQL compatibility
-            },
-          },
-          {
-            keywords: {
-              contains: query, // `mode: 'insensitive'` removed for MySQL compatibility
-            },
-          },
+          { articleTitle: { contains: query, mode: 'insensitive' } },
+          { abstract: { contains: query, mode: 'insensitive' } },
+          { keywords: { contains: query, mode: 'insensitive' } },
         ],
       },
-      take: 10, // Limit the number of suggestions
-      include: {
+      select: {
+        id: true,
+        articleTitle: true,
+        abstract: true,
         submittedBy: {
           select: {
             fullName: true,
           },
         },
+        coAuthors: true,
       },
+      take: 10, // Limit the number of suggestions
     });
 
-    const suggestions: SearchSuggestion[] = manuscripts.map((manuscript) => {
-      const authorNames: string[] = [];
-
-      // Add the main submitting author if available
+    const suggestions = manuscripts.map((manuscript) => {
+      const authors: string[] = [];
       if (manuscript.submittedBy?.fullName) {
-        authorNames.push(manuscript.submittedBy.fullName);
+        authors.push(manuscript.submittedBy.fullName);
       }
-
-      // Add co-authors if they exist
-      if (Array.isArray(manuscript.coAuthors)) {
-        manuscript.coAuthors.forEach((author: any) => {
-          // Check if author is a valid object with name properties
-          if (author && typeof author === 'object' && author.givenName && author.lastName) {
-            const coAuthorName = `${author.givenName} ${author.lastName}`;
-            // Avoid adding duplicates if the main author is also listed as a co-author
-            if (!authorNames.includes(coAuthorName)) {
-              authorNames.push(coAuthorName);
-            }
+      
+      let parsedCoAuthors: CoAuthor[] = [];
+      if (manuscript.coAuthors) {
+          if (typeof manuscript.coAuthors === 'string') {
+              try {
+                  parsedCoAuthors = JSON.parse(manuscript.coAuthors);
+              } catch (e) {
+                  // Ignore if parsing fails, co-authors will not be added to search result
+              }
+          } else if (Array.isArray(manuscript.coAuthors)) {
+              // Directly use if it's already a JSON object (array)
+              parsedCoAuthors = manuscript.coAuthors as CoAuthor[];
+          }
+      }
+      
+      if (Array.isArray(parsedCoAuthors)) {
+        parsedCoAuthors.forEach(coAuthor => {
+          if (coAuthor.givenName && coAuthor.lastName) {
+            authors.push(`${coAuthor.givenName} ${coAuthor.lastName}`);
           }
         });
       }
@@ -81,8 +75,8 @@ export async function GET(request: NextRequest) {
       return {
         id: manuscript.id,
         title: manuscript.articleTitle,
-        excerpt: createExcerpt(manuscript.abstract),
-        authors: authorNames,
+        excerpt: manuscript.abstract.substring(0, 100) + '...',
+        authors: authors,
       };
     });
 
@@ -90,9 +84,8 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error('Search API Error:', error);
-    // It's better to return a specific error message for easier debugging
     return NextResponse.json(
-      { error: 'Failed to fetch search suggestions.', details: error.message },
+      { error: 'An error occurred while searching.', details: error.message },
       { status: 500 }
     );
   }
