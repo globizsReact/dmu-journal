@@ -11,8 +11,7 @@ import type { DashboardStatCardProps } from '@/components/author/DashboardStatCa
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SubmitManuscriptStepper from '@/components/author/SubmitManuscriptStepper'; 
 import { useToast } from '@/hooks/use-toast';
-import type { Manuscript } from '@prisma/client';
-import { journalCategories } from '@/lib/data';
+import type { Manuscript, JournalCategory } from '@prisma/client';
 import {
   Table,
   TableBody,
@@ -39,13 +38,31 @@ const MyManuscriptView = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const fetchInitialData = async () => {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
+
+      try {
+        const res = await fetch('/api/public/journal-categories');
+        if (!res.ok) throw new Error("Could not fetch categories");
+        const data = await res.json();
+        setJournalCategories(data);
+      } catch (e) {
+          console.error(e);
+          toast({ title: 'Error', description: 'Could not load journal categories.', variant: 'destructive' });
+      } finally {
+        setIsLoadingCategories(false);
+      }
     }
-  }, []);
+
+    if (typeof window !== 'undefined') {
+      fetchInitialData();
+    }
+  }, [toast]);
 
   useEffect(() => {
     if (!authToken) {
@@ -85,6 +102,7 @@ const MyManuscriptView = () => {
   }, [authToken, toast]);
 
   const getJournalName = (journalId: string) => {
+    if (isLoadingCategories) return '...';
     const category = journalCategories.find(cat => cat.id === journalId);
     return category ? category.name : 'Unknown Journal';
   };

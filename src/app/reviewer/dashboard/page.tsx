@@ -10,9 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FileText, Clock, CheckSquare, Loader2, AlertTriangle, Eye } from 'lucide-react';
-import type { Manuscript } from '@prisma/client';
+import type { Manuscript, JournalCategory } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
-import { journalCategories } from '@/lib/data';
 import { format } from 'date-fns';
 import Link from 'next/link';
 
@@ -95,12 +94,29 @@ const AssignedManuscriptsView = () => {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   useEffect(() => {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
       if (!token) setIsLoading(false);
-  }, []);
+
+      const fetchCategories = async () => {
+        try {
+          const res = await fetch('/api/public/journal-categories');
+          if (!res.ok) throw new Error("Could not fetch categories");
+          const data = await res.json();
+          setJournalCategories(data);
+        } catch (e) {
+            console.error(e);
+            toast({ title: 'Error', description: 'Could not load journal categories.', variant: 'destructive' });
+        } finally {
+          setIsLoadingCategories(false);
+        }
+      };
+      fetchCategories();
+  }, [toast]);
 
   const fetchManuscripts = useCallback(async (token: string) => {
     setIsLoading(true);
@@ -130,6 +146,7 @@ const AssignedManuscriptsView = () => {
   }, [authToken, fetchManuscripts]);
   
   const getJournalName = (journalId: string) => {
+    if (isLoadingCategories) return '...';
     const category = journalCategories.find(cat => cat.id === journalId);
     return category ? category.name : 'Unknown Journal';
   };

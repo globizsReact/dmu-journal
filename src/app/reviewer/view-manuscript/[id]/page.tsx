@@ -3,8 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import type { Manuscript } from '@prisma/client';
-import { journalCategories } from '@/lib/data';
+import type { Manuscript, JournalCategory } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,13 +41,30 @@ export default function ReviewerManuscriptDetailsPage() {
   
   const [reviewerName, setReviewerName] = useState("Reviewer");
   const activeTab = 'assignedManuscripts'; // Keep assigned manuscripts tab active
+  const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    const fetchInitialData = async () => {
       const token = localStorage.getItem('authToken');
       const name = localStorage.getItem('authorName');
       setAuthToken(token || null);
       if (name) setReviewerName(name);
+
+      try {
+        const response = await fetch('/api/public/journal-categories');
+        if (!response.ok) throw new Error('Failed to fetch categories');
+        const data = await response.json();
+        setJournalCategories(data);
+      } catch (err: any) {
+        console.error("Error fetching categories:", err);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      fetchInitialData();
     }
   }, []);
 
@@ -128,6 +144,7 @@ export default function ReviewerManuscriptDetailsPage() {
   };
 
   const getJournalName = (journalId: string) => {
+    if (isLoadingCategories) return '...';
     const category = journalCategories.find(cat => cat.id === journalId);
     return category ? category.name : 'Unknown Journal';
   };
