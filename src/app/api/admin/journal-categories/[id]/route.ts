@@ -1,0 +1,111 @@
+
+import { type NextRequest, NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { verifyToken } from '@/lib/authUtils';
+import { z } from 'zod';
+
+const categorySchema = z.object({
+  name: z.string().min(3, 'Name must be at least 3 characters.'),
+  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  iconName: z.string().min(1, 'Icon name is required.'),
+  imagePath: z.string().min(1, 'Image path is required.'),
+  imageHint: z.string().min(1, 'Image hint is required.'),
+  abbreviation: z.string().optional(),
+  language: z.string().optional(),
+  issn: z.string().optional(),
+  doiBase: z.string().optional(),
+  startYear: z.number().optional(),
+  displayIssn: z.string().optional(),
+  copyrightYear: z.number().optional(),
+});
+
+function createSlug(name: string): string {
+    return name
+        .toLowerCase()
+        .replace(/&/g, 'and')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+}
+
+async function checkAdminAuth(request: NextRequest) {
+  const token = request.headers.get('Authorization')?.split(' ')[1];
+  if (!token) return null;
+  const decoded = verifyToken(token);
+  if (!decoded || decoded.role !== 'admin') return null;
+  return decoded;
+}
+
+// GET a single category by ID
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!await checkAdminAuth(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  try {
+    const category = await prisma.journalCategory.findUnique({ where: { id: params.id } });
+    if (!category) {
+      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+    }
+    return NextResponse.json(category);
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// PUT (update) a category by ID
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!await checkAdminAuth(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  try {
+    const body = await request.json();
+    const validation = categorySchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json({ error: 'Invalid input', issues: validation.error.issues }, { status: 400 });
+    }
+
+    const { name, ...rest } = validation.data;
+    const slug = createSlug(name);
+    
+    // Check for potential conflicts before updating
+    const existingByName = await prisma.journalCategory.findFirst({ where: { name, NOT: { id: params.id } } });
+    if (existingByName) return NextResponse.json({ error: 'Another category with this name already exists.' }, { status: 409 });
+    
+    const existingBySlug = await prisma.journalCategory.findFirst({ where: { slug, NOT: { id: params.id } } });
+    if (existingBySlug) return NextResponse.json({ error: `Another category with the generated slug '${slug}' already exists.` }, { status: 409 });
+
+    const updatedCategory = await prisma.journalCategory.update({
+      where: { id: params.id },
+      data: { name, slug, ...rest },
+    });
+    return NextResponse.json(updatedCategory);
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// DELETE a category by ID
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  if (!await checkAdminAuth(request)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+  try {
+    const manuscriptCount = await prisma.manuscript.count({
+        where: { journalCategoryId: params.id },
+    });
+    if (manuscriptCount > 0) {
+        return NextResponse.json({ error: 'Cannot delete category with associated manuscripts.' }, { status: 409 });
+    }
+
+    await prisma.journalCategory.delete({ where: { id: params.id } });
+    return new NextResponse(null, { status: 204 }); // No Content
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+    }
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}

@@ -1,27 +1,10 @@
 
 import type { LucideIcon } from 'lucide-react';
+import type { JournalCategory as PrismaJournalCategory } from '@prisma/client';
 
-export interface JournalCategory {
-  id: string;
-  name: string;
-  description: string;
-  icon: LucideIcon;
-  slug: string;
-  imagePath: string; 
-  imageHint: string;
-  abbreviation?: string;
-  language?: string;
-  issn?: string; 
-  doiBase?: string; 
-  startYear?: number;
-  publishedArticlesCount?: number;
-  scope?: {
-    introduction?: string; 
-    topics?: string[];
-    conclusion?: string;
-  };
-  displayIssn?: string; 
-  copyrightYear?: number; 
+export interface JournalCategory extends PrismaJournalCategory {
+  publishedArticlesCount?: number; // This can be added dynamically
+  icon?: LucideIcon; // This can be added dynamically
 }
 
 export interface JournalEntry {

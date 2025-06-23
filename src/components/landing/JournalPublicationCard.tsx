@@ -2,7 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
-import type { JournalCategory } from '@/lib/types';
+import type { JournalCategory } from '@prisma/client';
 
 interface JournalPublicationCardProps {
   category: JournalCategory;

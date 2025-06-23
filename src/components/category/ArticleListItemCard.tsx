@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,7 @@ const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItem
   return (
     <div className={cn("group flex flex-col md:flex-row items-start gap-6 p-6 border border-border rounded-lg shadow-sm bg-card hover:shadow-md transition-shadow", className)}>
       <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
-        <div className="aspect-[4/3] relative rounded-md overflow-hidden">
+        <div className="aspect-[4/3] relative rounded-md overflow-hidden bg-muted">
           <Image
             src={entry.imagePath || 'https://placehold.co/200x150.png'}
             alt={entry.title || 'Article image'}

@@ -4,12 +4,28 @@ import Footer from '@/components/shared/Footer';
 import HeroSection from '@/components/landing/HeroSection';
 import JournalPublicationCard from '@/components/landing/JournalPublicationCard';
 import GlobalSearchInput from '@/components/shared/GlobalSearchInput';
-import { journalCategories } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import prisma from '@/lib/prisma';
+import type { JournalCategory } from '@prisma/client';
 
-export default function HomePage() {
+async function getCategories(): Promise<JournalCategory[]> {
+    try {
+        const categories = await prisma.journalCategory.findMany({
+             orderBy: {
+                name: 'asc'
+            }
+        });
+        return categories;
+    } catch (error) {
+        console.error("Failed to fetch journal categories from DB:", error);
+        return []; // Return empty array on error
+    }
+}
+
+export default async function HomePage() {
   const universityName = "Dhanamanjuri University";
+  const journalCategories = await getCategories();
 
   return (
     <div className="flex flex-col min-h-screen">

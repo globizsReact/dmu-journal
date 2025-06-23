@@ -9,7 +9,6 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
-import { getCategoryBySlug, getJournalsByCategoryId } from '@/lib/data';
 import type { JournalCategory, JournalEntry } from '@/lib/types';
 import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -280,35 +279,26 @@ export default function CategoryPage() {
     
     setIsLoading(true);
     setError(null);
-    setAllCategoryJournals([]); // Reset on slug change
 
-    const foundCategory = getCategoryBySlug(slug);
-    setCategory(foundCategory || null);
-
-    if (foundCategory) {
-      const fetchJournals = async () => {
-        try {
-          const response = await fetch(`/api/public/manuscripts/by-category/${foundCategory.id}`);
-          if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.error || 'Failed to fetch journal entries.');
-          }
-          const data: JournalEntry[] = await response.json();
-          setAllCategoryJournals(data);
-        } catch (err: any) {
-          console.error("Error fetching journal entries:", err);
-          setError(err.message || "An error occurred.");
-          setAllCategoryJournals([]); // Ensure it's empty on error
-        } finally {
-          setIsLoading(false);
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/public/category-page/${slug}`);
+        if (!response.ok) {
+          const errData = await response.json();
+          throw new Error(errData.error || 'Failed to fetch category data.');
         }
-      };
-      fetchJournals();
-    } else {
-      console.error("Category not found for slug:", slug);
-      setError("Category not found.");
-      setIsLoading(false);
-    }
+        const data: { category: JournalCategory; journals: JournalEntry[] } = await response.json();
+        setCategory(data.category);
+        setAllCategoryJournals(data.journals);
+      } catch (err: any) {
+        console.error(`Error fetching data for slug ${slug}:`, err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
   }, [slug]);
 
   useEffect(() => {
@@ -351,10 +341,10 @@ export default function CategoryPage() {
   // The main `loading.tsx` file handles the full-page skeleton.
   // This hook handles the case where the category itself is not found after loading.
   useEffect(() => {
-    if (!isLoading && !category) {
-      router.push('/'); // Or a dedicated 404 page
+    if (!isLoading && !category && !error) { // Added !error to prevent redirect on fetch fail
+      setError("Category not found.");
     }
-  }, [isLoading, category, router]);
+  }, [isLoading, category, router, error]);
 
   if (isLoading || !category) {
     // Show a minimal loader or rely on the main loading.tsx.
@@ -451,7 +441,13 @@ export default function CategoryPage() {
       </nav>
       
       <main className="flex-1 container mx-auto px-4 py-8">
-        {activeTab === 'OVERVIEW' && (
+        {error && (
+            <div className="text-center py-10 text-destructive bg-destructive/10 rounded-lg">
+                <h2 className="text-2xl font-bold mb-2">An Error Occurred</h2>
+                <p>{error}</p>
+            </div>
+        )}
+        {!error && activeTab === 'OVERVIEW' && (
           <>
             <section className="mb-12">
               <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category.name}</h2>
@@ -467,28 +463,19 @@ export default function CategoryPage() {
 
             <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
             
-            {isLoading ? (
-              <div className="flex justify-center items-center py-10">
-                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                 <p className="ml-3 text-muted-foreground">Loading entries...</p>
-              </div>
-            ) : error ? (
-              <p className="text-center text-destructive py-8 text-lg">{error}</p>
-            ) : (
-              <div className="space-y-8">
-                {displayedEntries.length > 0 ? (
-                  displayedEntries.map((entry) => (
-                    <ArticleListItemCard 
-                      key={entry.id} 
-                      entry={entry} 
-                      categoryName={category.name}
-                    />
-                  ))
-                ) : (
-                  <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
-                )}
-              </div>
-            )}
+            <div className="space-y-8">
+              {displayedEntries.length > 0 ? (
+                displayedEntries.map((entry) => (
+                  <ArticleListItemCard 
+                    key={entry.id} 
+                    entry={{...entry, imagePath: category.imagePath, imageHint: category.imageHint}}
+                    categoryName={category.name}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
+              )}
+            </div>
 
 
             <div className="mt-12 text-center">
@@ -500,11 +487,11 @@ export default function CategoryPage() {
             </div>
           </>
         )}
-        {activeTab === 'ABOUT_DMUJ' && <AboutDMUJContent />}
-        {activeTab === 'PUBLICATION_POLICY' && <PublicationPolicyContent />}
-        {activeTab === 'ETHICS_POLICY' && <EthicsPolicyContent />}
-        {activeTab === 'AUTHORS_SECTION' && <AuthorsSectionContent />}
-        {activeTab === 'JOURNAL_ISSUES' && <CategoryIssuesContent category={category} />}
+        {!error && activeTab === 'ABOUT_DMUJ' && <AboutDMUJContent />}
+        {!error && activeTab === 'PUBLICATION_POLICY' && <PublicationPolicyContent />}
+        {!error && activeTab === 'ETHICS_POLICY' && <EthicsPolicyContent />}
+        {!error && activeTab === 'AUTHORS_SECTION' && <AuthorsSectionContent />}
+        {!error && activeTab === 'JOURNAL_ISSUES' && <CategoryIssuesContent category={category} />}
       </main>
 
       {/* ISSN and Copyright Section */}

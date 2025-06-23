@@ -6,12 +6,11 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import AlphabetFilter from '@/components/shared/AlphabetFilter';
 import SubjectBrowseItem from '@/components/journals/SubjectBrowseItem';
-import { journalCategories } from '@/lib/data';
-import type { JournalEntry } from '@/lib/types';
+import type { JournalCategory, JournalEntry } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const metadataLine = "Abbreviation: J. Biophys. Struct. Biol. Language: English ISSN: 2141-2200 DOI: 10.5897/JBSB Start Year: 2009 Published Articles: 25";
@@ -19,43 +18,38 @@ const metadataLine = "Abbreviation: J. Biophys. Struct. Biol. Language: English 
 export default function AllJournalsPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchJournals = async () => {
+    const fetchInitialData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/public/manuscripts');
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || 'Failed to fetch journals');
-        }
-        const data: JournalEntry[] = await response.json();
-        setJournalEntries(data);
+        const [categoriesRes, entriesRes] = await Promise.all([
+          fetch('/api/public/journal-categories'),
+          fetch('/api/public/manuscripts'), // This needs to be created
+        ]);
+
+        if (!categoriesRes.ok) throw new Error('Failed to fetch journal categories');
+        const categoriesData = await categoriesRes.json();
+        setJournalCategories(categoriesData);
+        
+        if (!entriesRes.ok) throw new Error('Failed to fetch journal entries');
+        const entriesData = await entriesRes.json();
+        setJournalEntries(entriesData);
+
       } catch (err: any) {
-        console.error("Failed to fetch journal entries:", err);
+        console.error("Failed to fetch initial data:", err);
         setError(err.message);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchJournals();
+    fetchInitialData();
   }, []);
-
-  const journalCategoriesWithCounts = useMemo(() => {
-    const counts = journalEntries.reduce((acc, entry) => {
-        acc[entry.categoryId] = (acc[entry.categoryId] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
-
-    return journalCategories.map(category => ({
-        ...category,
-        publishedArticlesCount: counts[category.id] || 0,
-    }));
-  }, [journalEntries]);
 
   const groupedJournals = useMemo(() => {
     if (isLoading || error) return {};
@@ -79,20 +73,11 @@ export default function AllJournalsPage() {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div>
-          {[...Array(2)].map((_, gIdx) => (
-              <div key={gIdx} className="mb-8">
-                  <Skeleton className="h-8 w-10 mb-4 pb-2" />
-                  <ul className="space-y-3">
-                      {[...Array(3)].map((_, i) => (
-                          <li key={i} className="flex items-center">
-                              <Skeleton className="w-4 h-4 rounded-full mr-2" />
-                              <Skeleton className="h-5 flex-1" />
-                          </li>
-                      ))}
-                  </ul>
-              </div>
-          ))}
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-10" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-4/5" />
         </div>
       );
     }
@@ -192,9 +177,17 @@ export default function AllJournalsPage() {
               </Link>
               <Separator className="mb-2"/>
               <nav className="space-y-1">
-                {journalCategoriesWithCounts.map(category => (
-                  <SubjectBrowseItem key={category.id} category={category} />
-                ))}
+                {isLoading ? (
+                    <div className="space-y-2">
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                        <Skeleton className="h-8 w-full" />
+                    </div>
+                ) : (
+                    journalCategories.map(category => (
+                        <SubjectBrowseItem key={category.id} category={category} />
+                    ))
+                )}
               </nav>
             </div>
           </aside>

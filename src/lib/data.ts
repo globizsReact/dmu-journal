@@ -1,107 +1,8 @@
 
-import type { JournalCategory, JournalEntry } from './types';
-import { FlaskConical, Library, Briefcase, Scale } from 'lucide-react';
+import type { JournalEntry } from './types';
 
-export const journalCategories: JournalCategory[] = [
-  {
-    id: '1',
-    name: 'Journal Of Sciences',
-    description: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges.',
-    icon: FlaskConical,
-    slug: 'journal-of-sciences',
-    imagePath: '/images/j2.png', 
-    imageHint: 'molecules science',
-    abbreviation: 'J. Biophys. Struct. Biol.',
-    language: 'English',
-    issn: '2141-2200',
-    doiBase: '10.5897/JBSB',
-    startYear: 2009,
-    publishedArticlesCount: 25,
-    scope: {
-      introduction: 'The Dhanamanjuri University Journal of Sciences serves as a multidisciplinary platform dedicated to the advancement of scientific research and innovation. The journal aims to publish high-quality, original research articles, review papers, and short communications that contribute meaningfully to the scientific community and address real-world challenges. Our scope spans across a broad range of disciplines including, but not limited to:',
-      topics: [
-        'Physics',
-        'Chemistry',
-        'Biology',
-        'Environmental Science',
-        'Mathematics',
-        'Earth Sciences',
-        'Biotechnology',
-        'Computational Science',
-        'and Allied Interdisciplinary Fields'
-      ],
-      conclusion: 'The journal encourages submissions that are theoretically sound, methodologically rigorous, and innovative in approach—works that push the boundaries of current scientific understanding. We particularly welcome research that fosters interdisciplinary dialogue, promotes sustainable development, and offers practical solutions to contemporary scientific problems. By fostering academic excellence and nurturing collaborative inquiry, the Dhanamanjuri University Journal of Sciences strives to become a leading source of scholarly communication in the national and global research landscape.',
-    },
-    displayIssn: 'ISSN NO. E: 0973-9262',
-    copyrightYear: 2018,
-  },
-  {
-    id: '2',
-    name: 'Journal Of Humanities And Social Sciences',
-    description: 'Insights into culture, society, and human behavior, fostering critical discourse and interdisciplinary approaches to understanding the human experience.',
-    icon: Library,
-    slug: 'journal-of-humanities-and-social-sciences',
-    imagePath: '/images/j3.png', 
-    imageHint: 'library books',
-    abbreviation: 'J. Hum. Soc. Sci.',
-    language: 'English',
-    issn: '2315-5154',
-    doiBase: '10.5897/JHSS',
-    startYear: 2010,
-    publishedArticlesCount: 18,
-    scope: {
-      introduction: 'This journal provides a platform for scholarly work that explores the complexities of human cultures, social structures, and historical narratives. We encourage submissions that offer fresh perspectives and rigorous analysis.',
-      topics: ['History', 'Literature', 'Sociology', 'Anthropology', 'Philosophy', 'Cultural Studies'],
-      conclusion: 'We aim to be a leading voice in the humanities and social sciences, promoting research that is both intellectually stimulating and socially relevant.',
-    },
-    displayIssn: 'ISSN NO. E: 0973-1122',
-    copyrightYear: 2018,
-  },
-  {
-    id: '3',
-    name: 'Journal Of Business & Applied Research',
-    description: 'Advancing business practices and applied research through empirical studies, case analyses, and theoretical contributions that address contemporary business challenges.',
-    icon: Briefcase,
-    slug: 'journal-of-business-and-applied-research',
-    imagePath: '/images/j1.png', 
-    imageHint: 'graphs business',
-    abbreviation: 'J. Bus. Appl. Res.',
-    language: 'English',
-    issn: '2006-9807',
-    doiBase: '10.5897/JBAR',
-    startYear: 2011,
-    publishedArticlesCount: 32,
-     scope: {
-      introduction: 'Dedicated to the dissemination of research in business, management, and applied economics. We welcome papers that offer practical insights and theoretical advancements.',
-      topics: ['Marketing', 'Management', 'Finance', 'Entrepreneurship', 'Supply Chain', 'Applied Economics'],
-      conclusion: 'Our goal is to bridge the gap between theory and practice, providing valuable knowledge for academics, practitioners, and policymakers.',
-    },
-    displayIssn: 'ISSN NO. E: 0974-5678',
-    copyrightYear: 2018,
-  },
-  {
-    id: '4',
-    name: 'Journal Of Legal Studies',
-    description: 'Critical analysis of law and legal systems, promoting scholarly debate on a wide range of legal issues, both domestic and international.',
-    icon: Scale,
-    slug: 'journal-of-legal-studies',
-    imagePath: '/images/j4.png', 
-    imageHint: 'gavel law',
-    abbreviation: 'J. Legal Stud.',
-    language: 'English',
-    issn: '1996-0840',
-    doiBase: '10.5897/JLS',
-    startYear: 2012,
-    publishedArticlesCount: 15,
-    scope: {
-      introduction: 'This journal offers a forum for in-depth examination of legal theories, doctrines, and reforms. We publish articles that are jurisprudentially significant and contribute to the understanding of law in society.',
-      topics: ['Constitutional Law', 'Criminal Law', 'International Law', 'Human Rights', 'Corporate Law', 'Legal Theory'],
-      conclusion: 'We aspire to enhance legal scholarship and inform legal practice through rigorous peer-reviewed research.',
-    },
-    displayIssn: 'ISSN NO. E: 0975-4321',
-    copyrightYear: 2018,
-  },
-];
+// The journalCategories data is now in the database.
+// This file is now only for static/mock data that hasn't been migrated to the DB yet.
 
 export const journalEntries: JournalEntry[] = [
   {
@@ -109,7 +10,7 @@ export const journalEntries: JournalEntry[] = [
     title: 'Data-Driven Decision Making In Modern Enterprises', // Updated to match image
     content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest loss has implications for the food security and livelihoods of the fisherfolk. Thus, there is a need for studies to provide crucial insights into the current postharvest practices and associated challenges faced by fish value chain actors in Kenya.\n\nA baseline study was conducted on four Omena landing beaches of Kenya\'s Lake Victoria as part of an EU-funded project. The objective of the baseline study was to assess the status of value addition and marketing of silver cyprinid. The findings of the study highlight the need for improved drying, storage, and processing techniques to enhance the quality and marketability of Omena. It also underscores the importance of capacity building, market linkages, quality assurance, and policy support to transform the Omena value chain. By addressing these challenges through innovative technologies and practices, the sector can significantly contribute to food security, livelihoods, and economic growth in the riparian communities of Lake Victoria.',
     date: '2023-07-15T10:00:00Z',
-    categoryId: '3', // Changed to Business & Applied Research to match image context
+    categoryId: '3', // This will need to match a DB ID after migration
     excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
     authors: ['Dr. Jane Doe', 'Dr. John Smith'],
     imagePath: '/images/j1.png', 
@@ -136,96 +37,7 @@ export const journalEntries: JournalEntry[] = [
     keywords: ['social media', 'politics', 'discourse analysis', 'misinformation'],
     articleType: 'Review Article',
   },
-  {
-    id: 'CF00B3673112',
-    title: 'Sustainable Business Models in Emerging Economies',
-    content: 'Emerging economies present unique challenges and opportunities for sustainable business development. This research investigates the characteristics of successful sustainable business models in these contexts, focusing on how companies integrate social, environmental, and economic considerations into their core strategies. Through a series of case studies across different sectors and countries, the study identifies key factors such as local community engagement, innovative use of technology, and adaptive supply chain management. The findings offer valuable insights for businesses seeking to achieve long-term viability and positive societal impact in emerging markets, highlighting the importance of context-specific approaches and stakeholder collaboration.',
-    date: '2023-09-05T09:15:00Z',
-    categoryId: '3',
-    excerpt: 'Emerging economies present unique challenges and opportunities for sustainable business development. This research investigates the characteristics of successful sustainable business models...',
-    authors: ['Prof. Charles Green', 'Dr. Diana White'],
-    imagePath: '/images/j1.png',
-    imageHint: 'business report',
-    views: 180,
-    downloads: 30,
-    citations: 15,
-    keywords: ['sustainability', 'business models', 'emerging economies', 'csr'],
-    articleType: 'Case Study',
-  },
-   {
-    id: 'CF00B3673113',
-    title: 'The Role of Precedent in Judicial Decision-Making',
-    content: 'The doctrine of stare decisis, or adherence to precedent, is a cornerstone of common law legal systems. This article examines the theoretical underpinnings and practical application of precedent in judicial decision-making. It analyzes how judges interpret and apply past rulings, the circumstances under which they may deviate from precedent, and the impact of evolving social norms on established legal principles. Drawing on a comparative analysis of case law from various jurisdictions, the paper argues that while precedent provides stability and predictability, its application is a dynamic process that allows for legal evolution. The study also considers the challenges posed by novel legal questions and the increasing complexity of modern litigation.',
-    date: '2023-10-11T17:00:00Z',
-    categoryId: '4',
-    excerpt: 'The doctrine of stare decisis, or adherence to precedent, is a cornerstone of common law legal systems. This article examines the theoretical underpinnings and practical application of precedent...',
-    authors: ['Justice (Ret.) Edward Black', 'Prof. Laura Grey'],
-    imagePath: '/images/j4.png',
-    imageHint: 'legal documents law',
-    views: 95,
-    downloads: 10,
-    citations: 5,
-    keywords: ['stare decisis', 'precedent', 'judicial process', 'common law'],
-    articleType: 'Legal Analysis',
-  },
-  {
-    id: 'SCI001', // Was CF00B3673110 before, changed to make it unique for science
-    title: 'Stored Products And Postharvest Research',
-    content: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high postharvest losses are mainly due to insect infestation, fragmentation, contamination by foreign matter such as sand, stones and animal droppings. This study aimed at determining the effect of improved postharvest handling practices on the quality and shelf life of Omena. The improved practices included use of raised drying racks, sorting, washing, salting and packaging in UV-treated polythene bags. The results showed that Omena dried on raised racks had significantly lower microbial counts compared to that dried on the ground. Salting significantly reduced microbial growth and extended the shelf life of Omena. Packaging in UV-treated polythene bags further extended the shelf life by preventing re-infestation by insects and reducing moisture uptake. It was concluded that improved postharvest handling practices significantly improve the quality and extend the shelf life of Omena.',
-    date: '2023-07-15T10:00:00Z',
-    categoryId: '1',
-    excerpt: 'Silver cyprinid (Rastrineobola argentea) fish, locally known as Omena, is an important source of dietary proteins for low-income households in Kenya. The fish is characterized by high postharvest losses chiefly due to improper drying techniques, low-value addition, and poor marketing or distribution channels. The high...',
-    authors: ['Dr. Maina K.', 'Dr. Wanjiku O.'],
-    imagePath: '/images/j2.png',
-    imageHint: 'scientific research',
-    views: 150,
-    downloads: 25,
-    citations: 12,
-    keywords: ['postharvest', 'omena', 'fish processing', 'food preservation'],
-    articleType: 'Research Article',
-  },
-  {
-    id: 'SCI002',
-    title: 'Quantum Entanglement and Its Applications',
-    content: 'A deep dive into the phenomenon of quantum entanglement and its potential applications in computing and communication. This paper reviews current experimental setups and theoretical models.',
-    date: '2023-11-01T11:00:00Z',
-    categoryId: '1',
-    excerpt: 'A deep dive into the phenomenon of quantum entanglement and its potential applications...',
-    authors: ['Dr. Quantum Physicist'],
-    imagePath: '/images/j2.png',
-    imageHint: 'quantum physics',
-    views: 300,
-    downloads: 75,
-    citations: 50,
-    keywords: ['quantum entanglement', 'quantum computing', 'quantum communication'],
-    articleType: 'Theoretical Paper',
-  },
-  {
-    id: 'SCI003',
-    title: 'Advances in Renewable Energy Storage',
-    content: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy, critical for the transition to a sustainable energy future.',
-    date: '2023-11-15T15:30:00Z',
-    categoryId: '1',
-    excerpt: 'Exploring recent breakthroughs in battery technology and other methods for storing renewable energy...',
-    authors: ['Dr. Energy Expert'],
-    imagePath: '/images/j2.png',
-    imageHint: 'renewable energy',
-    views: 250,
-    downloads: 60,
-    citations: 40,
-    keywords: ['renewable energy', 'battery technology', 'energy storage', 'sustainability'],
-    articleType: 'Review',
-  }
 ];
 
-export const getCategoryBySlug = (slug: string): JournalCategory | undefined => {
-  return journalCategories.find(category => category.slug === slug);
-}
-
-export const getJournalsByCategoryId = (categoryId: string): JournalEntry[] => {
-  return journalEntries.filter(entry => entry.categoryId === categoryId);
-}
-
-export const getJournalById = (id: string): JournalEntry | undefined => {
-  return journalEntries.find(entry => entry.id === id);
-}
+// Helper functions that used static data are no longer needed here.
+// They will be replaced by API calls or direct DB queries in components.

@@ -1,53 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  fullName      String
-  username      String   @unique
-  email         String   @unique
+  id            Int           @id @default(autoincrement())
+  fullName      String?
+  username      String        @unique
+  email         String        @unique
   password_hash String
-  role          String?  @default("author") // Roles: "author", "reviewer", "admin"
-  created_at    DateTime @default(now())
-
-  submittedManuscripts Manuscript[] @relation("SubmittedBy")
-
-  @@map("users")
+  role          String?       @default("author") // e.g., 'author', 'reviewer', 'admin', 'reviewer_inactive'
+  manuscripts   Manuscript[]  @relation("SubmittedBy")
 }
 
 model Manuscript {
-  id                    String    @id @default(cuid())
-  articleTitle          String
-  abstract              String    @db.Text
-  keywords              String // Comma-separated
-  journalCategoryId     String    // Corresponds to id in journalCategories from lib/data.ts
-  isSpecialReview       Boolean   @default(false)
+  id                      String    @id @default(cuid())
+  articleTitle            String
+  abstract                String
+  keywords                String?
+  isSpecialReview         Boolean   @default(false)
   
-  coverLetterFileName   String?
-  manuscriptFileName    String
-  supplementaryFilesName String?
+  // File tracking
+  coverLetterFileName     String?
+  manuscriptFileName      String
+  supplementaryFilesName  String?
   
-  authorAgreement       Boolean
-  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
+  // Author and agreement
+  authorAgreement         Boolean   @default(false)
+  coAuthors               Json?     // Storing co-author list as JSON
 
-  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
-  submittedAt           DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  // Status and tracking
+  status                  String    @default("Submitted") // e.g., 'Submitted', 'In Review', 'Accepted', 'Published', 'Rejected', 'Suspended'
+  submittedAt             DateTime  @default(now())
+  publishedAt             DateTime?
+  views                   Int       @default(0)
+  downloads               Int       @default(0)
+  citations               Int       @default(0)
 
-  submittedById         Int
-  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
+  // Relationships
+  submittedById           Int
+  submittedBy             User      @relation("SubmittedBy", fields: [submittedById], references: [id])
+  
+  journalCategoryId       String
+  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
+}
 
-  views                 Int       @default(0)
-  downloads             Int       @default(0)
-  citations             Int       @default(0)
+model JournalCategory {
+  id                      String @id @default(cuid())
+  name                    String @unique
+  slug                    String @unique
+  description             String @default("")
+  
+  // Icon and Image - stored as strings
+  iconName                String // e.g., "FlaskConical", "Library"
+  imagePath               String
+  imageHint               String
 
-  @@index([submittedById])
-  @@map("manuscripts")
+  // Metadata
+  abbreviation            String?
+  language                String?
+  issn                    String?
+  doiBase                 String?
+  startYear               Int?
+  displayIssn             String?
+  copyrightYear           Int?
+
+  manuscripts             Manuscript[]
 }

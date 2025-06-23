@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label'; // Not strictly needed if using FormLabel
 import {
   Select,
   SelectContent,
@@ -25,8 +24,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { journalCategories } from '@/lib/data';
 import { Loader2 } from 'lucide-react';
+import type { JournalCategory } from '@prisma/client';
 
 const manuscriptDetailsSchema = z.object({
   journalId: z.string().min(1, { message: 'Please select a journal.' }),
@@ -41,10 +40,29 @@ export type ManuscriptDetailsData = z.infer<typeof manuscriptDetailsSchema>;
 interface ManuscriptDetailsFormProps {
   onValidatedNext: (data: ManuscriptDetailsData) => void;
   initialData?: ManuscriptDetailsData | null;
-  isSubmitting: boolean; // Added prop
+  isSubmitting: boolean;
 }
 
 export default function ManuscriptDetailsForm({ onValidatedNext, initialData, isSubmitting }: ManuscriptDetailsFormProps) {
+  const [categories, setCategories] = useState<JournalCategory[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/public/journal-categories');
+        if (!response.ok) throw new Error('Failed to load journals');
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoadingCategories(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const form = useForm<ManuscriptDetailsData>({
     resolver: zodResolver(manuscriptDetailsSchema),
     defaultValues: initialData || {
@@ -74,15 +92,15 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData, is
               <Select 
                 onValueChange={field.onChange} 
                 defaultValue={field.value}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isLoadingCategories}
               >
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a journal" />
+                    <SelectValue placeholder={isLoadingCategories ? "Loading journals..." : "Select a journal"} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {journalCategories.map((category) => (
+                  {!isLoadingCategories && categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
                     </SelectItem>
@@ -164,8 +182,8 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData, is
         />
         
         <div className="flex justify-end">
-          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white" disabled={isSubmitting || isLoadingCategories}>
+            {(isSubmitting || isLoadingCategories) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Next
           </Button>
         </div>
