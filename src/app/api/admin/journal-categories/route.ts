@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     }
 
     const categories = await prisma.journalCategory.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { order: 'asc' },
     });
     return NextResponse.json(categories);
   } catch (error) {
@@ -77,11 +77,17 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `A category with the generated slug '${slug}' already exists.` }, { status: 409 });
     }
 
+    const maxOrderCategory = await prisma.journalCategory.findFirst({
+        orderBy: { order: 'desc' },
+    });
+    const newOrder = (maxOrderCategory?.order ?? -1) + 1;
+
     const newCategory = await prisma.journalCategory.create({
       data: {
         name,
         slug,
         ...rest,
+        order: newOrder,
       },
     });
 

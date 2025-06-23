@@ -13,7 +13,7 @@ model User {
   username      String   @unique
   email         String   @unique
   password_hash String
-  role          String?  @default("author") // Roles: "author", "reviewer", "admin", "reviewer_inactive"
+  role          String?  @default("author") // Roles: "author", "reviewer", "reviewer_inactive", "admin"
   created_at    DateTime @default(now())
 
   submittedManuscripts Manuscript[] @relation("SubmittedBy")
@@ -21,34 +21,12 @@ model User {
   @@map("users")
 }
 
-model JournalCategory {
-  id                    String    @id @default(cuid())
-  slug                  String    @unique
-  name                  String    @unique
-  description           String    @db.Text
-  iconName              String
-  imagePath             String
-  imageHint             String
-  
-  abbreviation          String?
-  language              String?   @default("English")
-  issn                  String?
-  displayIssn           String?
-  doiBase               String?
-  startYear             Int?
-  copyrightYear         Int?
-
-  manuscripts           Manuscript[]
-  
-  @@map("journal_categories")
-}
-
 model Manuscript {
   id                    String    @id @default(cuid())
   articleTitle          String
   abstract              String    @db.Text
   keywords              String // Comma-separated
-  
+  journalCategoryId     String
   isSpecialReview       Boolean   @default(false)
   
   coverLetterFileName   String?
@@ -58,14 +36,13 @@ model Manuscript {
   authorAgreement       Boolean
   coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
 
-  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Accepted", "Published", "Suspended"
+  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
   submittedAt           DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
 
   submittedById         Int
   submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
 
-  journalCategoryId     String
   journalCategory       JournalCategory @relation(fields: [journalCategoryId], references: [id])
 
   views                 Int       @default(0)
@@ -75,4 +52,27 @@ model Manuscript {
   @@index([submittedById])
   @@index([journalCategoryId])
   @@map("manuscripts")
+}
+
+model JournalCategory {
+  id              String  @id @default(cuid())
+  name            String  @unique
+  slug            String  @unique
+  description     String  @db.Text
+  iconName        String
+  imagePath       String
+  imageHint       String
+  abbreviation    String?
+  language        String?
+  issn            String?
+  doiBase         String?
+  startYear       Int?
+  displayIssn     String?
+  copyrightYear   Int?
+  order           Int     @default(0)
+
+  manuscripts     Manuscript[]
+
+  @@index([order])
+  @@map("journal_categories")
 }

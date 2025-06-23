@@ -13,7 +13,7 @@ async function getCategories(): Promise<JournalCategory[]> {
     try {
         const categories = await prisma.journalCategory.findMany({
              orderBy: {
-                name: 'asc'
+                order: 'asc'
             }
         });
         return categories;
