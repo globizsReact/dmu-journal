@@ -1,76 +1,78 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id            Int           @id @default(autoincrement())
-  fullName      String?
-  username      String        @unique
-  email         String        @unique
+  id            Int      @id @default(autoincrement())
+  fullName      String
+  username      String   @unique
+  email         String   @unique
   password_hash String
-  role          String?       @default("author") // e.g., 'author', 'reviewer', 'admin', 'reviewer_inactive'
-  manuscripts   Manuscript[]  @relation("SubmittedBy")
-}
+  role          String?  @default("author") // Roles: "author", "reviewer", "admin", "reviewer_inactive"
+  created_at    DateTime @default(now())
 
-model Manuscript {
-  id                      String    @id @default(cuid())
-  articleTitle            String
-  abstract                String
-  keywords                String?
-  isSpecialReview         Boolean   @default(false)
-  
-  // File tracking
-  coverLetterFileName     String?
-  manuscriptFileName      String
-  supplementaryFilesName  String?
-  
-  // Author and agreement
-  authorAgreement         Boolean   @default(false)
-  coAuthors               Json?     // Storing co-author list as JSON
+  submittedManuscripts Manuscript[] @relation("SubmittedBy")
 
-  // Status and tracking
-  status                  String    @default("Submitted") // e.g., 'Submitted', 'In Review', 'Accepted', 'Published', 'Rejected', 'Suspended'
-  submittedAt             DateTime  @default(now())
-  publishedAt             DateTime?
-  views                   Int       @default(0)
-  downloads               Int       @default(0)
-  citations               Int       @default(0)
-
-  // Relationships
-  submittedById           Int
-  submittedBy             User      @relation("SubmittedBy", fields: [submittedById], references: [id])
-  
-  journalCategoryId       String
-  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  @@map("users")
 }
 
 model JournalCategory {
-  id                      String @id @default(cuid())
-  name                    String @unique
-  slug                    String @unique
-  description             String @default("")
+  id                    String    @id @default(cuid())
+  slug                  String    @unique
+  name                  String    @unique
+  description           String    @db.Text
+  iconName              String
+  imagePath             String
+  imageHint             String
   
-  // Icon and Image - stored as strings
-  iconName                String // e.g., "FlaskConical", "Library"
-  imagePath               String
-  imageHint               String
+  abbreviation          String?
+  language              String?   @default("English")
+  issn                  String?
+  displayIssn           String?
+  doiBase               String?
+  startYear             Int?
+  copyrightYear         Int?
 
-  // Metadata
-  abbreviation            String?
-  language                String?
-  issn                    String?
-  doiBase                 String?
-  startYear               Int?
-  displayIssn             String?
-  copyrightYear           Int?
+  manuscripts           Manuscript[]
+  
+  @@map("journal_categories")
+}
 
-  manuscripts             Manuscript[]
+model Manuscript {
+  id                    String    @id @default(cuid())
+  articleTitle          String
+  abstract              String    @db.Text
+  keywords              String // Comma-separated
+  
+  isSpecialReview       Boolean   @default(false)
+  
+  coverLetterFileName   String?
+  manuscriptFileName    String
+  supplementaryFilesName String?
+  
+  authorAgreement       Boolean
+  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
+
+  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Accepted", "Published", "Suspended"
+  submittedAt           DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  submittedById         Int
+  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
+
+  journalCategoryId     String
+  journalCategory       JournalCategory @relation(fields: [journalCategoryId], references: [id])
+
+  views                 Int       @default(0)
+  downloads             Int       @default(0)
+  citations             Int       @default(0)
+
+  @@index([submittedById])
+  @@index([journalCategoryId])
+  @@map("manuscripts")
 }
