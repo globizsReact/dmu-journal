@@ -10,10 +10,18 @@ import type { JournalCategory, JournalEntry } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronRight, Loader2, FlaskConical, Library, Briefcase, Scale, type LucideIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const metadataLine = "Abbreviation: J. Biophys. Struct. Biol. Language: English ISSN: 2141-2200 DOI: 10.5897/JBSB Start Year: 2009 Published Articles: 25";
+
+// Define the icon map
+const iconMap: Record<string, LucideIcon> = {
+  FlaskConical,
+  Library,
+  Briefcase,
+  Scale,
+};
 
 export default function AllJournalsPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
@@ -34,7 +42,13 @@ export default function AllJournalsPage() {
 
         if (!categoriesRes.ok) throw new Error('Failed to fetch journal categories');
         const categoriesData = await categoriesRes.json();
-        setJournalCategories(categoriesData);
+        
+        // Transform the data to include the icon component
+        const categoriesWithIcons = categoriesData.map((cat: any) => ({
+          ...cat,
+          icon: iconMap[cat.iconName] || FlaskConical, // Use a fallback icon
+        }));
+        setJournalCategories(categoriesWithIcons);
         
         if (!entriesRes.ok) throw new Error('Failed to fetch journal entries');
         const entriesData = await entriesRes.json();
