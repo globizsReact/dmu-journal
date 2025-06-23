@@ -6,7 +6,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import AlphabetFilter from '@/components/shared/AlphabetFilter';
 import SubjectBrowseItem from '@/components/journals/SubjectBrowseItem';
-import type { JournalCategory, JournalEntry } from '@/lib/types';
+import type { JournalCategory } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
@@ -25,7 +25,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 export default function AllJournalsPage() {
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
+  const [journalEntries, setJournalEntries] = useState<{ id: string; title: string }[]>([]);
   const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,16 +37,15 @@ export default function AllJournalsPage() {
       try {
         const [categoriesRes, entriesRes] = await Promise.all([
           fetch('/api/public/journal-categories'),
-          fetch('/api/public/manuscripts'), // This needs to be created
+          fetch('/api/public/manuscripts'),
         ]);
 
         if (!categoriesRes.ok) throw new Error('Failed to fetch journal categories');
         const categoriesData = await categoriesRes.json();
         
-        // Transform the data to include the icon component
         const categoriesWithIcons = categoriesData.map((cat: any) => ({
           ...cat,
-          icon: iconMap[cat.iconName] || FlaskConical, // Use a fallback icon
+          icon: iconMap[cat.iconName] || FlaskConical,
         }));
         setJournalCategories(categoriesWithIcons);
         
@@ -67,7 +66,7 @@ export default function AllJournalsPage() {
 
   const groupedJournals = useMemo(() => {
     if (isLoading || error) return {};
-    const groups: Record<string, JournalEntry[]> = {};
+    const groups: Record<string, { id: string; title: string }[]> = {};
     const filtered = selectedLetter
       ? journalEntries.filter(entry => entry.title.toUpperCase().startsWith(selectedLetter))
       : journalEntries;

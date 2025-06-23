@@ -1,44 +1,33 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import type { JournalEntry } from '@/lib/types';
 
 export async function GET() {
   try {
-    const manuscripts = await prisma.manuscript.findMany({
+    const publishedManuscripts = await prisma.manuscript.findMany({
       where: {
-        status: 'Accepted', // Only fetch accepted/published manuscripts
+        status: 'Published',
       },
-      include: {
-        submittedBy: {
-          select: {
-            fullName: true,
-          },
-        },
+      select: {
+        id: true,
+        articleTitle: true,
       },
       orderBy: {
-        submittedAt: 'desc',
+        articleTitle: 'asc',
       },
     });
 
-    // Map Prisma model to JournalEntry type for frontend consistency
-    const journalEntries: JournalEntry[] = manuscripts.map((m) => ({
-      id: m.id,
-      title: m.articleTitle,
-      content: m.abstract, // Use abstract for content
-      date: m.submittedAt.toISOString(),
-      categoryId: m.journalCategoryId,
-      excerpt: m.abstract.substring(0, 200) + '...', // Create an excerpt from the abstract
-      authors: m.submittedBy ? [m.submittedBy.fullName || 'Unknown Author'] : [],
-      articleType: "Published Article", // Example static value
-      // imagePath and other fields can be added here if they exist on the model
+    // Transform the data to a simpler format for the list view
+    const journalEntries = publishedManuscripts.map(ms => ({
+      id: ms.id,
+      title: ms.articleTitle,
     }));
 
-    return NextResponse.json(journalEntries);
+    return NextResponse.json(journalEntries, { status: 200 });
   } catch (error) {
-    console.error('Error fetching manuscripts:', error);
+    console.error('Error fetching published manuscripts:', error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred while fetching manuscripts.' },
+      { error: 'An unexpected error occurred while fetching journal entries.' },
       { status: 500 }
     );
   }
