@@ -32,7 +32,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard', icon: LayoutDashboard, tabKey: 'dashboard' },
-  { label: 'Assigned Manuscripts', icon: FileText, tabKey: 'assignedManuscripts' },
+  { label: 'Manuscripts', icon: FileText, tabKey: 'manuscripts' },
   { label: 'Review Guidelines', icon: BadgeCheck, tabKey: 'guidelines' },
   { label: 'Logout', icon: LogOut, isLogout: true },
 ];

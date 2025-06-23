@@ -14,6 +14,7 @@ import type { Manuscript, JournalCategory } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 // Stat Card component
 interface ReviewerStatCardProps {
@@ -87,8 +88,8 @@ const ReviewerDashboardView = ({ stats, isLoading }: { stats: any, isLoading: bo
 };
 
 
-// Assigned Manuscripts View
-const AssignedManuscriptsView = () => {
+// All Manuscripts View
+const ManuscriptsView = () => {
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -187,6 +188,7 @@ const AssignedManuscriptsView = () => {
                 <TableHead>Article Title</TableHead>
                 <TableHead>Journal</TableHead>
                 <TableHead>Submitted On</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -196,6 +198,21 @@ const AssignedManuscriptsView = () => {
                   <TableCell className="font-medium">{ms.articleTitle}</TableCell>
                   <TableCell>{getJournalName(ms.journalCategoryId)}</TableCell>
                   <TableCell>{format(new Date(ms.submittedAt), "dd MMM yyyy")}</TableCell>
+                  <TableCell>
+                      <span 
+                          className={cn('px-2 py-1 text-xs font-semibold rounded-full', {
+                            'bg-blue-100 text-blue-700': ms.status === 'Submitted',
+                            'bg-yellow-100 text-yellow-700': ms.status === 'In Review',
+                            'bg-green-100 text-green-700': ms.status === 'Accepted',
+                            'bg-emerald-100 text-emerald-700': ms.status === 'Published',
+                            'bg-orange-100 text-orange-700': ms.status === 'Suspended',
+                            'bg-red-100 text-red-700': ms.status === 'Rejected',
+                            'bg-gray-100 text-gray-700': !['Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'].includes(ms.status)
+                          })}
+                      >
+                          {ms.status}
+                      </span>
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button asChild variant="outline" size="sm">
                       <Link href={`/reviewer/view-manuscript/${ms.id}`}> 
@@ -303,7 +320,7 @@ export default function ReviewerDashboardPage() {
         />
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
           {activeTab === 'dashboard' && <ReviewerDashboardView stats={stats} isLoading={isLoadingStats} />}
-          {activeTab === 'assignedManuscripts' && <AssignedManuscriptsView />}
+          {activeTab === 'manuscripts' && <ManuscriptsView />}
           {activeTab === 'guidelines' && <GuidelinesView />}
         </main>
       </div>
