@@ -1,13 +1,43 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import type { Manuscript } from '@prisma/client';
 
-interface SearchSuggestion {
-  id: string;
-  title: string;
-  excerpt: string;
-  authors: string[];
+interface Suggestion {
+    id: string;
+    title: string;
+    excerpt: string;
+    authors: string[];
 }
+
+// A simple utility to parse co-authors, robust against different storage formats
+function parseCoAuthors(coAuthors: any): string[] {
+    if (!coAuthors) return [];
+    try {
+        let authorsArray;
+        if (typeof coAuthors === 'string') {
+            authorsArray = JSON.parse(coAuthors);
+        } else if (Array.isArray(coAuthors)) {
+            authorsArray = coAuthors;
+        } else {
+            return [];
+        }
+
+        if (!Array.isArray(authorsArray)) return [];
+
+        return authorsArray.map(author => {
+            if (typeof author === 'object' && author !== null && author.givenName && author.lastName) {
+                return `${author.givenName} ${author.lastName}`;
+            }
+            return 'Unknown Author';
+        }).filter(name => name !== 'Unknown Author');
+
+    } catch (error) {
+        console.error("Failed to parse co-authors:", error);
+        return [];
+    }
+}
+
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -22,9 +52,9 @@ export async function GET(request: NextRequest) {
       where: {
         status: 'Published',
         OR: [
-          { articleTitle: { contains: query, mode: 'insensitive' } },
-          { abstract: { contains: query, mode: 'insensitive' } },
-          { keywords: { contains: query, mode: 'insensitive' } },
+          { articleTitle: { contains: query } },
+          { abstract: { contains: query } },
+          { keywords: { contains: query } },
         ],
       },
       select: {
@@ -35,41 +65,20 @@ export async function GET(request: NextRequest) {
       },
       take: 10,
     });
-
-    const suggestions: SearchSuggestion[] = manuscripts.map((ms) => {
-      let authorNames: string[] = [];
-      // The coAuthors field is of type JsonValue. We must handle it safely.
-      if (Array.isArray(ms.coAuthors)) {
-        try {
-          authorNames = ms.coAuthors
-            .map((author: any) => {
-              if (author && typeof author === 'object' && author.givenName && author.lastName) {
-                return `${author.givenName} ${author.lastName}`.trim();
-              }
-              return null;
-            })
-            .filter((name): name is string => name !== null && name !== '');
-        } catch (e) {
-            console.error(`Error processing coAuthors for manuscript ID ${ms.id}:`, e);
-            // On error, authorNames will remain an empty array.
-            authorNames = [];
-        }
-      }
-
-      return {
-        id: ms.id,
-        title: ms.articleTitle,
-        // Ensure abstract is not null before calling substring
-        excerpt: ms.abstract?.substring(0, 100) || '',
-        authors: authorNames,
-      };
-    });
+    
+    const suggestions: Suggestion[] = manuscripts.map(ms => ({
+      id: ms.id,
+      title: ms.articleTitle,
+      excerpt: ms.abstract.substring(0, 100) + (ms.abstract.length > 100 ? '...' : ''),
+      authors: parseCoAuthors(ms.coAuthors)
+    }));
 
     return NextResponse.json({ suggestions });
+
   } catch (error: any) {
-    console.error('Search API error:', error);
+    console.error("Search API error:", error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred during search.', details: error.message },
+      { error: 'An error occurred while searching for manuscripts.', details: error.message },
       { status: 500 }
     );
   }
