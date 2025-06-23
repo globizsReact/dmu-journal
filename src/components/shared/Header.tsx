@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
   className?: string;
@@ -16,13 +17,14 @@ const Header = ({ className }: HeaderProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const logoSrc = '/images/logo.png';
+  const pathname = usePathname();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const checkAuthStatus = () => {
         const token = localStorage.getItem('authToken');
         const role = localStorage.getItem('userRole');
-        setIsLoggedIn(!!token); // Check for token presence for any role
+        setIsLoggedIn(!!token);
         setUserRole(role);
       };
 
@@ -42,6 +44,21 @@ const Header = ({ className }: HeaderProps) => {
 
   const isAdmin = userRole === 'admin';
   const isReviewer = userRole === 'reviewer';
+
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname.startsWith(href);
+  };
+
+  const navLinkClasses = (href: string) => cn(
+    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center",
+    isActive(href) ? "text-accent border-b-2 border-accent" : "border-b-2 border-transparent"
+  );
+
+  const mobileNavLinkClasses = (href: string) => cn(
+    "block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors",
+    isActive(href) && "text-accent font-bold"
+  );
 
   return (
     <>
@@ -63,29 +80,29 @@ const Header = ({ className }: HeaderProps) => {
           </Link>
 
           <nav className="hidden md:flex space-x-4 md:space-x-6 items-center">
-            <Link href="/" className="text-sm font-medium hover:text-accent transition-colors">
+            <Link href="/" className={navLinkClasses('/')}>
               HOME
             </Link>
-            <Link href="/about" className="text-sm font-medium hover:text-accent transition-colors">
+            <Link href="/about" className={navLinkClasses('/about')}>
               ABOUT US
             </Link>
             {!isLoggedIn && (
-              <Link href="/submit" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link href="/submit" className={navLinkClasses('/submit')}>
                 CALL FOR PAPER SUBMISSION
               </Link>
             )}
             {isLoggedIn && !isAdmin && !isReviewer && (
-              <Link href="/author/dashboard" className="text-sm font-medium hover:text-accent transition-colors">
+              <Link href="/author/dashboard" className={navLinkClasses('/author/dashboard')}>
                 AUTHOR DASHBOARD
               </Link>
             )}
             {isLoggedIn && isReviewer && (
-              <Link href="/reviewer/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
+              <Link href="/reviewer/dashboard" className={navLinkClasses('/reviewer/dashboard')}>
                 <BadgeCheck className="w-4 h-4 mr-1" /> REVIEWER DASHBOARD
               </Link>
             )}
             {isLoggedIn && isAdmin && (
-              <Link href="/admin/dashboard" className="text-sm font-medium hover:text-accent transition-colors flex items-center">
+              <Link href="/admin/dashboard" className={navLinkClasses('/admin/dashboard')}>
                 <ShieldCheck className="w-4 h-4 mr-1" /> ADMIN DASHBOARD
               </Link>
             )}
@@ -144,14 +161,14 @@ const Header = ({ className }: HeaderProps) => {
         <Link
           href="/"
           onClick={handleLinkClick}
-          className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          className={mobileNavLinkClasses('/')}
         >
           HOME
         </Link>
         <Link
           href="/about"
           onClick={handleLinkClick}
-          className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+          className={mobileNavLinkClasses('/about')}
         >
           ABOUT US
         </Link>
@@ -159,7 +176,7 @@ const Header = ({ className }: HeaderProps) => {
           <Link
             href="/submit"
             onClick={handleLinkClick}
-            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+            className={mobileNavLinkClasses('/submit')}
           >
            CALL FOR PAPER SUBMISSION
           </Link>
@@ -168,7 +185,7 @@ const Header = ({ className }: HeaderProps) => {
           <Link
             href="/author/dashboard"
             onClick={handleLinkClick}
-            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+            className={mobileNavLinkClasses('/author/dashboard')}
           >
             AUTHOR DASHBOARD
           </Link>
@@ -177,7 +194,7 @@ const Header = ({ className }: HeaderProps) => {
           <Link
             href="/reviewer/dashboard"
             onClick={handleLinkClick}
-            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+            className={mobileNavLinkClasses('/reviewer/dashboard')}
           >
             <BadgeCheck className="w-4 h-4 mr-1 inline-block" /> REVIEWER DASHBOARD
           </Link>
@@ -186,7 +203,7 @@ const Header = ({ className }: HeaderProps) => {
           <Link
             href="/admin/dashboard"
             onClick={handleLinkClick}
-            className="block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors"
+            className={mobileNavLinkClasses('/admin/dashboard')}
           >
             <ShieldCheck className="w-4 h-4 mr-1 inline-block" /> ADMIN DASHBOARD
           </Link>
