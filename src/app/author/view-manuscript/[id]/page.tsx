@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import DashboardSidebar from '@/components/author/DashboardSidebar';
+import Link from 'next/link';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -25,6 +26,16 @@ interface ManuscriptDetails extends Manuscript {
 }
 
 type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Published' | 'Suspended' | 'Rejected';
+
+const Breadcrumbs = ({ manuscriptTitle }: { manuscriptTitle: string }) => (
+  <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+    <Link href="/author/dashboard" className="hover:text-primary">Dashboard</Link>
+    <span>/</span>
+    <Link href="/author/dashboard" className="hover:text-primary">My Manuscripts</Link>
+    <span>/</span>
+    <span className="font-medium text-foreground truncate">{manuscriptTitle}</span>
+  </div>
+);
 
 
 export default function AuthorManuscriptDetailsPage() {
@@ -161,9 +172,6 @@ export default function AuthorManuscriptDetailsPage() {
           </CardHeader>
           <CardContent>
             <p>{error}</p>
-            <Button onClick={() => router.push('/author/dashboard')} variant="outline" className="mt-4">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
           </CardContent>
         </Card>
       );
@@ -177,9 +185,6 @@ export default function AuthorManuscriptDetailsPage() {
           </CardHeader>
           <CardContent>
             <p>The requested manuscript could not be found or you may not have permission to view it.</p>
-            <Button onClick={() => router.push('/author/dashboard')} variant="outline" className="mt-4">
-               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
           </CardContent>
         </Card>
       );
@@ -195,9 +200,6 @@ export default function AuthorManuscriptDetailsPage() {
                     Submitted on: {formatDisplayDate(manuscript.submittedAt)}
                     </CardDescription>
                 </div>
-                <Button onClick={() => router.push('/author/dashboard')} variant="outline" size="sm" className="w-full sm:w-auto">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-                </Button>
             </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -276,6 +278,14 @@ export default function AuthorManuscriptDetailsPage() {
           onTabChange={handleSidebarNav}
         />
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
+          {manuscript && !isLoading && !error && (
+            <div className="mb-6 space-y-4">
+               <Button onClick={() => router.push('/author/dashboard')} variant="outline" size="sm">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to My Manuscripts
+              </Button>
+              <Breadcrumbs manuscriptTitle={manuscript.articleTitle} />
+            </div>
+          )}
           {renderContent()}
         </main>
       </div>

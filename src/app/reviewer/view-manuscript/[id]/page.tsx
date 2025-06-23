@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ReviewerDashboardSidebar from '@/components/reviewer/ReviewerDashboardSidebar';
+import Link from 'next/link';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -26,6 +27,17 @@ interface ManuscriptDetails extends Manuscript {
 
 type ManuscriptStatus = 'Submitted' | 'In Review' | 'Accepted' | 'Published' | 'Suspended';
 type ReviewerActionStatus = 'In Review' | 'Accepted' | 'Suspended' | 'Published';
+
+const Breadcrumbs = ({ manuscriptTitle }: { manuscriptTitle: string }) => (
+  <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+    <Link href="/reviewer/dashboard" className="hover:text-primary">Dashboard</Link>
+    <span>/</span>
+    <Link href="/reviewer/dashboard" className="hover:text-primary">All Manuscripts</Link>
+    <span>/</span>
+    <span className="font-medium text-foreground truncate">{manuscriptTitle}</span>
+  </div>
+);
+
 
 export default function ReviewerManuscriptDetailsPage() {
   const params = useParams();
@@ -187,9 +199,6 @@ export default function ReviewerManuscriptDetailsPage() {
           </CardHeader>
           <CardContent>
             <p>{error}</p>
-            <Button onClick={() => router.push('/reviewer/dashboard')} variant="outline" className="mt-4">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
           </CardContent>
         </Card>
       );
@@ -203,9 +212,6 @@ export default function ReviewerManuscriptDetailsPage() {
           </CardHeader>
           <CardContent>
             <p>The requested manuscript could not be found.</p>
-            <Button onClick={() => router.push('/reviewer/dashboard')} variant="outline" className="mt-4">
-               <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-            </Button>
           </CardContent>
         </Card>
       );
@@ -223,9 +229,6 @@ export default function ReviewerManuscriptDetailsPage() {
                   Submitted by: {manuscript.submittedBy?.fullName || 'N/A'} on {formatDisplayDate(manuscript.submittedAt)}
                   </CardDescription>
               </div>
-              <Button onClick={() => router.push('/reviewer/dashboard')} variant="outline" size="sm" className="w-full sm:w-auto">
-                  <ArrowLeft className="mr-2 h-4 w-4" /> Back to Dashboard
-              </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -332,6 +335,14 @@ export default function ReviewerManuscriptDetailsPage() {
           onTabChange={handleSidebarNav}
         />
         <main className="flex-1 lg:ml-8 mt-8 lg:mt-0">
+          {manuscript && !isLoading && !error && (
+            <div className="mb-6 space-y-4">
+                <Button onClick={() => router.push('/reviewer/dashboard')} variant="outline" size="sm">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Manuscripts
+                </Button>
+                <Breadcrumbs manuscriptTitle={manuscript.articleTitle} />
+            </div>
+          )}
           {renderContent()}
         </main>
       </div>
