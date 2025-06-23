@@ -1,23 +1,20 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import type { User } from '@prisma/client';
 
-interface CoAuthor {
-    title: string;
-    givenName: string;
-    lastName: string;
-    email: string;
-    affiliation: string;
-    country: string;
+interface SearchSuggestion {
+  id: string;
+  title: string;
+  excerpt: string;
+  authors: string[];
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get('query');
 
-  if (!query || query.trim().length < 2) {
-    return NextResponse.json({ suggestions: [] });
+  if (!query) {
+    return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
   }
 
   try {
@@ -34,58 +31,45 @@ export async function GET(request: NextRequest) {
         id: true,
         articleTitle: true,
         abstract: true,
-        submittedBy: {
-          select: {
-            fullName: true,
-          },
-        },
         coAuthors: true,
       },
-      take: 10, // Limit the number of suggestions
+      take: 10,
     });
 
-    const suggestions = manuscripts.map((manuscript) => {
-      const authors: string[] = [];
-      if (manuscript.submittedBy?.fullName) {
-        authors.push(manuscript.submittedBy.fullName);
-      }
-      
-      let parsedCoAuthors: CoAuthor[] = [];
-      if (manuscript.coAuthors) {
-          if (typeof manuscript.coAuthors === 'string') {
-              try {
-                  parsedCoAuthors = JSON.parse(manuscript.coAuthors);
-              } catch (e) {
-                  // Ignore if parsing fails, co-authors will not be added to search result
+    const suggestions: SearchSuggestion[] = manuscripts.map((ms) => {
+      let authorNames: string[] = [];
+      // The coAuthors field is of type JsonValue. We must handle it safely.
+      if (Array.isArray(ms.coAuthors)) {
+        try {
+          authorNames = ms.coAuthors
+            .map((author: any) => {
+              if (author && typeof author === 'object' && author.givenName && author.lastName) {
+                return `${author.givenName} ${author.lastName}`.trim();
               }
-          } else if (Array.isArray(manuscript.coAuthors)) {
-              // Directly use if it's already a JSON object (array)
-              parsedCoAuthors = manuscript.coAuthors as CoAuthor[];
-          }
-      }
-      
-      if (Array.isArray(parsedCoAuthors)) {
-        parsedCoAuthors.forEach(coAuthor => {
-          if (coAuthor.givenName && coAuthor.lastName) {
-            authors.push(`${coAuthor.givenName} ${coAuthor.lastName}`);
-          }
-        });
+              return null;
+            })
+            .filter((name): name is string => name !== null && name !== '');
+        } catch (e) {
+            console.error(`Error processing coAuthors for manuscript ID ${ms.id}:`, e);
+            // On error, authorNames will remain an empty array.
+            authorNames = [];
+        }
       }
 
       return {
-        id: manuscript.id,
-        title: manuscript.articleTitle,
-        excerpt: manuscript.abstract.substring(0, 100) + '...',
-        authors: authors,
+        id: ms.id,
+        title: ms.articleTitle,
+        // Ensure abstract is not null before calling substring
+        excerpt: ms.abstract?.substring(0, 100) || '',
+        authors: authorNames,
       };
     });
 
     return NextResponse.json({ suggestions });
-
   } catch (error: any) {
-    console.error('Search API Error:', error);
+    console.error('Search API error:', error);
     return NextResponse.json(
-      { error: 'An error occurred while searching.', details: error.message },
+      { error: 'An unexpected error occurred during search.', details: error.message },
       { status: 500 }
     );
   }
