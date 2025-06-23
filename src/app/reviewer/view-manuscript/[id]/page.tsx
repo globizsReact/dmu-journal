@@ -40,7 +40,7 @@ export default function ReviewerManuscriptDetailsPage() {
   const [authToken, setAuthToken] = useState<string | undefined>(undefined);
   
   const [reviewerName, setReviewerName] = useState("Reviewer");
-  const activeTab = 'assignedManuscripts'; // Keep assigned manuscripts tab active
+  const activeTab = 'manuscripts'; // Keep manuscripts tab active
   const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
 
@@ -251,6 +251,41 @@ export default function ReviewerManuscriptDetailsPage() {
             <section>
               <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
               <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{manuscript.abstract}</p>
+            </section>
+            
+            {manuscript.keywords && (
+                <section>
+                    <h3 className="text-md font-semibold text-primary mb-1">Keywords</h3>
+                    <p className="text-sm text-foreground/70">{manuscript.keywords}</p>
+                </section>
+            )}
+            
+            <Separator />
+            
+            {manuscript.coAuthors && manuscript.coAuthors.length > 0 && (
+                <section>
+                    <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-3">Co-Author(s)</h3>
+                    <div className="space-y-4">
+                        {manuscript.coAuthors.map((author, index) => (
+                            <div key={index} className="p-3 border rounded-md bg-card shadow-sm">
+                                <p className="font-semibold text-primary/90 text-md">{author.title} {author.givenName} {author.lastName}</p>
+                                <p className="text-xs text-muted-foreground flex items-center"><Mail className="w-3.5 h-3.5 mr-1.5"/>{author.email}</p>
+                                <p className="text-xs text-muted-foreground flex items-center"><Building className="w-3.5 h-3.5 mr-1.5"/>{author.affiliation} ({author.country})</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+            
+            <Separator />
+            
+            <section>
+                <h3 className="text-lg font-semibold text-primary mb-3">Submitted Files</h3>
+                <ul className="list-disc list-inside space-y-2 text-sm text-foreground/80">
+                    {manuscript.manuscriptFileName && <li><strong className="text-foreground">Manuscript:</strong> {manuscript.manuscriptFileName}</li>}
+                    {manuscript.coverLetterFileName && <li><strong className="text-foreground">Cover Letter:</strong> {manuscript.coverLetterFileName}</li>}
+                    {manuscript.supplementaryFilesName && <li><strong className="text-foreground">Supplementary Files:</strong> {manuscript.supplementaryFilesName}</li>}
+                </ul>
             </section>
             
             <Separator />
