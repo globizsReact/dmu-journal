@@ -65,19 +65,25 @@ export default function EditJournalCategoryDialog({ category, isOpen, onClose, o
 
   const form = useForm<EditCategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: {
-      ...category,
-      startYear: category.startYear || undefined,
-      copyrightYear: category.copyrightYear || undefined,
-    },
   });
   
   useEffect(() => {
-    form.reset({
-      ...category,
-      startYear: category.startYear || undefined,
-      copyrightYear: category.copyrightYear || undefined,
-    });
+    if (category) {
+      form.reset({
+        name: category.name || '',
+        description: category.description || '',
+        iconName: category.iconName as IconName,
+        imagePath: category.imagePath || '',
+        imageHint: category.imageHint || '',
+        abbreviation: category.abbreviation || '',
+        language: category.language || '',
+        issn: category.issn || '',
+        doiBase: category.doiBase || '',
+        displayIssn: category.displayIssn || '',
+        startYear: category.startYear || undefined,
+        copyrightYear: category.copyrightYear || undefined,
+      });
+    }
   }, [category, form]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {

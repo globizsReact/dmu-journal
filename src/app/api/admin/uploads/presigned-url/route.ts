@@ -50,7 +50,6 @@ export async function POST(request: NextRequest) {
       Bucket: process.env.AWS_BUCKET_NAME,
       Key: key,
       ContentType: contentType,
-      ACL: 'public-read', // Make the object publicly accessible
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // URL expires in 5 minutes
