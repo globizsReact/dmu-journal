@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
       Key: key,
       Body: buffer,
       ContentType: file.type,
-      ACL: 'public-read', // Make the object publicly accessible
     });
 
     // Execute the upload
