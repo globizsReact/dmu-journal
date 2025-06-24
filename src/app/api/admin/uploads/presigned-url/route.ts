@@ -5,21 +5,16 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { verifyToken } from '@/lib/authUtils';
 import { randomUUID } from 'crypto';
 
-// Basic check for S3 environment variables
-if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_BUCKET_NAME) {
-  console.error("S3 Upload Error: Missing required AWS environment variables.");
-}
-
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Check for required environment variables at runtime
+    const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME } = process.env;
+
+    if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_BUCKET_NAME) {
+      console.error("S3 Upload Error: One or more required AWS environment variables are missing on the server.");
+      return NextResponse.json({ error: 'Server configuration error: Missing AWS credentials. Please contact an administrator.' }, { status: 500 });
+    }
+
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
@@ -33,9 +28,15 @@ export async function POST(request: NextRequest) {
     if (!filename || !contentType) {
       return NextResponse.json({ error: 'Filename and contentType are required' }, { status: 400 });
     }
-     if (!process.env.AWS_BUCKET_NAME) {
-      throw new Error("S3 bucket name is not configured on the server.");
-    }
+
+    // Initialize S3 Client inside the handler to ensure env vars are loaded
+    const s3Client = new S3Client({
+      region: AWS_REGION,
+      credentials: {
+        accessKeyId: AWS_ACCESS_KEY_ID,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      },
+    });
 
     const now = new Date();
     const year = now.getFullYear();
@@ -47,20 +48,19 @@ export async function POST(request: NextRequest) {
     const key = `uploads/${year}/${month}/${day}/${uniqueSuffix}-${sanitizedFilename}`;
     
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: AWS_BUCKET_NAME,
       Key: key,
       ContentType: contentType,
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // URL expires in 5 minutes
 
-    // The public URL to access the file after upload
-    const publicUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    const publicUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${key}`;
 
     return NextResponse.json({
       success: true,
       uploadUrl: presignedUrl,
-      publicUrl: publicUrl, // This is the URL to store in the database
+      publicUrl: publicUrl,
     });
 
   } catch (error) {
