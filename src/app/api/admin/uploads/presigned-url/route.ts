@@ -55,11 +55,10 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const key = `uploads/${year}/${month}/${day}/${uniqueSuffix}-${sanitizedFilename}`;
+    const key = `uploads/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
     
     // Upload directly to S3
     const command = new PutObjectCommand({

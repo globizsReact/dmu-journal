@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { JournalCategory } from '@prisma/client';
+import Image from 'next/image';
 import {
   Table,
   TableBody,
@@ -119,7 +120,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={5} className="h-24 text-center">
+            <TableCell colSpan={6} className="h-24 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
             </TableCell>
           </TableRow>
@@ -130,7 +131,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
+            <TableCell colSpan={6} className="h-24 text-center text-destructive">{error}</TableCell>
           </TableRow>
         </tbody>
       );
@@ -139,7 +140,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={5} className="h-24 text-center">
+            <TableCell colSpan={6} className="h-24 text-center">
               No journal categories found. Add one to get started.
             </TableCell>
           </TableRow>
@@ -153,6 +154,22 @@ export default function JournalCategoryListTable() {
                     <TableCell className="font-medium">
                         {category.name}
                         <p className="text-xs text-muted-foreground line-clamp-2 font-normal">{category.description}</p>
+                    </TableCell>
+                    <TableCell>
+                      {category.imagePath ? (
+                        <Image
+                          src={category.imagePath}
+                          alt={category.name ?? 'Category thumbnail'}
+                          width={64}
+                          height={48}
+                          className="rounded-md object-cover bg-muted"
+                          data-ai-hint={category.imageHint ?? ''}
+                        />
+                      ) : (
+                        <div className="w-16 h-12 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                          No Image
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>{category.issn || 'N/A'}</TableCell>
                     <TableCell>{category.startYear || 'N/A'}</TableCell>
@@ -206,10 +223,11 @@ export default function JournalCategoryListTable() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto border rounded-lg">
-            <Table className="min-w-[800px]">
+            <Table className="min-w-[900px]">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[350px]">Name</TableHead>
+                        <TableHead className="w-[300px]">Name</TableHead>
+                        <TableHead className="w-[100px]">Thumbnail</TableHead>
                         <TableHead>ISSN</TableHead>
                         <TableHead>Start Year</TableHead>
                         <TableHead>Abbreviation</TableHead>
