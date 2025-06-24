@@ -23,12 +23,10 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Add S3 bucket hostname. Replace with your actual bucket hostname.
-      // e.g., 'your-bucket-name.s3.your-region.amazonaws.com'
-      // Using a wildcard for the bucket name is also an option for flexibility:
+      // Specific S3 bucket hostname for improved security
       {
         protocol: 'https',
-        hostname: '*.s3.amazonaws.com',
+        hostname: 'dmu-journals.s3.ap-south-1.amazonaws.com',
         port: '',
         pathname: '/**',
       }
