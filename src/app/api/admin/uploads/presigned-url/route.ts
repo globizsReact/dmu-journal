@@ -53,14 +53,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate unique key
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
+    // Generate unique key for the assets folder
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const key = `uploads/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
+    const key = `assets/${uniqueSuffix}-${sanitizedFilename}`;
     
     // Upload directly to S3
     const command = new PutObjectCommand({
@@ -74,8 +71,8 @@ export async function POST(request: NextRequest) {
     // Execute the upload
     await s3Client.send(command);
     
-    // Generate the public URL
-    const publicUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+    // Generate the public URL via CloudFront
+    const publicUrl = `https://diuu569ds96wh.cloudfront.net/${key}`;
 
     console.log('File uploaded successfully:', publicUrl);
 

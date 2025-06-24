@@ -23,10 +23,10 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-      // Specific S3 bucket hostname for improved security
+      // CloudFront distribution for S3 bucket
       {
         protocol: 'https',
-        hostname: 'dmu-journals.s3.ap-south-1.amazonaws.com',
+        hostname: 'diuu569ds96wh.cloudfront.net',
         port: '',
         pathname: '/**',
       }
