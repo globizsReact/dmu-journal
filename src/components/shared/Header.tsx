@@ -86,7 +86,7 @@ const Header = ({ className }: HeaderProps) => {
             <Link href="/about" className={navLinkClasses('/about')}>
               ABOUT US
             </Link>
-            {!isLoggedIn && (
+            {(!isLoggedIn || isAdmin) && (
               <Link href="/submit" className={navLinkClasses('/submit')}>
                 CALL FOR PAPER SUBMISSION
               </Link>
@@ -99,11 +99,6 @@ const Header = ({ className }: HeaderProps) => {
             {isLoggedIn && isReviewer && (
               <Link href="/reviewer/dashboard" className={navLinkClasses('/reviewer/dashboard')}>
                 <BadgeCheck className="w-4 h-4 mr-1" /> REVIEWER DASHBOARD
-              </Link>
-            )}
-            {isLoggedIn && isAdmin && (
-              <Link href="/admin/dashboard" className={navLinkClasses('/admin/dashboard')}>
-                <ShieldCheck className="w-4 h-4 mr-1" /> ADMIN DASHBOARD
               </Link>
             )}
           </nav>
@@ -172,7 +167,7 @@ const Header = ({ className }: HeaderProps) => {
         >
           ABOUT US
         </Link>
-        {!isLoggedIn && (
+        {(!isLoggedIn || isAdmin) && (
           <Link
             href="/submit"
             onClick={handleLinkClick}
@@ -197,15 +192,6 @@ const Header = ({ className }: HeaderProps) => {
             className={mobileNavLinkClasses('/reviewer/dashboard')}
           >
             <BadgeCheck className="w-4 h-4 mr-1 inline-block" /> REVIEWER DASHBOARD
-          </Link>
-        )}
-         {isLoggedIn && isAdmin && (
-          <Link
-            href="/admin/dashboard"
-            onClick={handleLinkClick}
-            className={mobileNavLinkClasses('/admin/dashboard')}
-          >
-            <ShieldCheck className="w-4 h-4 mr-1 inline-block" /> ADMIN DASHBOARD
           </Link>
         )}
       </nav>
