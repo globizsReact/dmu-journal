@@ -8,7 +8,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { useToast } from '@/hooks/use-toast';
 
-export default function ReviewerLayout({ children }: { children: ReactNode }) {
+export default function AuthorLayout({ children }: { children: ReactNode }) {
   const [isVerifying, setIsVerifying] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
@@ -18,7 +18,7 @@ export default function ReviewerLayout({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('authToken');
       const role = localStorage.getItem('userRole');
 
-      if (!token || role !== 'reviewer') {
+      if (!token || role !== 'author') {
         router.replace('/submit');
         return;
       }
@@ -31,7 +31,7 @@ export default function ReviewerLayout({ children }: { children: ReactNode }) {
 
         if (response.ok) {
           const data = await response.json();
-          if (data.user.role === 'reviewer') {
+          if (data.user.role === 'author') {
             setIsVerifying(false);
           } else {
             throw new Error('Mismatched role');
@@ -40,10 +40,11 @@ export default function ReviewerLayout({ children }: { children: ReactNode }) {
           throw new Error('Session invalid');
         }
       } catch (error) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userRole');
-        localStorage.removeItem('authorName');
+        // Clear local storage and redirect
         localStorage.removeItem('isAuthorLoggedIn');
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('authorName');
+        localStorage.removeItem('userRole');
         localStorage.removeItem('rememberAuthorLogin');
         localStorage.removeItem('rememberedUsername');
         window.dispatchEvent(new CustomEvent('authChange'));
@@ -61,14 +62,14 @@ export default function ReviewerLayout({ children }: { children: ReactNode }) {
 
   if (isVerifying) {
     return (
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1 flex items-center justify-center bg-muted">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="ml-4 text-lg">Verifying reviewer session...</p>
-          </main>
-          <Footer />
-        </div>
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-1 flex items-center justify-center bg-muted">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="ml-4 text-lg">Verifying author session...</p>
+        </main>
+        <Footer />
+      </div>
     );
   }
 
