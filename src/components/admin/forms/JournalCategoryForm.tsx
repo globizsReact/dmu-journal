@@ -147,6 +147,11 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
                 <FormField control={form.control} name="description" render={({ field }) => <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} rows={5} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
                 <FormField control={form.control} name="imageHint" render={({ field }) => <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g., science lab, law books" disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField control={form.control} name="abbreviation" render={({ field }) => <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+                  <FormField control={form.control} name="language" render={({ field }) => <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+                  <FormField control={form.control} name="issn" render={({ field }) => <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+                  <FormField control={form.control} name="doiBase" render={({ field }) => <FormItem><FormLabel>DOI Base</FormLabel><FormControl><Input {...field} placeholder="e.g., 10.5897/JBSB" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+                  <FormField control={form.control} name="displayIssn" render={({ field }) => <FormItem><FormLabel>Display ISSN</FormLabel><FormControl><Input {...field} placeholder="e.g., ISSN: 2141-2200" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
                   <FormField control={form.control} name="iconName" render={({ field }) => (
                     <FormItem>
                       <FormLabel>Icon</FormLabel>
@@ -155,7 +160,6 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
                       </Select><FormMessage />
                     </FormItem>
                   )} />
-                  <FormField control={form.control} name="issn" render={({ field }) => <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
                   <FormField control={form.control} name="startYear" render={({ field }) => <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
                   <FormField control={form.control} name="copyrightYear" render={({ field }) => <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
                 </div>
