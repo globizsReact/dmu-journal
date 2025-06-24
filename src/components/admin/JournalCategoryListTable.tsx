@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -110,27 +111,33 @@ export default function JournalCategoryListTable() {
   const renderTableBody = () => {
     if (isLoading) {
       return (
-        <TableRow>
-          <TableCell colSpan={5} className="h-24 text-center">
-            <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
-          </TableCell>
-        </TableRow>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={5} className="h-24 text-center">
+              <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+            </TableCell>
+          </TableRow>
+        </TableBody>
       );
     }
     if (error) {
       return (
-        <TableRow>
-          <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
-        </TableRow>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
+          </TableRow>
+        </TableBody>
       );
     }
     if (categories.length === 0) {
       return (
-        <TableRow>
-          <TableCell colSpan={5} className="h-24 text-center">
-            No journal categories found. Add one to get started.
-          </TableCell>
-        </TableRow>
+        <TableBody>
+          <TableRow>
+            <TableCell colSpan={5} className="h-24 text-center">
+              No journal categories found. Add one to get started.
+            </TableCell>
+          </TableRow>
+        </TableBody>
       );
     }
     return (
