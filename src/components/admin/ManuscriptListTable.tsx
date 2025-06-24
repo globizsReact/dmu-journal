@@ -14,10 +14,16 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ExternalLink, Loader2, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ExternalLink, Loader2, AlertTriangle, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ManuscriptWithAuthor extends Manuscript {
   submittedBy?: {
@@ -115,7 +121,7 @@ export default function ManuscriptListTable() {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return isValid(date) ? format(date, 'PPpp') : 'Invalid Date';
+      return isValid(date) ? format(date, 'PPpp') : 'Error';
     } catch (e) {
       return 'Error';
     }
@@ -190,24 +196,37 @@ export default function ManuscriptListTable() {
                     <TableCell>{manuscript.journalCategory?.name || 'Unknown Journal'}</TableCell>
                     <TableCell>
                       <span
-                        className={cn(`px-2 py-1 text-xs font-semibold rounded-full
-                          ${manuscript.status === 'Submitted' ? 'bg-blue-100 text-blue-700' :
-                            manuscript.status === 'In Review' ? 'bg-yellow-100 text-yellow-700' :
-                            manuscript.status === 'Accepted' ? 'bg-green-100 text-green-700' :
-                            manuscript.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'}`)}
+                        className={cn('px-2 py-1 text-xs font-semibold rounded-full', {
+                          'bg-blue-100 text-blue-700': manuscript.status === 'Submitted',
+                          'bg-yellow-100 text-yellow-700': manuscript.status === 'In Review',
+                          'bg-green-100 text-green-700': manuscript.status === 'Accepted',
+                          'bg-emerald-100 text-emerald-700': manuscript.status === 'Published',
+                          'bg-orange-100 text-orange-700': manuscript.status === 'Suspended',
+                          'bg-red-100 text-red-700': manuscript.status === 'Rejected',
+                          'bg-gray-100 text-gray-700': !['Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'].includes(manuscript.status)
+                        })}
                       >
                         {manuscript.status}
                       </span>
                     </TableCell>
                     <TableCell>{formatSubmittedDate(manuscript.submittedAt)}</TableCell>
                     <TableCell className="text-right">
-                      <Button asChild variant="outline" size="sm" disabled={isLoading}>
-                        <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`}>
-                          <ExternalLink className="w-3.5 h-3.5 md:mr-1" />
-                          <span className="hidden md:inline">Details</span>
-                        </Link>
-                      </Button>
+                       <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Link href={`/admin/dashboard/manuscripts/${manuscript.id}`} className="cursor-pointer">
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                <span>View Details</span>
+                              </Link>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
