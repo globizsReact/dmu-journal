@@ -5,19 +5,21 @@ import { verifyToken } from '@/lib/authUtils';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
-  console.log('Environment check:');
-  console.log('AWS_REGION:', process.env.AWS_REGION);
-  console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? 'Set' : 'Not set');
-  console.log('AWS_SECRET_ACCESS_KEY:', process.env.AWS_SECRET_ACCESS_KEY ? 'Set' : 'Not set');
-  console.log('AWS_BUCKET_NAME:', process.env.AWS_BUCKET_NAME);
-
   try {
     // Check for required environment variables at runtime
     const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME } = process.env;
 
-    if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_BUCKET_NAME) {
-      console.error("S3 Upload Error: One or more required AWS environment variables are missing on the server.");
-      return NextResponse.json({ error: 'Server configuration error: Missing AWS credentials. Please contact an administrator.' }, { status: 500 });
+    const missingVars = [
+        !AWS_REGION && "AWS_REGION",
+        !AWS_ACCESS_KEY_ID && "AWS_ACCESS_KEY_ID",
+        !AWS_SECRET_ACCESS_KEY && "AWS_SECRET_ACCESS_KEY",
+        !AWS_BUCKET_NAME && "AWS_BUCKET_NAME"
+    ].filter(Boolean).join(', ');
+
+    if (missingVars) {
+        const errorMsg = `Server configuration error: The following AWS environment variables are missing: ${missingVars}.`;
+        console.error("S3 Upload Error:", errorMsg);
+        return NextResponse.json({ error: 'Server configuration error: Missing AWS credentials. Please contact an administrator.' }, { status: 500 });
     }
 
     const token = request.headers.get('Authorization')?.split(' ')[1];
@@ -46,8 +48,8 @@ export async function POST(request: NextRequest) {
     const s3Client = new S3Client({
       region: AWS_REGION,
       credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID,
-        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        accessKeyId: AWS_ACCESS_KEY_ID!,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY!,
       },
     });
 
@@ -66,6 +68,7 @@ export async function POST(request: NextRequest) {
       Key: key,
       Body: buffer,
       ContentType: file.type,
+      ACL: 'public-read', // Make the object publicly accessible
     });
 
     // Execute the upload
