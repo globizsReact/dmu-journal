@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FlaskConical, Library, Briefcase, Scale } from 'lucide-react';
+import { Loader2, FlaskConical, Library, Briefcase, Scale, FileUp, CheckCircle, AlertCircle } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const iconMap = {
@@ -33,7 +33,7 @@ const categorySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters.'),
   description: z.string().min(10, 'Description must be at least 10 characters.'),
   iconName: z.enum(Object.keys(iconMap) as [IconName, ...IconName[]], { required_error: 'An icon is required.' }),
-  imagePath: z.string().min(1, 'Image path is required (e.g., /images/j1.png).'),
+  imagePath: z.string().min(1, 'An uploaded image is required.'), // Now holds the S3 URL
   imageHint: z.string().min(1, 'Image hint is required (e.g., science lab).'),
   abbreviation: z.string().optional(),
   language: z.string().optional(),
@@ -55,12 +55,60 @@ interface AddJournalCategoryDialogProps {
 
 export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, authToken }: AddJournalCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<AddCategoryFormValues>({
     resolver: zodResolver(categorySchema),
-    defaultValues: { name: '', description: '', imagePath: '/images/j1.png', imageHint: '', language: 'English' },
+    defaultValues: { name: '', description: '', imagePath: '', imageHint: '', language: 'English' },
   });
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setUploadError(null);
+    setFileName(file.name);
+    form.setValue('imagePath', ''); // Reset image path while uploading
+
+    try {
+      const presignedUrlResponse = await fetch('/api/admin/uploads/presigned-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      });
+
+      const { uploadUrl, publicUrl, error: presignedUrlError } = await presignedUrlResponse.json();
+      if (!presignedUrlResponse.ok) throw new Error(presignedUrlError || 'Could not get an upload URL.');
+
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+
+      if (!uploadResponse.ok) throw new Error('Failed to upload file to S3.');
+
+      form.setValue('imagePath', publicUrl); // Set the public URL to be saved
+      form.trigger('imagePath'); // Re-validate the field
+      setUploadSuccess(true);
+      toast({ title: "Upload Successful", description: "Image is ready." });
+
+    } catch (error: any) {
+      setUploadError(error.message);
+      toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const onSubmit = async (values: AddCategoryFormValues) => {
     setIsSubmitting(true);
@@ -99,18 +147,10 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
             <ScrollArea className="h-[60vh] p-4">
               <div className="space-y-4">
                 <FormField control={form.control} name="name" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
+                  <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField control={form.control} name="description" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl><Textarea {...field} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
+                  <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="iconName" render={({ field }) => (
                   <FormItem>
@@ -119,23 +159,42 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
                        <FormControl><SelectTrigger>{field.value ? <div className="flex items-center">{iconMap[field.value as IconName]} {field.value}</div> : "Select an icon"}</SelectTrigger></FormControl>
                       <SelectContent>
                         {Object.keys(iconMap).map(iconName => (
-                          <SelectItem key={iconName} value={iconName}>
-                            <div className="flex items-center">{iconMap[iconName as IconName]} {iconName}</div>
-                          </SelectItem>
+                          <SelectItem key={iconName} value={iconName}><div className="flex items-center">{iconMap[iconName as IconName]} {iconName}</div></SelectItem>
                         ))}
                       </SelectContent>
-                    </Select>
-                    <FormMessage />
+                    </Select><FormMessage />
                   </FormItem>
                 )} />
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField control={form.control} name="imagePath" render={({ field }) => (
-                    <FormItem><FormLabel>Image Path</FormLabel><FormControl><Input {...field} placeholder="/images/j1.png" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                  <FormField control={form.control} name="imageHint" render={({ field }) => (
-                    <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="science lab" /></FormControl><FormMessage /></FormItem>
-                  )} />
-                </div>
+
+                <FormField control={form.control} name="imagePath" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Category Thumbnail</FormLabel>
+                        <FormControl>
+                            <div>
+                                <Button type="button" variant="outline" asChild disabled={isUploading || isSubmitting}>
+                                    <label htmlFor="image-upload-add" className="cursor-pointer flex items-center gap-2">
+                                        <FileUp className="w-4 h-4" />
+                                        {isUploading ? 'Uploading...' : 'Choose Image'}
+                                    </label>
+                                </Button>
+                                <Input id="image-upload-add" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/jpg" disabled={isUploading || isSubmitting}/>
+                            </div>
+                        </FormControl>
+                        {fileName && (
+                            <div className="mt-2 text-sm flex items-center gap-2">
+                            {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                            {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
+                            {uploadError && <AlertCircle className="w-4 h-4 text-destructive" />}
+                            <span className="truncate">{fileName}</span>
+                            </div>
+                        )}
+                        <FormMessage />
+                    </FormItem>
+                )} />
+
+                <FormField control={form.control} name="imageHint" render={({ field }) => (
+                    <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g., science lab, law books" /></FormControl><FormMessage /></FormItem>
+                )} />
                 <FormField control={form.control} name="issn" render={({ field }) => (
                   <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
@@ -151,8 +210,8 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
             </ScrollArea>
             <DialogFooter className="mt-6 pt-4 border-t">
               <DialogClose asChild><Button type="button" variant="outline" disabled={isSubmitting}>Cancel</Button></DialogClose>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isSubmitting || isUploading}>
+                {(isSubmitting || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add Category
               </Button>
             </DialogFooter>

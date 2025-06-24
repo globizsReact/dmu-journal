@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -19,6 +20,15 @@ const nextConfig: NextConfig = {
       { // Keep placehold.co for article list items or other placeholders
         protocol: 'https',
         hostname: 'placehold.co',
+        port: '',
+        pathname: '/**',
+      },
+      // Add S3 bucket hostname. Replace with your actual bucket hostname.
+      // e.g., 'your-bucket-name.s3.your-region.amazonaws.com'
+      // Using a wildcard for the bucket name is also an option for flexibility:
+      {
+        protocol: 'https',
+        hostname: '*.s3.amazonaws.com',
         port: '',
         pathname: '/**',
       }
