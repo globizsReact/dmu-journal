@@ -73,10 +73,11 @@ export async function POST(request: NextRequest) {
     // Execute the upload
     await s3Client.send(command);
     
-    // Generate the public URL directly from S3 for debugging
-    const publicUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+    // Generate the public URL using the CloudFront distribution
+    const cloudfrontUrl = "https://diuu569ds96wh.cloudfront.net";
+    const publicUrl = `${cloudfrontUrl}/${key}`;
 
-    console.log('File uploaded successfully (direct S3 URL):', publicUrl);
+    console.log('File uploaded successfully (CloudFront URL):', publicUrl);
 
     return NextResponse.json({
       success: true,
