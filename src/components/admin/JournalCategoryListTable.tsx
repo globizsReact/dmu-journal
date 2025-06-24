@@ -117,7 +117,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center">
+            <TableCell colSpan={5} className="h-24 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
             </TableCell>
           </TableRow>
@@ -128,7 +128,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center text-destructive">{error}</TableCell>
+            <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
           </TableRow>
         </tbody>
       );
@@ -137,7 +137,7 @@ export default function JournalCategoryListTable() {
       return (
         <tbody>
           <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center">
+            <TableCell colSpan={5} className="h-24 text-center">
               No journal categories found. Add one to get started.
             </TableCell>
           </TableRow>
@@ -148,22 +148,6 @@ export default function JournalCategoryListTable() {
         <TableBody>
             {categories.map((category, index) => (
                 <TableRow key={category.id}>
-                    <TableCell className="pl-4">
-                      {category.imagePath ? (
-                        <Image
-                          src={category.imagePath}
-                          alt={category.name ?? 'Category thumbnail'}
-                          width={40}
-                          height={40}
-                          className="rounded-full object-cover bg-muted w-10 h-10"
-                          data-ai-hint={category.imageHint ?? ''}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                          N/A
-                        </div>
-                      )}
-                    </TableCell>
                     <TableCell className="font-medium">
                         {category.name}
                         <p className="text-xs text-muted-foreground line-clamp-2 font-normal">{category.description}</p>
@@ -227,7 +211,6 @@ export default function JournalCategoryListTable() {
             <Table className="min-w-[900px]">
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-[80px] pl-4">Thumb</TableHead>
                         <TableHead className="w-[300px]">Name</TableHead>
                         <TableHead>ISSN</TableHead>
                         <TableHead>Start Year</TableHead>
