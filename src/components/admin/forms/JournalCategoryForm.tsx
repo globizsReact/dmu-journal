@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -24,6 +25,10 @@ const iconMap = {
   Scale: <Scale className="w-4 h-4 mr-2" />,
 };
 type IconName = keyof typeof iconMap;
+
+// --- File Size Limit ---
+const MAX_FILE_SIZE_MB = 2;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 // --- Zod Schema ---
 const categorySchema = z.object({
@@ -80,6 +85,18 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      toast({
+        title: "File Too Large",
+        description: `Thumbnail image must be less than ${MAX_FILE_SIZE_MB}MB.`,
+        variant: "destructive",
+      });
+      if (event.target) {
+        event.target.value = "";
+      }
+      return;
+    }
 
     setIsUploading(true);
     setUploadSuccess(false);

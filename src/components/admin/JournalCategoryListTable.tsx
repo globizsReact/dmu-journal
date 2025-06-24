@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -147,25 +148,25 @@ export default function JournalCategoryListTable() {
         <TableBody>
             {categories.map((category, index) => (
                 <TableRow key={category.id}>
-                    <TableCell className="font-medium">
-                        {category.name}
-                        <p className="text-xs text-muted-foreground line-clamp-2 font-normal">{category.description}</p>
-                    </TableCell>
-                    <TableCell>
+                    <TableCell className="pl-4">
                       {category.imagePath ? (
                         <Image
                           src={category.imagePath}
                           alt={category.name ?? 'Category thumbnail'}
-                          width={64}
-                          height={48}
-                          className="rounded-md object-cover bg-muted"
+                          width={40}
+                          height={40}
+                          className="rounded-full object-cover bg-muted w-10 h-10"
                           data-ai-hint={category.imageHint ?? ''}
                         />
                       ) : (
-                        <div className="w-16 h-12 rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                          No Image
+                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                          N/A
                         </div>
                       )}
+                    </TableCell>
+                    <TableCell className="font-medium">
+                        {category.name}
+                        <p className="text-xs text-muted-foreground line-clamp-2 font-normal">{category.description}</p>
                     </TableCell>
                     <TableCell>{category.issn || 'N/A'}</TableCell>
                     <TableCell>{category.startYear || 'N/A'}</TableCell>
@@ -226,8 +227,8 @@ export default function JournalCategoryListTable() {
             <Table className="min-w-[900px]">
                 <TableHeader>
                     <TableRow>
+                        <TableHead className="w-[80px] pl-4">Thumb</TableHead>
                         <TableHead className="w-[300px]">Name</TableHead>
-                        <TableHead className="w-[100px]">Thumbnail</TableHead>
                         <TableHead>ISSN</TableHead>
                         <TableHead>Start Year</TableHead>
                         <TableHead>Abbreviation</TableHead>
