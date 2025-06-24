@@ -29,6 +29,13 @@ const nextConfig: NextConfig = {
         hostname: 'diuu569ds96wh.cloudfront.net',
         port: '',
         pathname: '/**',
+      },
+      // Direct S3 bucket URL (for legacy data or direct access)
+      {
+        protocol: 'https',
+        hostname: 'dmu-journals.s3.ap-south-1.amazonaws.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
