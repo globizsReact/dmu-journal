@@ -13,11 +13,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookIcon, Pencil, Trash2, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
+import { BookIcon, Pencil, Trash2, Loader2, ArrowUp, ArrowDown, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AddJournalCategoryDialog from './dialogs/AddJournalCategoryDialog';
 import EditJournalCategoryDialog from './dialogs/EditJournalCategoryDialog';
 import DeleteJournalCategoryDialog from './dialogs/DeleteJournalCategoryDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function JournalCategoryListTable() {
   const [categories, setCategories] = useState<JournalCategory[]>([]);
@@ -111,33 +117,33 @@ export default function JournalCategoryListTable() {
   const renderTableBody = () => {
     if (isLoading) {
       return (
-        <TableBody>
+        <tbody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
             </TableCell>
           </TableRow>
-        </TableBody>
+        </tbody>
       );
     }
     if (error) {
       return (
-        <TableBody>
+        <tbody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
           </TableRow>
-        </TableBody>
+        </tbody>
       );
     }
     if (categories.length === 0) {
       return (
-        <TableBody>
+        <tbody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center">
               No journal categories found. Add one to get started.
             </TableCell>
           </TableRow>
-        </TableBody>
+        </tbody>
       );
     }
     return (
@@ -158,12 +164,24 @@ export default function JournalCategoryListTable() {
                          <Button variant="outline" size="icon" className="h-7 w-7" title="Move Down" onClick={() => handleMove(index, 'down')} disabled={index === categories.length - 1 || isSavingOrder}>
                             <ArrowDown className="w-3.5 h-3.5" />
                         </Button>
-                        <Button variant="outline" size="icon" className="h-7 w-7" title="Edit Category" onClick={() => setEditingCategory(category)} disabled={isSavingOrder}>
-                            <Pencil className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button variant="destructive" size="icon" className="h-7 w-7" title="Delete Category" onClick={() => setDeletingCategory(category)} disabled={isSavingOrder}>
-                            <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-7 w-7 p-0" disabled={isSavingOrder}>
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreVertical className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => setEditingCategory(category)} className="cursor-pointer">
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Edit</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setDeletingCategory(category)} className="cursor-pointer text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Delete</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </TableCell>
                 </TableRow>
             ))}
