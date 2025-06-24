@@ -14,12 +14,19 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, UserPlus, ChevronLeft, ChevronRight, CheckCircle2, MoreVertical } from 'lucide-react';
 import AddUserDialog from '@/components/admin/dialogs/AddUserDialog';
 import EditUserDialog from '@/components/admin/dialogs/EditUserDialog';
 import DeleteUserConfirmationDialog from '@/components/admin/dialogs/DeleteUserConfirmationDialog';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface DisplayUser {
   id: number;
@@ -234,7 +241,7 @@ export default function UserListTable() {
                   <TableHead>Email</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Status / Action</TableHead>
-                  <TableHead className="text-right w-[100px] sm:w-[130px]">Actions</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -280,13 +287,32 @@ export default function UserListTable() {
                            <Badge variant="secondary" className="border-red-600 text-red-700 bg-red-100">System Admin</Badge>
                         )}
                     </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      <Button variant="outline" size="icon" className="h-7 w-7" onClick={() => setEditingUser(user)} title="Edit User" disabled={isLoading}>
-                        <Pencil className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => setDeletingUser(user)} title="Delete User" disabled={isLoading}>
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
+                    <TableCell className="text-right">
+                       <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0" disabled={isLoading}>
+                              <span className="sr-only">Open menu</span>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem
+                              onClick={() => setEditingUser(user)}
+                              className="cursor-pointer"
+                            >
+                              <Pencil className="mr-2 h-4 w-4" />
+                              <span>Edit User</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => setDeletingUser(user)}
+                              className="cursor-pointer text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Delete User</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
