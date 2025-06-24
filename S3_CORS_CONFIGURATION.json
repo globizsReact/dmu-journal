@@ -1,20 +1,17 @@
-{
-  "instructions": "Copy the JSON array below (the part starting with '[') and paste it into your S3 bucket's CORS configuration editor in the AWS Management Console. You can find this under the 'Permissions' tab of your bucket settings. Remember to add your production domain to 'AllowedOrigins' when you deploy your app.",
-  "configuration": [
-    {
-      "AllowedHeaders": [
-        "*"
-      ],
-      "AllowedMethods": [
-        "PUT",
-        "POST",
-        "GET"
-      ],
-      "AllowedOrigins": [
-        "http://localhost:9002",
-        "https://*.cloudworkstations.dev"
-      ],
-      "ExposeHeaders": []
-    }
-  ]
-}
+[
+  {
+    "AllowedHeaders": [
+      "*"
+    ],
+    "AllowedMethods": [
+      "PUT",
+      "POST",
+      "GET"
+    ],
+    "AllowedOrigins": [
+      "http://localhost:9002",
+      "https://*.cloudworkstations.dev"
+    ],
+    "ExposeHeaders": []
+  }
+]
