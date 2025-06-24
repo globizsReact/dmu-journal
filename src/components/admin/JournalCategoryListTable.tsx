@@ -1,9 +1,9 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import type { JournalCategory } from '@prisma/client';
 import Image from 'next/image';
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -16,8 +16,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BookIcon, Pencil, Trash2, Loader2, ArrowUp, ArrowDown, MoreVertical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import AddJournalCategoryDialog from './dialogs/AddJournalCategoryDialog';
-import EditJournalCategoryDialog from './dialogs/EditJournalCategoryDialog';
 import DeleteJournalCategoryDialog from './dialogs/DeleteJournalCategoryDialog';
 import {
   DropdownMenu,
@@ -33,8 +31,6 @@ export default function JournalCategoryListTable() {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<JournalCategory | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<JournalCategory | null>(null);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
 
@@ -189,9 +185,11 @@ export default function JournalCategoryListTable() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => setEditingCategory(category)} className="cursor-pointer">
+                                <DropdownMenuItem asChild className="cursor-pointer">
+                                  <Link href={`/admin/dashboard/journals/edit/${category.id}`}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     <span>Edit</span>
+                                  </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setDeletingCategory(category)} className="cursor-pointer text-destructive focus:text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -216,8 +214,10 @@ export default function JournalCategoryListTable() {
               <CardTitle className="text-xl md:text-2xl lg:text-3xl font-headline font-bold text-primary">Journal Categories</CardTitle>
               <CardDescription>Use the arrow buttons to change the display order on the homepage.</CardDescription>
             </div>
-            <Button onClick={() => setIsAddDialogOpen(true)} className="w-full sm:w-auto">
-              <BookIcon className="mr-2 h-4 w-4" /> Add New Category
+            <Button asChild className="w-full sm:w-auto">
+              <Link href="/admin/dashboard/journals/new">
+                <BookIcon className="mr-2 h-4 w-4" /> Add New Category
+              </Link>
             </Button>
           </div>
         </CardHeader>
@@ -240,23 +240,6 @@ export default function JournalCategoryListTable() {
         </CardContent>
       </Card>
       
-      {isAddDialogOpen && (
-        <AddJournalCategoryDialog
-            isOpen={isAddDialogOpen}
-            onClose={() => setIsAddDialogOpen(false)}
-            onSuccess={handleSuccess}
-            authToken={authToken || ''}
-        />
-      )}
-      {editingCategory && (
-          <EditJournalCategoryDialog
-              category={editingCategory}
-              isOpen={!!editingCategory}
-              onClose={() => setEditingCategory(null)}
-              onSuccess={handleSuccess}
-              authToken={authToken || ''}
-          />
-      )}
       {deletingCategory && (
           <DeleteJournalCategoryDialog
               category={deletingCategory}
