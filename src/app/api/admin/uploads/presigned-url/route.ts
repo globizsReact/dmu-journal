@@ -1,13 +1,10 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { verifyToken } from '@/lib/authUtils';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
-
-  // Add this debug logging
   console.log('Environment check:');
   console.log('AWS_REGION:', process.env.AWS_REGION);
   console.log('AWS_ACCESS_KEY_ID:', process.env.AWS_ACCESS_KEY_ID ? 'Set' : 'Not set');
@@ -27,17 +24,25 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json({ error: 'Unauthorized: Missing token' }, { status: 401 });
     }
+    
     const decoded = verifyToken(token);
     if (!decoded || decoded.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
-    const { filename, contentType } = await request.json();
-    if (!filename || !contentType) {
-      return NextResponse.json({ error: 'Filename and contentType are required' }, { status: 400 });
+    // Parse form data to get the actual file
+    const formData = await request.formData();
+    const file = formData.get('file') as File;
+    
+    if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Initialize S3 Client inside the handler to ensure env vars are loaded
+    // Convert file to buffer
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    // Initialize S3 Client
     const s3Client = new S3Client({
       region: AWS_REGION,
       credentials: {
@@ -46,34 +51,43 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Generate unique key
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     const uniqueSuffix = randomUUID();
-    const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
     const key = `uploads/${year}/${month}/${day}/${uniqueSuffix}-${sanitizedFilename}`;
     
+    // Upload directly to S3
     const command = new PutObjectCommand({
       Bucket: AWS_BUCKET_NAME,
       Key: key,
-      ContentType: contentType,
+      Body: buffer,
+      ContentType: file.type,
+      ACL: 'public-read', // Make the object publicly accessible
     });
 
-    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // URL expires in 5 minutes
-
+    // Execute the upload
+    await s3Client.send(command);
+    
+    // Generate the public URL
     const publicUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+
+    console.log('File uploaded successfully:', publicUrl);
 
     return NextResponse.json({
       success: true,
-      uploadUrl: presignedUrl,
       publicUrl: publicUrl,
+      location: publicUrl,
+      key: key
     });
 
   } catch (error) {
-    console.error('Error creating presigned URL:', error);
+    console.error('Error uploading file:', error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: 'Failed to create presigned URL', details: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to upload file', details: errorMessage }, { status: 500 });
   }
 }

@@ -96,22 +96,21 @@ export default function EditJournalCategoryDialog({ category, isOpen, onClose, o
     setFileName(file.name);
 
     try {
-      const presignedUrlResponse = await fetch('/api/admin/uploads/presigned-url', {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/uploads/presigned-url', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+        body: formData,
       });
 
-      const { uploadUrl, publicUrl, error: presignedUrlError } = await presignedUrlResponse.json();
-      if (!presignedUrlResponse.ok) throw new Error(presignedUrlError || 'Could not get an upload URL.');
-
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-
-      if (!uploadResponse.ok) throw new Error('Failed to upload file to S3.');
+      const { publicUrl, error } = await response.json();
+      if (!response.ok) {
+        throw new Error(error || 'Failed to upload file.');
+      }
       
       form.setValue('imagePath', publicUrl);
       form.trigger('imagePath');
@@ -214,27 +213,27 @@ export default function EditJournalCategoryDialog({ category, isOpen, onClose, o
                 )} />
                 
                  <FormField control={form.control} name="issn" render={({ field }) => (
-                  <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="startYear" render={({ field }) => (
-                    <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="copyrightYear" render={({ field }) => (
-                    <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
                  <FormField control={form.control} name="abbreviation" render={({ field }) => (
-                  <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="language" render={({ field }) => (
-                  <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="doiBase" render={({ field }) => (
-                  <FormItem><FormLabel>DOI Base</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>DOI Base</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField control={form.control} name="displayIssn" render={({ field }) => (
-                  <FormItem><FormLabel>Display ISSN</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Display ISSN</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
             </ScrollArea>

@@ -74,31 +74,27 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
     setUploadSuccess(false);
     setUploadError(null);
     setFileName(file.name);
-    form.setValue('imagePath', ''); // Reset image path while uploading
+    form.setValue('imagePath', '');
 
     try {
-      const presignedUrlResponse = await fetch('/api/admin/uploads/presigned-url', {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/admin/uploads/presigned-url', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${authToken}`,
         },
-        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+        body: formData,
       });
 
-      const { uploadUrl, publicUrl, error: presignedUrlError } = await presignedUrlResponse.json();
-      if (!presignedUrlResponse.ok) throw new Error(presignedUrlError || 'Could not get an upload URL.');
+      const { publicUrl, error } = await response.json();
+      if (!response.ok) {
+        throw new Error(error || 'Failed to upload file.');
+      }
 
-      const uploadResponse = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      });
-
-      if (!uploadResponse.ok) throw new Error('Failed to upload file to S3.');
-
-      form.setValue('imagePath', publicUrl); // Set the public URL to be saved
-      form.trigger('imagePath'); // Re-validate the field
+      form.setValue('imagePath', publicUrl);
+      form.trigger('imagePath');
       setUploadSuccess(true);
       toast({ title: "Upload Successful", description: "Image is ready." });
 
@@ -109,6 +105,7 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
       setIsUploading(false);
     }
   };
+
 
   const onSubmit = async (values: AddCategoryFormValues) => {
     setIsSubmitting(true);
@@ -200,10 +197,10 @@ export default function AddJournalCategoryDialog({ isOpen, onClose, onSuccess, a
                 )} />
                 <div className="grid grid-cols-2 gap-4">
                   <FormField control={form.control} name="startYear" render={({ field }) => (
-                    <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
                   <FormField control={form.control} name="copyrightYear" render={({ field }) => (
-                    <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                   )} />
                 </div>
               </div>
