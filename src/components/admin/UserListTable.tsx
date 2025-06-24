@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -85,6 +84,15 @@ export default function UserListTable() {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('authorName');
+                window.dispatchEvent(new CustomEvent('authChange'));
+            }
+            return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to fetch users: ${response.statusText}`);
       }

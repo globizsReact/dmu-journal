@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -43,7 +42,19 @@ export default function JournalCategoryListTable() {
       const response = await fetch('/api/admin/journal-categories', {
         headers: { 'Authorization': `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('authorName');
+                window.dispatchEvent(new CustomEvent('authChange'));
+            }
+            return;
+        }
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch categories');
+      }
       const data = await response.json();
       setCategories(data);
     } catch (err: any) {
