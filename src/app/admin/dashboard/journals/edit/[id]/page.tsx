@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -7,7 +8,20 @@ import JournalCategoryForm from '@/components/admin/forms/JournalCategoryForm';
 import type { JournalCategory } from '@prisma/client';
 import LoadingEditJournalCategoryPage from './loading'; // Import the skeleton loader
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+
+const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
+  <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
+    <Link href="/admin/dashboard" className="hover:text-primary">Admin</Link>
+    <span>/</span>
+    <Link href="/admin/dashboard/journals" className="hover:text-primary">Journals</Link>
+    <span>/</span>
+    <span className="font-medium text-foreground truncate">{categoryName}</span>
+  </div>
+);
+
 
 export default function EditJournalCategoryPage() {
   const params = useParams();
@@ -102,11 +116,21 @@ export default function EditJournalCategoryPage() {
   }
 
   return (
-    <JournalCategoryForm
-      initialData={category}
-      onSubmit={handleSubmit}
-      isSubmitting={isSubmitting}
-      authToken={authToken}
-    />
+     <div className="space-y-4">
+        <div className="space-y-2">
+            <Button asChild variant="outline" size="sm" className="w-fit">
+                <Link href="/admin/dashboard/journals">
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Journals
+                </Link>
+            </Button>
+            <Breadcrumbs categoryName={category.name} />
+        </div>
+        <JournalCategoryForm
+            initialData={category}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            authToken={authToken}
+        />
+    </div>
   );
 }
