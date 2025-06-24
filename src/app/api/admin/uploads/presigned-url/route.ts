@@ -7,12 +7,17 @@ import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for required environment variables at runtime
-    const { AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_BUCKET_NAME } = process.env;
+    // Check for required environment variables at runtime and provide specific errors
+    const missingVars = [];
+    if (!process.env.AWS_REGION) missingVars.push('AWS_REGION');
+    if (!process.env.AWS_ACCESS_KEY_ID) missingVars.push('AWS_ACCESS_KEY_ID');
+    if (!process.env.AWS_SECRET_ACCESS_KEY) missingVars.push('AWS_SECRET_ACCESS_KEY');
+    if (!process.env.AWS_BUCKET_NAME) missingVars.push('AWS_BUCKET_NAME');
 
-    if (!AWS_REGION || !AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY || !AWS_BUCKET_NAME) {
-      console.error("S3 Upload Error: One or more required AWS environment variables are missing on the server.");
-      return NextResponse.json({ error: 'Server configuration error: Missing AWS credentials. Please contact an administrator.' }, { status: 500 });
+    if (missingVars.length > 0) {
+      const errorMessage = `Server configuration error: The following AWS environment variables are missing: ${missingVars.join(', ')}. Please check your .env.local file and restart the server.`;
+      console.error(errorMessage);
+      return NextResponse.json({ error: errorMessage }, { status: 500 });
     }
 
     const token = request.headers.get('Authorization')?.split(' ')[1];
@@ -31,10 +36,10 @@ export async function POST(request: NextRequest) {
 
     // Initialize S3 Client inside the handler to ensure env vars are loaded
     const s3Client = new S3Client({
-      region: AWS_REGION,
+      region: process.env.AWS_REGION,
       credentials: {
-        accessKeyId: AWS_ACCESS_KEY_ID,
-        secretAccessKey: AWS_SECRET_ACCESS_KEY,
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
       },
     });
 
@@ -48,14 +53,14 @@ export async function POST(request: NextRequest) {
     const key = `uploads/${year}/${month}/${day}/${uniqueSuffix}-${sanitizedFilename}`;
     
     const command = new PutObjectCommand({
-      Bucket: AWS_BUCKET_NAME,
+      Bucket: process.env.AWS_BUCKET_NAME,
       Key: key,
       ContentType: contentType,
     });
 
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 300 }); // URL expires in 5 minutes
 
-    const publicUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${key}`;
+    const publicUrl = `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
     return NextResponse.json({
       success: true,
