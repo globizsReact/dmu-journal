@@ -53,11 +53,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate unique key for the assets folder
+    // Generate unique, date-based key for the assets folder
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const key = `assets/${uniqueSuffix}-${sanitizedFilename}`;
+    const key = `assets/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
     
     // Upload directly to S3
     const command = new PutObjectCommand({
