@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,71 +14,67 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  fullName      String
-  username      String   @unique
-  email         String   @unique
+  id            Int     @id @default(autoincrement())
+  email         String  @unique
+  username      String  @unique
   password_hash String
-  role          String?  @default("author") // Roles: "author", "reviewer", "reviewer_inactive", "admin"
-  created_at    DateTime @default(now())
+  fullName      String?
+  role          String? @default("author") // e.g., author, reviewer, admin
 
   submittedManuscripts Manuscript[] @relation("SubmittedBy")
 
   @@map("users")
 }
 
+model JournalCategory {
+  id                   String       @id @default(cuid())
+  name                 String       @unique
+  description          Json
+  slug                 String       @unique
+  iconName             String
+  imagePath            String       @db.VarChar(1024)
+  imageHint            String       @db.VarChar(255)
+  order                Int          @default(0)
+  abbreviation         String?
+  language             String?
+  issn                 String?
+  doiBase              String?
+  startYear            Int?
+  displayIssn          String?
+  copyrightYear        Int?
+  scope                Json?
+  manuscripts          Manuscript[]
+
+  @@map("journal_categories")
+}
+
 model Manuscript {
-  id                    String    @id @default(cuid())
-  articleTitle          String
-  abstract              String    @db.Text
-  keywords              String // Comma-separated
-  journalCategoryId     String
-  isSpecialReview       Boolean   @default(false)
+  id                      String   @id @default(cuid())
+  articleTitle            String   @db.Text
+  abstract                String   @db.Text
+  keywords                String?
+  journalCategoryId       String
+  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  isSpecialReview         Boolean  @default(false)
   
-  coverLetterFileName   String?
-  manuscriptFileName    String
-  supplementaryFilesName String?
+  // File details
+  coverLetterFileName     String?
+  manuscriptFileName      String
+  supplementaryFilesName  String?
+
+  authorAgreement         Boolean
+  coAuthors               Json?
   
-  authorAgreement       Boolean
-  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
+  status                  String
+  submittedAt             DateTime @default(now())
+  submittedById           Int
+  submittedBy             User     @relation("SubmittedBy", fields: [submittedById], references: [id])
 
-  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
-  submittedAt           DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  submittedById         Int
-  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
-
-  journalCategory       JournalCategory @relation(fields: [journalCategoryId], references: [id])
-
-  views                 Int       @default(0)
-  downloads             Int       @default(0)
-  citations             Int       @default(0)
+  views                   Int? @default(0)
+  downloads               Int? @default(0)
+  citations               Int? @default(0)
 
   @@index([submittedById])
   @@index([journalCategoryId])
   @@map("manuscripts")
-}
-
-model JournalCategory {
-  id              String  @id @default(cuid())
-  name            String  @unique
-  slug            String  @unique
-  description     String  @db.Text
-  iconName        String
-  imagePath       String
-  imageHint       String
-  abbreviation    String?
-  language        String?
-  issn            String?
-  doiBase         String?
-  startYear       Int?
-  displayIssn     String?
-  copyrightYear   Int?
-  order           Int     @default(0)
-
-  manuscripts     Manuscript[]
-
-  @@index([order])
-  @@map("journal_categories")
 }

@@ -3,10 +3,14 @@ import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/authUtils';
 import { z } from 'zod';
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 const categorySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  description: z.any().refine((value) => {
+    const text = getPlainTextFromTiptapJson(value);
+    return text.length >= 10;
+  }, { message: "Description must contain at least 10 characters of text." }),
   iconName: z.string().min(1, 'Icon name is required.'),
   imagePath: z.string().min(1, 'Image path is required.'),
   imageHint: z.string().min(1, 'Image hint is required.'),

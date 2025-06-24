@@ -35,9 +35,9 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { label: 'Dashboard Overview', icon: LayoutDashboard, href: '/admin/dashboard' },
+  { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: false },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
   { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false },
-  { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: false },
 ];
 
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {

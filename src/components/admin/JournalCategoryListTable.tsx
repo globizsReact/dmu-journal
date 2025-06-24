@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -23,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 export default function JournalCategoryListTable() {
   const [categories, setCategories] = useState<JournalCategory[]>([]);
@@ -161,7 +163,9 @@ export default function JournalCategoryListTable() {
                 <TableRow key={category.id}>
                     <TableCell className="font-medium">
                         {category.name}
-                        <p className="text-xs text-muted-foreground line-clamp-2 font-normal">{category.description}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 font-normal">
+                          {getPlainTextFromTiptapJson(category.description)}
+                        </p>
                     </TableCell>
                     <TableCell>{category.issn || 'N/A'}</TableCell>
                     <TableCell>{category.startYear || 'N/A'}</TableCell>

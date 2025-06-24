@@ -8,7 +8,6 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, FlaskConical, Library, Briefcase, Scale, FileUp, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import type { JournalCategory } from '@prisma/client';
+import TiptapEditor from './TiptapEditor';
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 // --- Icon Mapping ---
 const iconMap = {
@@ -33,7 +34,10 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 // --- Zod Schema ---
 const categorySchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  description: z.any().refine((value) => {
+    const text = getPlainTextFromTiptapJson(value);
+    return text.length >= 10;
+  }, { message: "Description must contain at least 10 characters of text." }),
   iconName: z.enum(Object.keys(iconMap) as [IconName, ...IconName[]], { required_error: 'An icon is required.' }),
   imagePath: z.string().min(1, 'An uploaded image is required.'),
   imageHint: z.string().min(1, 'Image hint is required (e.g., science lab).'),
@@ -68,7 +72,7 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
     resolver: zodResolver(categorySchema),
     defaultValues: {
       name: initialData?.name || '',
-      description: initialData?.description || '',
+      description: initialData?.description || { type: 'doc', content: [{ type: 'paragraph' }] },
       iconName: (initialData?.iconName as IconName) || undefined,
       imagePath: initialData?.imagePath || '',
       imageHint: initialData?.imageHint || '',
@@ -144,7 +148,19 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
               {/* Left side - form fields */}
               <div className="md:col-span-2 space-y-6">
                 <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
-                <FormField control={form.control} name="description" render={({ field }) => <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea {...field} rows={5} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
+                <FormField control={form.control} name="description" render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                            <TiptapEditor
+                                content={field.value}
+                                onChange={field.onChange}
+                                isSubmitting={isSubmitting}
+                            />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )} />
                 <FormField control={form.control} name="imageHint" render={({ field }) => <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g., science lab, law books" disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField control={form.control} name="abbreviation" render={({ field }) => <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />

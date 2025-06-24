@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
 
 type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY' | 'AUTHORS_SECTION' | 'JOURNAL_ISSUES';
 
@@ -458,7 +459,12 @@ export default function CategoryPage() {
                 </ul>
               )}
               {category.scope?.conclusion && <p className="text-foreground/80 font-body">{category.scope.conclusion}</p>}
-              {!category.scope && <p className="text-foreground/80 font-body">{category.description}</p>}
+              {!category.scope && (
+                <TiptapRenderer
+                  jsonContent={category.description}
+                  className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+                />
+              )}
             </section>
 
             <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
