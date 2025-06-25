@@ -1,11 +1,14 @@
+'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ChevronRight } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
 
 const metadataItems = [
   "Abbreviation: J. Biophys. Struct. Biol.",
@@ -25,7 +28,38 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
   </Link>
 );
 
+interface PageData {
+    title: string;
+    content: any; // JSON from Tiptap
+}
+
 export default function AboutUsPage() {
+    const [pageData, setPageData] = useState<PageData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await fetch('/api/public/pages/about');
+                if (!response.ok) {
+                    throw new Error('Failed to load content. Please try again later.');
+                }
+                const data = await response.json();
+                setPageData(data);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchContent();
+    }, []);
+
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -86,41 +120,29 @@ export default function AboutUsPage() {
 
           {/* Right Content Pane */}
           <section className="w-full md:w-3/4 lg:w-4/5">
-            <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-              About Us
-            </h2>
-            <div className="space-y-6 text-foreground/80 font-body">
-              <p>
-                Welcome to the official platform of the Dhanamanjuri University Journals, a multidisciplinary initiative dedicated to fostering academic excellence, scholarly innovation, and impactful research. As a state university rooted in the rich intellectual heritage of Manipur, Dhanamanjuri University is committed to promoting cutting-edge research across a wide spectrum of disciplines through its peer-reviewed academic journals.
-              </p>
-              <p>
-                Our journals serve as a dynamic forum for scholars, researchers, practitioners, and policymakers, offering a space for the critical exchange of ideas, empirical discoveries, and theoretical advancements. We currently publish specialized journals in the following domains:
-              </p>
-              <ul className="list-none space-y-3 pl-0">
-                <li className="flex items-start">
-                  <ChevronRight className="w-5 h-5 text-primary mr-2 mt-1 shrink-0" />
-                  <span><strong className="text-foreground">Sciences</strong> – advancing knowledge in core and applied scientific disciplines.</span>
-                </li>
-                <li className="flex items-start">
-                  <ChevronRight className="w-5 h-5 text-primary mr-2 mt-1 shrink-0" />
-                  <span><strong className="text-foreground">Humanities & Social Sciences</strong> – exploring human culture, behavior, and social systems.</span>
-                </li>
-                <li className="flex items-start">
-                  <ChevronRight className="w-5 h-5 text-primary mr-2 mt-1 shrink-0" />
-                  <span><strong className="text-foreground">Business & Applied Research</strong> – bridging the gap between theory and real-world business practice.</span>
-                </li>
-                <li className="flex items-start">
-                  <ChevronRight className="w-5 h-5 text-primary mr-2 mt-1 shrink-0" />
-                  <span><strong className="text-foreground">Legal Studies</strong> – promoting justice, policy insight, and legal scholarship.</span>
-                </li>
-              </ul>
-              <p>
-                Each journal is guided by a team of esteemed academics and follows strict ethical guidelines, including double-blind peer review, plagiarism prevention, and adherence to UGC norms and international standards. We are committed to publishing original, relevant, and transformative research that contributes meaningfully to academic discourse and societal progress.
-              </p>
-              <p>
-                By integrating regional perspectives with global standards, Dhanamanjuri University Journals aim to empower knowledge creation, support interdisciplinary collaboration, and shape the future of research in India and beyond.
-              </p>
-            </div>
+            {isLoading && (
+                 <div className="flex items-center justify-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                 </div>
+            )}
+            {error && (
+                <div className="text-center py-10 bg-destructive/10 text-destructive rounded-lg px-4">
+                    <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                    <p className="font-semibold">Failed to load content</p>
+                    <p className="text-sm">{error}</p>
+                </div>
+            )}
+            {!isLoading && !error && pageData && (
+                <>
+                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                        {pageData.title}
+                    </h2>
+                    <TiptapRenderer 
+                        jsonContent={pageData.content} 
+                        className="prose lg:prose-lg max-w-none font-body text-foreground/80"
+                    />
+                </>
+            )}
           </section>
         </div>
       </main>

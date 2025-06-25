@@ -3,7 +3,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, Info } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -38,6 +38,7 @@ const navItems: NavItem[] = [
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: false },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
   { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false },
+  { label: "Manage 'About Us'", icon: Info, href: '/admin/dashboard/pages/about' },
 ];
 
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {

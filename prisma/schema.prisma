@@ -1,3 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,73 +14,82 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
-  fullName      String
-  username      String   @unique
-  email         String   @unique
-  password_hash String
-  role          String?  @default("author") // Roles: "author", "reviewer", "reviewer_inactive", "admin"
-  created_at    DateTime @default(now())
-
-  submittedManuscripts Manuscript[] @relation("SubmittedBy")
-
-  @@map("users")
-}
-
-model Manuscript {
-  id                    String    @id @default(cuid())
-  articleTitle          String
-  abstract              Json
-  keywords              String // Comma-separated
-  journalCategoryId     String
-  isSpecialReview       Boolean   @default(false)
-  
-  coverLetterFileName   String?
-  manuscriptFileName    String
-  supplementaryFilesName String?
-  thumbnailImagePath      String?  // Path for the optional uploaded thumbnail
-  thumbnailImageHint      String? 
-  
-  authorAgreement       Boolean
-  coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
-
-  status                String    @default("Submitted") // e.g., "Submitted", "In Review", "Revisions Required", "Accepted", "Rejected"
-  submittedAt           DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  submittedById         Int
-  submittedBy           User      @relation("SubmittedBy", fields: [submittedById], references: [id])
-
-  journalCategory       JournalCategory @relation(fields: [journalCategoryId], references: [id])
-
-  views                 Int       @default(0)
-  downloads             Int       @default(0)
-  citations             Int       @default(0)
-
-  @@index([submittedById])
-  @@index([journalCategoryId])
-  @@map("manuscripts")
+  id              Int      @id @default(autoincrement())
+  username        String   @unique
+  email           String   @unique
+  password_hash   String
+  fullName        String?
+  role            String?  @default("author") // e.g., author, reviewer, admin, reviewer_inactive
+  submittedManuscripts Manuscript[] @relation("SubmittedByUser")
 }
 
 model JournalCategory {
-  id              String  @id @default(cuid())
-  name            String  @unique
-  slug            String  @unique
-  description     Json
+  id              String   @id @default(cuid())
+  name            String   @unique
+  slug            String   @unique
+  description     Json     
+  order           Int      @default(0)
   iconName        String
   imagePath       String
   imageHint       String
+  
+  // New detailed fields
   abbreviation    String?
   language        String?
   issn            String?
+  displayIssn     String?
   doiBase         String?
   startYear       Int?
-  displayIssn     String?
   copyrightYear   Int?
-  order           Int     @default(0)
+
+  scope           Json?
 
   manuscripts     Manuscript[]
+}
 
-  @@index([order])
-  @@map("journal_categories")
+model Manuscript {
+  id              String   @id @default(cuid())
+  articleTitle    String
+  abstract        Json     
+  keywords        String?
+  
+  journalCategory   JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  journalCategoryId String
+
+  isSpecialReview Boolean @default(false)
+  
+  // Files - storing names/paths as strings
+  coverLetterFileName String?
+  manuscriptFileName String
+  supplementaryFilesName String?
+  
+  // Author agreement
+  authorAgreement Boolean @default(false)
+
+  // Author details (can be a JSON array of objects)
+  coAuthors       Json?
+
+  // Tracking and metadata
+  status          String   @default("Submitted") // e.g., Submitted, In Review, Accepted, Published, Suspended, Rejected
+  submittedAt     DateTime @default(now())
+  publishedAt     DateTime?
+  views           Int?      @default(0)
+  downloads       Int?      @default(0)
+  citations       Int?      @default(0)
+
+  // Submitter relationship
+  submittedBy     User     @relation("SubmittedByUser", fields: [submittedById], references: [id])
+  submittedById   Int
+
+  // Thumbnail
+  thumbnailImagePath      String? 
+  thumbnailImageHint      String?  
+}
+
+model SitePage {
+  id      String   @id @default(cuid())
+  slug    String   @unique
+  title   String
+  content Json
+  updatedAt DateTime @updatedAt
 }
