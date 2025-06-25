@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Eye, Download, MessageSquareQuote, FileText, Users, ListOrdered, BarChart3 } from 'lucide-react';
 import { Button } from '../ui/button';
 import TiptapRenderer from '../shared/TiptapRenderer';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 interface StatItemProps {
   icon: React.ElementType;
@@ -39,7 +40,7 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
     { label: "Article Metrics", href: "#metrics", icon: BarChart3 },
   ];
 
-  const displayImagePath = entry.thumbnailImagePath || category.imagePath;
+  const displayImagePath = toPublicUrl(entry.thumbnailImagePath || category.imagePath);
   const displayImageHint = entry.thumbnailImageHint || category.imageHint;
 
   return (

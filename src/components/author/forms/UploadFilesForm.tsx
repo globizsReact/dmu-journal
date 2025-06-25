@@ -22,6 +22,7 @@ import Link from 'next/link';
 import { Loader2, FileUp, CheckCircle, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -209,7 +210,7 @@ export default function UploadFilesForm({ onFinish, onPrevious, isSubmitting }: 
                 <FormField control={form.control} name="thumbnailImagePath" render={() => (
                     <FormItem>
                         <FormLabel>Thumbnail Photo (Optional)</FormLabel>
-                        {thumbnailPreview && <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border"><Image src={thumbnailPreview} alt="Thumbnail Preview" layout="fill" objectFit="cover" /></div>}
+                        {thumbnailPreview && <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border"><Image src={toPublicUrl(thumbnailPreview)} alt="Thumbnail Preview" layout="fill" objectFit="cover" /></div>}
                         <FormControl>
                             <Button type="button" variant="outline" asChild disabled={isUploadingThumbnail || isSubmitting} className="w-full mt-2"><label htmlFor="thumbnail-upload" className="cursor-pointer flex items-center gap-2"><FileUp className="w-4 h-4" />{isUploadingThumbnail ? 'Uploading...' : 'Choose Image'}</label></Button>
                         </FormControl>

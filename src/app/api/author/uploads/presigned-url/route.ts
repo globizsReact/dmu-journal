@@ -2,6 +2,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { verifyToken } from '@/lib/authUtils';
+import { toDbUrl } from '@/lib/urlUtils';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -62,8 +63,7 @@ export async function POST(request: NextRequest) {
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const pathForUrl = `${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
-    const key = `assets/${pathForUrl}`;
+    const key = `assets/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
     
     // Upload directly to S3
     const command = new PutObjectCommand({
@@ -76,14 +76,17 @@ export async function POST(request: NextRequest) {
     await s3Client.send(command);
     
     const cloudfrontUrl = "https://diuu569ds96wh.cloudfront.net";
-    const publicUrl = `${cloudfrontUrl}/${pathForUrl}`;
+    const fullPublicUrl = `${cloudfrontUrl}/${key}`;
 
-    console.log('File uploaded successfully by author (CloudFront URL):', publicUrl);
+    // Convert to the "clean" URL for database storage
+    const dbUrl = toDbUrl(fullPublicUrl);
+    
+    console.log('File uploaded by author. Full URL:', fullPublicUrl, 'DB URL:', dbUrl);
 
     return NextResponse.json({
       success: true,
-      publicUrl: publicUrl,
-      location: publicUrl,
+      publicUrl: dbUrl, // Return the clean URL
+      location: dbUrl,
       key: key
     });
 

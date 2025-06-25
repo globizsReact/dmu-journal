@@ -17,6 +17,7 @@ import Image from 'next/image';
 import type { JournalCategory } from '@prisma/client';
 import TiptapEditor from './TiptapEditor';
 import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 // --- Icon Mapping ---
 const iconMap = {
@@ -187,7 +188,7 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
                     <FormLabel>Category Thumbnail</FormLabel>
                     {imagePreview && (
                       <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border">
-                        <Image src={imagePreview} alt="Image Preview" layout="fill" objectFit="cover" />
+                        <Image src={toPublicUrl(imagePreview)} alt="Image Preview" layout="fill" objectFit="cover" />
                       </div>
                     )}
                     <FormControl>

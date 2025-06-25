@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import type { JournalEntry } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 interface ArticleListItemCardProps {
   entry: JournalEntry;
@@ -13,12 +14,14 @@ interface ArticleListItemCardProps {
 }
 
 const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItemCardProps) => {
+  const imageUrl = toPublicUrl(entry.thumbnailImagePath || entry.imagePath) || 'https://placehold.co/200x150.png';
+
   return (
     <div className={cn("group flex flex-col md:flex-row items-start gap-6 p-6 border border-border rounded-lg shadow-sm bg-card hover:shadow-md transition-shadow", className)}>
       <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
         <div className="aspect-[4/3] relative rounded-md overflow-hidden bg-muted">
           <Image
-            src={entry.thumbnailImagePath || entry.imagePath || 'https://placehold.co/200x150.png'}
+            src={imageUrl}
             alt={entry.title || 'Article image'}
             layout="fill"
             objectFit="cover"

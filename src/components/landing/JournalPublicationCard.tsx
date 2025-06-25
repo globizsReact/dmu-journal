@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import type { JournalCategory } from '@prisma/client';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 interface JournalPublicationCardProps {
   category: JournalCategory;
@@ -15,7 +16,7 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
       <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card rounded-none">
         <div className="relative w-full aspect-video"> {/* Image and text container */}
           <Image
-            src={category.imagePath}
+            src={toPublicUrl(category.imagePath)}
             alt={category.name}
             layout="fill"
             objectFit="cover"
