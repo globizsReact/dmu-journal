@@ -21,7 +21,7 @@ type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY'
 
 // Moved TABS_CONFIG outside the component
 const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: 'OVERVIEW', label: 'Overview', icon: LayoutList },
+  { key: 'OVERVIEW', label: 'Articles', icon: FileText },
   { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
   { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
   { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
@@ -413,30 +413,24 @@ export default function CategoryPage() {
       {/* Tab Navigation Bar */}
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            <Link href="/" className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-foreground hover:text-primary rounded-md transition-colors">
-              <Home className="w-4 h-4" /> Home
-            </Link>
-            {/* Relative container for TABS_CONFIG and the animated underline */}
-            <div className="relative flex items-center gap-1">
-              {TABS_CONFIG.map((tabInfo, index) => (
-                <TabButton
-                  key={tabInfo.key}
-                  ref={el => (tabRefs.current[index] = el)}
-                  label={tabInfo.label}
-                  icon={tabInfo.icon}
-                  isActive={activeTab === tabInfo.key}
-                  onClick={() => setActiveTab(tabInfo.key)}
-                />
-              ))}
-              <div
-                className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
-                style={{
-                  width: `${underlineStyle.width}px`,
-                  left: `${underlineStyle.left}px`,
-                }}
+          <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
+            {TABS_CONFIG.map((tabInfo, index) => (
+              <TabButton
+                key={tabInfo.key}
+                ref={el => (tabRefs.current[index] = el)}
+                label={tabInfo.label}
+                icon={tabInfo.icon}
+                isActive={activeTab === tabInfo.key}
+                onClick={() => setActiveTab(tabInfo.key)}
               />
-            </div>
+            ))}
+            <div
+              className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
+              style={{
+                width: `${underlineStyle.width}px`,
+                left: `${underlineStyle.left}px`,
+              }}
+            />
           </div>
         </div>
       </nav>
