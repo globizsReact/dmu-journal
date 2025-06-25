@@ -18,11 +18,11 @@ const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItem
       <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
         <div className="aspect-[4/3] relative rounded-md overflow-hidden bg-muted">
           <Image
-            src={entry.imagePath || 'https://placehold.co/200x150.png'}
+            src={entry.thumbnailImagePath || entry.imagePath || 'https://placehold.co/200x150.png'}
             alt={entry.title || 'Article image'}
             layout="fill"
             objectFit="cover"
-            data-ai-hint={entry.imageHint || "scientific research"}
+            data-ai-hint={entry.thumbnailImageHint || entry.imageHint || "scientific research"}
           />
         </div>
       </div>

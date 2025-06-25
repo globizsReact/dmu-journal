@@ -39,6 +39,9 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
     { label: "Article Metrics", href: "#metrics", icon: BarChart3 },
   ];
 
+  const displayImagePath = entry.thumbnailImagePath || category.imagePath;
+  const displayImageHint = entry.thumbnailImageHint || category.imageHint;
+
   return (
     <>
       {entry.articleType && (
@@ -75,15 +78,15 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
               </div>
             </div>
 
-            {entry.imagePath && (
+            {displayImagePath && (
               <div className="w-full mt-4 sm:mt-0 sm:w-1/3 flex-shrink-0 flex flex-col">
                 <div className="relative h-[180px] sm:h-full overflow-hidden border flex-grow">
                   <Image
-                    src={entry.imagePath}
+                    src={displayImagePath}
                     alt={`Thumbnail for ${entry.title}`}
                     layout="fill"
                     objectFit="cover"
-                    data-ai-hint={entry.imageHint || "research graph"}
+                    data-ai-hint={displayImageHint || "research graph"}
                   />
                 </div>
               </div>

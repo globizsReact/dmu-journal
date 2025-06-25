@@ -76,8 +76,10 @@ export default function SubmitManuscriptStepper() {
       authorDetails: formDataStep2,
       files: {
         coverLetterFileName: dataStep3.coverLetterFile?.name,
-        manuscriptFileName: dataStep3.manuscriptFile.name, // Manuscript file is required by schema
+        manuscriptFileName: dataStep3.manuscriptFile.name,
         supplementaryFilesName: dataStep3.supplementaryFiles?.name,
+        thumbnailImagePath: dataStep3.thumbnailImagePath,
+        thumbnailImageHint: dataStep3.thumbnailImageHint,
         agreedToTerms: dataStep3.authorAgreement,
       }
     };

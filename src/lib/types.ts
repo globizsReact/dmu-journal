@@ -24,4 +24,6 @@ export interface JournalEntry {
   citations?: number;
   keywords?: string[] | string;
   articleType?: string; // e.g., "Full Length Research Paper"
+  thumbnailImagePath?: string;
+  thumbnailImageHint?: string;
 }

@@ -14,6 +14,8 @@ interface SubmissionPayload {
     coverLetterFileName?: string;
     manuscriptFileName: string;
     supplementaryFilesName?: string;
+    thumbnailImagePath?: string;
+    thumbnailImageHint?: string;
     agreedToTerms: boolean;
   };
 }
@@ -67,6 +69,8 @@ export async function POST(request: NextRequest) {
         coverLetterFileName: files.coverLetterFileName,
         manuscriptFileName: files.manuscriptFileName,
         supplementaryFilesName: files.supplementaryFilesName,
+        thumbnailImagePath: files.thumbnailImagePath,
+        thumbnailImageHint: files.thumbnailImageHint,
         
         authorAgreement: files.agreedToTerms,
         coAuthors: authorDetails.authors, // Prisma will store this as JSON
