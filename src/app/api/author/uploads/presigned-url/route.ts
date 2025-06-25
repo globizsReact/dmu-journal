@@ -2,7 +2,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { verifyToken } from '@/lib/authUtils';
-import { toDbUrl } from '@/lib/urlUtils';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -56,38 +55,40 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Generate unique, date-based key for the assets folder
+    // Generate unique, date-based key parts
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const key = `assets/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
-    
+    // The path part of the key, WITHOUT the 'assets/' prefix
+    const pathWithoutAssets = `${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
+
+    // The full S3 key, WITH the 'assets/' prefix, for the actual upload
+    const s3Key = `assets/${pathWithoutAssets}`;
+
     // Upload directly to S3
     const command = new PutObjectCommand({
       Bucket: AWS_BUCKET_NAME,
-      Key: key,
+      Key: s3Key,
       Body: buffer,
       ContentType: file.type,
     });
 
     await s3Client.send(command);
     
+    // Generate the public URL that CloudFront will use (WITHOUT 'assets/')
     const cloudfrontUrl = "https://diuu569ds96wh.cloudfront.net";
-    const fullPublicUrl = `${cloudfrontUrl}/${key}`;
+    const publicUrlForDb = `${cloudfrontUrl}/${pathWithoutAssets}`;
 
-    // Convert to the "clean" URL for database storage
-    const dbUrl = toDbUrl(fullPublicUrl);
-    
-    console.log('File uploaded by author. Full URL:', fullPublicUrl, 'DB URL:', dbUrl);
+    console.log('File uploaded by author. Public URL for DB:', publicUrlForDb);
 
     return NextResponse.json({
       success: true,
-      publicUrl: dbUrl, // Return the clean URL
-      location: dbUrl,
-      key: key
+      publicUrl: publicUrlForDb, // This is the correct URL for the DB
+      location: publicUrlForDb,
+      key: s3Key
     });
 
   } catch (error) {
