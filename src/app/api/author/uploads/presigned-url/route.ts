@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
     const uniqueSuffix = randomUUID();
     const sanitizedFilename = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     
-    const key = `assets/${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
+    const pathForUrl = `${year}/${month}/${uniqueSuffix}-${sanitizedFilename}`;
+    const key = `assets/${pathForUrl}`;
     
     // Upload directly to S3
     const command = new PutObjectCommand({
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     await s3Client.send(command);
     
     const cloudfrontUrl = "https://diuu569ds96wh.cloudfront.net";
-    const publicUrl = `${cloudfrontUrl}/${key}`;
+    const publicUrl = `${cloudfrontUrl}/${pathForUrl}`;
 
     console.log('File uploaded successfully by author (CloudFront URL):', publicUrl);
 
