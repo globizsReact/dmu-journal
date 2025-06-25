@@ -24,7 +24,7 @@ model User {
 model Manuscript {
   id                    String    @id @default(cuid())
   articleTitle          String
-  abstract              String    @db.Text
+  abstract              Json
   keywords              String // Comma-separated
   journalCategoryId     String
   isSpecialReview       Boolean   @default(false)
