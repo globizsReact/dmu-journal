@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle } from 'lucide-react';
+import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle, MoreVertical, Pencil, Trash2, Undo2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -31,6 +31,15 @@ import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import DeleteManuscriptDialog from '@/components/author/dialogs/DeleteManuscriptDialog';
+
 
 const MyManuscriptView = () => {
   const [manuscripts, setManuscripts] = useState<Manuscript[]>([]);
@@ -40,11 +49,45 @@ const MyManuscriptView = () => {
   const [authToken, setAuthToken] = useState<string | null>(null);
   const [journalCategories, setJournalCategories] = useState<JournalCategory[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [deletingManuscript, setDeletingManuscript] = useState<Manuscript | null>(null);
+  const [updatingManuscriptId, setUpdatingManuscriptId] = useState<string | null>(null);
+
+
+  const fetchManuscripts = useCallback(async (token: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/author/manuscripts', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `Failed to fetch manuscripts: ${response.statusText}`);
+      }
+      const data = await response.json();
+      setManuscripts(data);
+    } catch (err: any) {
+      console.error("Error fetching manuscripts:", err);
+      setError(err.message || "An unexpected error occurred.");
+      toast({
+        title: "Error Fetching Manuscripts",
+        description: err.message || "Could not load your submissions.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
+       if (token) {
+        fetchManuscripts(token);
+      } else {
+        setIsLoading(false);
+      }
 
       try {
         const res = await fetch('/api/public/journal-categories');
@@ -62,44 +105,36 @@ const MyManuscriptView = () => {
     if (typeof window !== 'undefined') {
       fetchInitialData();
     }
-  }, [toast]);
-
-  useEffect(() => {
-    if (!authToken) {
-      setIsLoading(false); 
-      return;
+  }, [toast, fetchManuscripts]);
+  
+  const handleDeleteSuccess = () => {
+    if (authToken) {
+      fetchManuscripts(authToken);
+      toast({ title: "Success", description: "Manuscript deleted successfully." });
     }
+  };
+  
+  const handleUnpublish = async (manuscript: Manuscript) => {
+    if (!authToken) return;
+    setUpdatingManuscriptId(manuscript.id);
+    try {
+      const response = await fetch(`/api/author/manuscripts/${manuscript.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+        body: JSON.stringify({ status: 'Suspended' }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Failed to unpublish manuscript.');
 
-    const fetchManuscripts = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch('/api/author/manuscripts', {
-          headers: {
-            'Authorization': `Bearer ${authToken}`,
-          },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || `Failed to fetch manuscripts: ${response.statusText}`);
-        }
-        const data = await response.json();
-        setManuscripts(data);
-      } catch (err: any) {
-        console.error("Error fetching manuscripts:", err);
-        setError(err.message || "An unexpected error occurred.");
-        toast({
-          title: "Error Fetching Manuscripts",
-          description: err.message || "Could not load your submissions.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      toast({ title: "Success", description: "Manuscript has been unpublished and is now suspended." });
+      if (authToken) fetchManuscripts(authToken);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setUpdatingManuscriptId(null);
+    }
+  };
 
-    fetchManuscripts();
-  }, [authToken, toast]);
 
   const getJournalName = (journalId: string) => {
     if (isLoadingCategories) return '...';
@@ -147,6 +182,7 @@ const MyManuscriptView = () => {
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <CardTitle className="text-2xl md:text-3xl font-headline font-bold text-primary">My Manuscripts</CardTitle>
@@ -192,13 +228,47 @@ const MyManuscriptView = () => {
                   </TableCell>
                   <TableCell>{manuscript.views ?? 0}</TableCell>
                   <TableCell>{manuscript.downloads ?? 0}</TableCell>
-                  <TableCell className="text-right">
-                    <Button asChild variant="outline" size="sm">
-                        <Link href={`/author/view-manuscript/${manuscript.id}`}>
-                            <Eye className="w-4 h-4 mr-1 sm:mr-2" />
-                            <span className="hidden sm:inline">View</span>
-                        </Link>
-                    </Button>
+                   <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0" disabled={updatingManuscriptId === manuscript.id}>
+                          {updatingManuscriptId === manuscript.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <MoreVertical className="h-4 w-4" />}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild className="cursor-pointer">
+                          <Link href={`/author/view-manuscript/${manuscript.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>View</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          asChild
+                          disabled={manuscript.status === 'Published'}
+                          className="cursor-pointer"
+                        >
+                          <Link href={`/author/edit-manuscript/${manuscript.id}`}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        {manuscript.status === 'Published' && (
+                          <DropdownMenuItem onClick={() => handleUnpublish(manuscript)} className="cursor-pointer">
+                            <Undo2 className="mr-2 h-4 w-4" />
+                            <span>Unpublish</span>
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => setDeletingManuscript(manuscript)}
+                          className="text-destructive focus:text-destructive cursor-pointer"
+                          disabled={manuscript.status === 'Published'}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Delete</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               )
@@ -207,6 +277,16 @@ const MyManuscriptView = () => {
         </Table>
       </CardContent>
     </Card>
+     {deletingManuscript && (
+        <DeleteManuscriptDialog
+          manuscript={deletingManuscript}
+          isOpen={!!deletingManuscript}
+          onClose={() => setDeletingManuscript(null)}
+          onSuccess={handleDeleteSuccess}
+          authToken={authToken || ''}
+        />
+      )}
+    </>
   );
 };
 
