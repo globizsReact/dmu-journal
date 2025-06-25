@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
@@ -127,7 +126,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
       </head>
-      <body className="font-body antialiased bg-background text-foreground">
+      <body className="font-body antialiased bg-background text-foreground overflow-hidden">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="md:hidden">
