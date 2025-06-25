@@ -18,22 +18,29 @@ export function toDbUrl(url: string): string {
 }
 
 /**
- * Converts a "clean" URL from the database to a full public-facing URL
- * by adding the "/assets" path segment back. It safely ignores blob URLs.
- * e.g., "https://domain.com/folder/file.png" -> "https://domain.com/assets/folder/file.png"
- * @param url The URL from the database.
- * @returns The full public URL.
+ * Normalizes a URL to be publicly accessible via CloudFront by ensuring
+ * the /assets/ prefix is NOT in the path. This handles legacy data that might
+ * have the prefix and leaves clean URLs untouched. It also safely ignores blob URLs.
+ * e.g., "https://domain.com/assets/folder/file.png" -> "https://domain.com/folder/file.png"
+ * e.g., "https://domain.com/folder/file.png" -> "https://domain.com/folder/file.png"
+ * @param url The URL from the database or other source.
+ * @returns The cleaned public URL.
  */
 export function toPublicUrl(url: string | null | undefined): string {
-    if (!url || url.includes('/assets/') || url.startsWith('blob:')) {
+    if (!url || url.startsWith('blob:')) {
         return url || '';
     }
+
     try {
         const urlObj = new URL(url);
-        urlObj.pathname = `/assets${urlObj.pathname}`;
+        if (urlObj.pathname.startsWith('/assets/')) {
+            // Rebuild the URL without '/assets'
+            urlObj.pathname = urlObj.pathname.substring('/assets'.length);
+        }
         return urlObj.toString();
-    } catch {
-        // Fallback for non-URL strings or paths
+    } catch (e) {
+        // This block catches cases where `url` is not a full URL (e.g., a relative path like '/images/j1.png')
+        // In this case, just return the path as is, as it's likely a local asset.
         return url;
     }
 }
