@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
     await s3Client.send(command);
     
     // Generate the public URL that CloudFront will use (WITHOUT 'assets/')
+    // This is the URL that will be stored in the database.
     const cloudfrontUrl = "https://diuu569ds96wh.cloudfront.net";
     const publicUrlForDb = `${cloudfrontUrl}/${pathWithoutAssets}`;
 
