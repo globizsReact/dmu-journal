@@ -1,4 +1,3 @@
-
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/authUtils';
@@ -42,11 +41,12 @@ async function checkAdminAuth(request: NextRequest) {
 
 // GET a single category by ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   if (!await checkAdminAuth(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   try {
-    const category = await prisma.journalCategory.findUnique({ where: { id: params.id } });
+    const category = await prisma.journalCategory.findUnique({ where: { id } });
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
@@ -58,6 +58,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
 // PUT (update) a category by ID
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   if (!await checkAdminAuth(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -72,14 +73,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const slug = createSlug(name);
     
     // Check for potential conflicts before updating
-    const existingByName = await prisma.journalCategory.findFirst({ where: { name, NOT: { id: params.id } } });
+    const existingByName = await prisma.journalCategory.findFirst({ where: { name, NOT: { id } } });
     if (existingByName) return NextResponse.json({ error: 'Another category with this name already exists.' }, { status: 409 });
     
-    const existingBySlug = await prisma.journalCategory.findFirst({ where: { slug, NOT: { id: params.id } } });
+    const existingBySlug = await prisma.journalCategory.findFirst({ where: { slug, NOT: { id } } });
     if (existingBySlug) return NextResponse.json({ error: `Another category with the generated slug '${slug}' already exists.` }, { status: 409 });
 
     const updatedCategory = await prisma.journalCategory.update({
-      where: { id: params.id },
+      where: { id },
       data: { name, slug, ...rest },
     });
     return NextResponse.json(updatedCategory);
@@ -93,18 +94,19 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
 // DELETE a category by ID
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   if (!await checkAdminAuth(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
   try {
     const manuscriptCount = await prisma.manuscript.count({
-        where: { journalCategoryId: params.id },
+        where: { journalCategoryId: id },
     });
     if (manuscriptCount > 0) {
         return NextResponse.json({ error: 'Cannot delete category with associated manuscripts.' }, { status: 409 });
     }
 
-    await prisma.journalCategory.delete({ where: { id: params.id } });
+    await prisma.journalCategory.delete({ where: { id } });
     return new NextResponse(null, { status: 204 }); // No Content
   } catch (error: any) {
     if (error.code === 'P2025') {
