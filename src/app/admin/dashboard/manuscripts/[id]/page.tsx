@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -271,7 +272,10 @@ export default function ManuscriptDetailsPage() {
 
         <section>
           <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{manuscript.abstract}</p>
+          <TiptapRenderer
+            jsonContent={manuscript.abstract}
+            className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+          />
         </section>
         
         {manuscript.keywords && (

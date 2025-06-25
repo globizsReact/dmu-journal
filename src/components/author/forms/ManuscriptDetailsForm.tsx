@@ -7,7 +7,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
@@ -26,12 +25,20 @@ import {
 } from '@/components/ui/form';
 import { Loader2 } from 'lucide-react';
 import type { JournalCategory } from '@prisma/client';
+import TiptapEditor from '@/components/admin/forms/TiptapEditor';
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 const manuscriptDetailsSchema = z.object({
   journalId: z.string().min(1, { message: 'Please select a journal.' }),
   isSpecialReview: z.boolean().optional(),
   articleTitle: z.string().min(5, { message: 'Article title must be at least 5 characters.' }).max(250, { message: 'Article title cannot exceed 250 characters.' }),
-  abstract: z.string().min(20, { message: 'Abstract must be at least 20 characters.' }).max(5000, { message: 'Abstract cannot exceed 5000 characters.' }),
+  abstract: z.any().refine((value) => {
+    const text = getPlainTextFromTiptapJson(value);
+    return text.length >= 20;
+  }, { message: "Abstract must contain at least 20 characters of text." }).refine((value) => {
+    const text = getPlainTextFromTiptapJson(value);
+    return text.length <= 5000;
+  }, { message: "Abstract cannot exceed 5000 characters." }),
   keywords: z.string().min(3, { message: 'Please provide at least one keyword (e.g., keyword1, keyword2).' }).max(200, { message: 'Keywords cannot exceed 200 characters.' }),
 });
 
@@ -69,7 +76,7 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData, is
       journalId: '',
       isSpecialReview: false,
       articleTitle: '',
-      abstract: '',
+      abstract: { type: 'doc', content: [{ type: 'paragraph' }] },
       keywords: '',
     },
   });
@@ -155,11 +162,10 @@ export default function ManuscriptDetailsForm({ onValidatedNext, initialData, is
             <FormItem>
               <FormLabel>Abstract <span className="text-destructive">*</span></FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Provide a brief summary of your article (max 5000 characters)"
-                  className="min-h-[150px]"
-                  {...field}
-                  disabled={isSubmitting}
+                <TiptapEditor
+                  content={field.value}
+                  onChange={field.onChange}
+                  isSubmitting={isSubmitting}
                 />
               </FormControl>
               <FormMessage />

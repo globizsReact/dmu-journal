@@ -10,7 +10,7 @@ export interface JournalCategory extends PrismaJournalCategory {
 export interface JournalEntry {
   id: string; 
   title: string;
-  content: string; 
+  abstract: any; // Changed from content: string to abstract: any
   date: string; 
   categoryId: string;
   excerpt: string; 

@@ -16,6 +16,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ReviewerDashboardSidebar from '@/components/reviewer/ReviewerDashboardSidebar';
 import Link from 'next/link';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -253,7 +254,10 @@ export default function ReviewerManuscriptDetailsPage() {
             <Separator />
             <section>
               <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
-              <p className="text-sm text-foreground/80 whitespace-pre-wrap leading-relaxed">{manuscript.abstract}</p>
+              <TiptapRenderer
+                jsonContent={manuscript.abstract}
+                className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+              />
             </section>
             
             {manuscript.keywords && (

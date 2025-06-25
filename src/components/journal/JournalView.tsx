@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Eye, Download, MessageSquareQuote, FileText, Users, ListOrdered, BarChart3 } from 'lucide-react';
 import { Button } from '../ui/button';
+import TiptapRenderer from '../shared/TiptapRenderer';
 
 interface StatItemProps {
   icon: React.ElementType;
@@ -126,11 +127,11 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
       <div className="my-8">
         <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
         <Separator className="mb-4" />
-        <div
+        <TiptapRenderer
+          jsonContent={entry.abstract}
           className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80
                      prose-headings:font-headline prose-headings:text-primary
                      prose-strong:text-primary/90"
-          dangerouslySetInnerHTML={{ __html: entry.content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br />') }}
         />
         {entry.keywords && entry.keywords.length > 0 && (
           <div className="mt-6">
