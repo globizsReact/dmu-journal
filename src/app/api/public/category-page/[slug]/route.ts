@@ -1,14 +1,16 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
+import type { JournalEntry } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { slug: string } }
 ) {
-  const slug = params.slug;
+  const { slug } = params;
   if (!slug) {
-    return NextResponse.json({ error: 'Category slug is required' }, { status: 400 });
+    return NextResponse.json({ error: 'Category slug is required.' }, { status: 400 });
   }
 
   try {
@@ -17,54 +19,59 @@ export async function GET(
     });
 
     if (!category) {
-      return NextResponse.json({ error: 'Category not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Category not found.' }, { status: 404 });
     }
 
-    const journals = await prisma.manuscript.findMany({
+    const manuscripts = await prisma.manuscript.findMany({
       where: {
         journalCategoryId: category.id,
         status: 'Published',
       },
-      select: {
-        id: true,
-        articleTitle: true,
-        abstract: true,
-        submittedAt: true,
-        views: true,
-        downloads: true,
-        citations: true,
-        keywords: true,
-        status: true,
-        submittedById: true,
-      },
       orderBy: {
         submittedAt: 'desc',
       },
+      include: {
+        submittedBy: {
+          select: {
+            fullName: true,
+          },
+        },
+      },
     });
-    
-    // Map to a simplified JournalEntry-like structure
-    const journalEntries = journals.map(j => ({
+
+    // Transform manuscripts to JournalEntry format
+    const journals: JournalEntry[] = manuscripts.map((j) => {
+      const plainAbstract = getPlainTextFromTiptapJson(j.abstract);
+      let coAuthorNames: string[] = [];
+      if (j.coAuthors && Array.isArray(j.coAuthors)) {
+        coAuthorNames = j.coAuthors.map((a: any) => `${a.title || ''} ${a.givenName || ''} ${a.lastName || ''}`.trim());
+      }
+      const authorList = [j.submittedBy?.fullName, ...coAuthorNames].filter(Boolean) as string[];
+
+      return {
         id: j.id,
         title: j.articleTitle,
-        excerpt: j.abstract.substring(0, 200) + '...',
+        excerpt: plainAbstract.substring(0, 200) + (plainAbstract.length > 200 ? '...' : ''),
         date: j.submittedAt.toISOString(),
         categoryId: category.id,
         views: j.views,
         downloads: j.downloads,
         citations: j.citations,
-        keywords: j.keywords,
-        articleType: 'Published Article',
-        imagePath: category.imagePath,
-        imageHint: category.imageHint,
-    }));
+        keywords: j.keywords?.split(',').map(k => k.trim()) || [],
+        articleType: "Full Length Research Paper", // This might need to be a field in the DB later
+        authors: authorList,
+        abstract: j.abstract,
+        imagePath: j.thumbnailImagePath || category.imagePath,
+        imageHint: j.thumbnailImageHint || category.imageHint,
+        thumbnailImagePath: j.thumbnailImagePath,
+        thumbnailImageHint: j.thumbnailImageHint,
+      };
+    });
 
+    return NextResponse.json({ category, journals });
 
-    return NextResponse.json({ category, journals: journalEntries }, { status: 200 });
   } catch (error: any) {
     console.error(`Error fetching category page data for slug ${slug}:`, error);
-    return NextResponse.json(
-      { error: 'An unexpected error occurred.', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }
