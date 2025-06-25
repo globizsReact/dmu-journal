@@ -32,6 +32,8 @@ model Manuscript {
   coverLetterFileName   String?
   manuscriptFileName    String
   supplementaryFilesName String?
+  thumbnailImagePath      String?  // Path for the optional uploaded thumbnail
+  thumbnailImageHint      String? 
   
   authorAgreement       Boolean
   coAuthors             Json // Store array of co-author objects: { title, givenName, lastName, email, affiliation, country }
