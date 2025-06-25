@@ -164,7 +164,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        <div className="flex min-h-[calc(100vh-3.5rem)]">
+        <div className="flex h-[calc(100vh-3.5rem)]">
           <div className="hidden md:block">
             <AdminDashboardSidebar
               adminName={adminName}
@@ -172,7 +172,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             />
           </div>
 
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-auto bg-muted">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-muted">
             {children}
           </main>
         </div>
