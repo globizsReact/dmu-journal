@@ -177,12 +177,6 @@ export default function UploadFilesForm({ onFinish, onPrevious, isSubmitting }: 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <h3 className="text-lg font-semibold text-foreground mb-4">Step 3: Upload Files & Submit</h3>
 
-        <div className="space-y-6">
-          <FormField name="coverLetterFile" render={() => ( /* ... */ )} />
-          <FormField name="manuscriptFile" render={() => ( /* ... */ )} />
-          <FormField name="supplementaryFiles" render={() => ( /* ... */ )} />
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-6">
                 <FormField control={form.control} name="coverLetterFile" render={() => (
