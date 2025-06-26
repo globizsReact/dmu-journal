@@ -1,132 +1,121 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-generator client {
-  provider = "prisma-client-js"
-}
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 model User {
-  id            Int      @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   fullName      String?
-  username      String   @unique
-  email         String   @unique
+  username      String       @unique
+  email         String       @unique
   password_hash String
-  role          String?  @default("author") // e.g., 'author', 'reviewer', 'admin', 'reviewer_inactive'
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          String?      @default("author") // e.g., 'author', 'reviewer', 'admin', 'reviewer_inactive'
+  manuscripts   Manuscript[] @relation("SubmittedManuscripts")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
 
-  submittedManuscripts Manuscript[] @relation("SubmittedManuscripts")
-
-  // @@index([role])
+model Manuscript {
+  id                      String          @id @default(cuid())
+  submittedById           Int
+  submittedBy             User            @relation("SubmittedManuscripts", fields: [submittedById], references: [id])
+  journalCategoryId       String
+  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  articleTitle            String          @db.Text
+  abstract                Json?
+  keywords                String?
+  isSpecialReview         Boolean         @default(false)
+  authorAgreement         Boolean
+  coAuthors               Json?
+  coverLetterFileName     String?
+  manuscriptFileName      String
+  supplementaryFilesName  String?
+  thumbnailImagePath      String?         @db.VarChar(255)
+  thumbnailImageHint      String?
+  status                  String          @default("Submitted") // e.g., Submitted, In Review, Accepted, Published, Suspended, Rejected
+  views                   Int?            @default(0)
+  downloads               Int?            @default(0)
+  citations               Int?            @default(0)
+  articleType             String?
+  submittedAt             DateTime        @default(now())
+  updatedAt               DateTime        @updatedAt
 }
 
 model JournalCategory {
-  id                     String         @id @default(cuid())
-  name                   String         @unique
-  slug                   String         @unique
-  description            Json
+  id                     String       @id @default(cuid())
+  name                   String       @unique
+  slug                   String       @unique
+  description            Json?
   iconName               String
-  imagePath              String
+  imagePath              String       @db.VarChar(255)
   imageHint              String
-  order                  Int            @default(0)
+  bgColor                String?      @db.VarChar(7)
+  order                  Int          @default(0)
   abbreviation           String?
   language               String?
   issn                   String?
   doiBase                String?
   startYear              Int?
-  publishedArticlesCount Int?           @default(0)
   displayIssn            String?
   copyrightYear          Int?
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
+  publishedArticlesCount Int?
   manuscripts            Manuscript[]
-  pages                  JournalPage[]  @relation("CategoryPages")
+  pages                  JournalPage[]
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
 }
 
 model JournalPage {
   id                String          @id @default(cuid())
   title             String
   slug              String
-  content           Json
-  order             Int             @default(0)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  content           Json?
+  order             Int
   journalCategoryId String
+  journalCategory   JournalCategory @relation(fields: [journalCategoryId], references: [id], onDelete: Cascade)
   parentId          String?
-  journalCategory   JournalCategory @relation("CategoryPages", fields: [journalCategoryId], references: [id], onDelete: Cascade)
   parent            JournalPage?    @relation("SubPages", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   children          JournalPage[]   @relation("SubPages")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 
   @@unique([journalCategoryId, slug])
 }
 
-model Manuscript {
-  id                     String   @id @default(cuid())
-  articleTitle           String   @db.VarChar(255)
-  abstract               Json
-  keywords               String?  @db.VarChar(255)
-  status                 String   @default("Submitted") // e.g., Submitted, In Review, Accepted, Published, Suspended
-  submittedAt            DateTime @default(now())
-  updatedAt              DateTime @updatedAt
-  isSpecialReview        Boolean? @default(false)
-  views                  Int?     @default(0)
-  downloads              Int?     @default(0)
-  citations              Int?     @default(0)
-  coAuthors              Json?
-  authorAgreement        Boolean  @default(false)
-  // File Paths
-  coverLetterFileName    String?
-  manuscriptFileName     String
-  supplementaryFilesName String?
-  thumbnailImagePath     String?
-  thumbnailImageHint     String?
-
-  // Relations
-  submittedById          Int
-  submittedBy            User     @relation("SubmittedManuscripts", fields: [submittedById], references: [id])
-
-  journalCategoryId      String
-  journalCategory        JournalCategory @relation(fields: [journalCategoryId], references: [id])
-
-  @@index([status])
-  @@index([submittedById])
-  @@index([journalCategoryId])
-}
-
-model SitePage {
-  slug           String   @id
-  title          String
-  content        Json?
-  coverImagePath String?
-  coverImageHint String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
 model FaqCategory {
-  id        String    @id @default(cuid())
-  title     String
-  order     Int
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  items     FaqItem[]
+  id      String    @id @default(cuid())
+  title   String
+  order   Int
+  items   FaqItem[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model FaqItem {
-  id         String      @id @default(cuid())
-  question   String
-  answer     Json
-  order      Int
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  categoryId String
-  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id          String      @id @default(cuid())
+  question    String
+  answer      Json
+  order       Int
+  categoryId  String
+  category    FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
 
-  @@index([categoryId])
+// For standalone site pages like 'About Us', 'Landing Page'
+model SitePage {
+  slug           String   @id @unique
+  title          String
+  content        Json?
+  coverImagePath String?  @db.VarChar(255)
+  coverImageHint String?  @db.VarChar(255)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
