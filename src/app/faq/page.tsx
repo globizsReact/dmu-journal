@@ -1,4 +1,7 @@
 
+'use client';
+
+import { useState, useEffect } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
@@ -10,6 +13,21 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import { Loader2 } from 'lucide-react';
+import LoadingFAQPage from './loading'; // Import the skeleton loader
+
+interface FaqItem {
+  id: string;
+  question: string;
+  answer: any; // JSON for Tiptap
+}
+
+interface FaqCategory {
+  id: string;
+  title: string;
+  items: FaqItem[];
+}
 
 const metadataItems = [
   "Abbreviation: J. Biophys. Struct. Biol.",
@@ -19,81 +37,6 @@ const metadataItems = [
   "Start Year: 2009",
   "Published Articles: 25",
 ];
-
-const faqSections = [
-  {
-    title: "For Authors",
-    items: [
-      {
-        question: "How Do I Submit A Manuscript?",
-        answer: "To submit a manuscript, please navigate to the 'Submit Manuscript' section in your author dashboard. Follow the instructions provided, upload your manuscript file, and fill in the required metadata. Ensure your manuscript adheres to our formatting guidelines.",
-      },
-      {
-        question: "How Do I Check Status Of A Manuscript?",
-        answer: "You can check the status of your submitted manuscript by logging into your author dashboard and visiting the 'My Manuscripts' section. The current status (e.g., Under Review, Revisions Required, Accepted) will be displayed next to each submission.",
-      },
-      {
-        question: "How To Send A Message To The Editorial Office?",
-        answer: "You can send a message to the editorial office through the contact form available on the journal's specific page or via the contact details provided in the 'Contact Us' section of our website.",
-      },
-      {
-        question: "How Do I Send A Message To Help Desk?",
-        answer: "For technical support or help desk inquiries, please visit our 'Support Center' page where you can find contact options or a form to submit your query.",
-      },
-      {
-        question: "How Do I Change My Password Or Update My Profile?",
-        answer: "To change your password or update your profile information, log in to your author dashboard and look for the 'View/Edit Profile' section. You will find options to update your personal details and change your password there.",
-      },
-      {
-        question: "How Do I Make Payment?",
-        answer: "On the left side menu on the Author's page, click the 'Make Payment' button. A list of payments due would be loaded. Please note, this only displays if you have outstanding payments.",
-      }
-    ],
-  },
-  {
-    title: "For Editors",
-    items: [
-      {
-        question: "How Do I Become An Editor?",
-        answer: "If you are interested in becoming an editor for one of our journals, please visit the 'Editorial Board' section on the respective journal's page for information on how to apply or express your interest. Typically, this involves submitting your CV and a cover letter.",
-      },
-      {
-        question: "How Do I Change My Password Or Update My Profile?",
-        answer: "Visit this page to access the login page for editors. Once logged in, you should find options to manage your profile and password settings within your editor dashboard.",
-      },
-      {
-        question: "How Do I Download Original Manuscript, Revised Manuscript, And Reviewers Comments?",
-        answer: "As an editor, you can download manuscripts and reviewer comments from the editorial management system. After logging in, navigate to the assigned manuscript to find download links for all relevant files.",
-      },
-      {
-        question: "How Do I Make A Decision On A Manuscript?",
-        answer: "After reviewing the manuscript and the comments from reviewers, you can submit your editorial decision (e.g., Accept, Reject, Revisions Required) through the editorial management system. Clear instructions are usually provided within the system.",
-      },
-    ],
-  },
-  {
-    title: "For Reviewers",
-    items: [
-      {
-        question: "How Do I Join The Editorial Board?",
-        answer: "To join the editorial board or become a reviewer, please check the 'Join Us' or 'Reviewer Guidelines' section on our website. You may need to submit an application or register your areas of expertise.",
-      },
-      {
-        question: "How Can I Send A Message To The Editorial Office?",
-        answer: "Click here to view a list of mail addresses for all editorial offices. Alternatively, use the contact forms available on the journal websites.",
-      },
-      {
-        question: "How Do I Submit My Evaluation Of A Manuscript?",
-        answer: "When you are invited to review a manuscript, you will receive instructions and a link to our peer review system. You can submit your evaluation, comments, and recommendation through this system.",
-      },
-      {
-        question: "I Have Been Invited To Review A Manuscript, How Do I Login Into The System?",
-        answer: "The invitation email you received should contain a link and credentials to log into the peer review system. If you have trouble logging in, please contact the editorial office for assistance.",
-      },
-    ],
-  },
-];
-
 
 const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href?: string }) => (
   <Link
@@ -105,6 +48,76 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
 );
 
 export default function FAQPage() {
+  const [faqSections, setFaqSections] = useState<FaqCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/public/faq');
+        if (!response.ok) {
+          throw new Error('Failed to load FAQs. Please try again later.');
+        }
+        const data = await response.json();
+        setFaqSections(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchFaqs();
+  }, []);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return <LoadingFAQPage />;
+    }
+    if (error) {
+      return <div className="text-center py-10 text-destructive">{error}</div>;
+    }
+    if (faqSections.length === 0) {
+        return <div className="text-center py-10 text-muted-foreground">No FAQs have been added yet.</div>;
+    }
+    return (
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+            <aside className="w-full md:w-1/4 lg:w-1/5">
+                <h2 className="text-xl font-headline font-semibold text-primary mb-4 px-3">Quick Links</h2>
+                <nav className="space-y-1">
+                <SidebarLink href="/journals">Journals</SidebarLink>
+                <SidebarLink href="/about">About Us</SidebarLink>
+                <SidebarLink href="#">Membership</SidebarLink>
+                <SidebarLink href="#">Support Center</SidebarLink>
+                </nav>
+            </aside>
+            <section className="w-full md:w-3/4 lg:w-4/5">
+                {faqSections.map((section) => (
+                <div key={section.id} className="mb-10">
+                    <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
+                    {section.title}
+                    </h2>
+                    <Accordion type="single" collapsible className="w-full space-y-3">
+                    {section.items.map((item, index) => (
+                        <AccordionItem key={item.id} value={`item-${section.id}-${index}`} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
+                        <AccordionTrigger className="px-6 py-4 text-left text-md font-medium text-foreground hover:bg-muted/50 transition-colors">
+                            {item.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-4 pt-0">
+                           <TiptapRenderer jsonContent={item.answer} className="prose prose-sm max-w-none font-body text-foreground/80" />
+                        </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                    </Accordion>
+                </div>
+                ))}
+            </section>
+        </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -160,41 +173,7 @@ export default function FAQPage() {
       </nav>
 
       <main className="flex-1 container mx-auto px-4 py-8 md:py-12">
-        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-          {/* Left Sidebar */}
-          <aside className="w-full md:w-1/4 lg:w-1/5">
-            <h2 className="text-xl font-headline font-semibold text-primary mb-4 px-3">Quick Links</h2>
-            <nav className="space-y-1">
-              <SidebarLink href="/journals">Journals</SidebarLink>
-              <SidebarLink href="/about">About Us</SidebarLink>
-              <SidebarLink href="#">Membership</SidebarLink>
-              <SidebarLink href="#">Support Center</SidebarLink>
-            </nav>
-          </aside>
-
-          {/* Right Content Pane - Accordion */}
-          <section className="w-full md:w-3/4 lg:w-4/5">
-            {faqSections.map((section) => (
-              <div key={section.title} className="mb-10">
-                <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
-                  {section.title}
-                </h2>
-                <Accordion type="single" collapsible className="w-full space-y-3">
-                  {section.items.map((item, index) => (
-                    <AccordionItem key={index} value={`item-${section.title.replace(/\s+/g, '-')}-${index}`} className="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
-                      <AccordionTrigger className="px-6 py-4 text-left text-md font-medium text-foreground hover:bg-muted/50 transition-colors">
-                        {item.question}
-                      </AccordionTrigger>
-                      <AccordionContent className="px-6 pb-4 pt-0 text-foreground/80 font-body">
-                        {item.answer}
-                      </AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
-              </div>
-            ))}
-          </section>
-        </div>
+        {renderContent()}
       </main>
 
       <Footer />
