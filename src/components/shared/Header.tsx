@@ -1,12 +1,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 interface HeaderProps {
   className?: string;
@@ -19,6 +20,10 @@ const Header = ({ className }: HeaderProps) => {
   const logoSrc = '/images/logo.png';
   const pathname = usePathname();
 
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0, opacity: 0 });
+  const navRef = useRef<HTMLDivElement>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const checkAuthStatus = () => {
@@ -29,18 +34,12 @@ const Header = ({ className }: HeaderProps) => {
       };
 
       checkAuthStatus();
-
       window.addEventListener('authChange', checkAuthStatus);
-
-      return () => {
-        window.removeEventListener('authChange', checkAuthStatus);
-      };
+      return () => window.removeEventListener('authChange', checkAuthStatus);
     }
   }, []);
 
-  const handleLinkClick = () => {
-    setIsOpen(false);
-  };
+  const handleLinkClick = () => setIsOpen(false);
 
   const isAdmin = userRole === 'admin';
   const isReviewer = userRole === 'reviewer';
@@ -49,10 +48,39 @@ const Header = ({ className }: HeaderProps) => {
     if (href === '/') return pathname === '/';
     return pathname.startsWith(href);
   };
+  
+  const navLinks = useMemo(() => {
+    const baseLinks = [
+      { href: '/', label: 'HOME', show: true },
+      { href: '/about', label: 'ABOUT US', show: true },
+    ];
+    const conditionalLinks = [
+      { href: '/submit', label: 'CALL FOR PAPER SUBMISSION', show: !isLoggedIn || isAdmin },
+      { href: '/author/dashboard', label: 'AUTHOR DASHBOARD', show: isLoggedIn && !isAdmin && !isReviewer },
+      { href: '/reviewer/dashboard', label: 'REVIEWER DASHBOARD', show: isLoggedIn && isReviewer, icon: BadgeCheck },
+    ];
+    return [...baseLinks, ...conditionalLinks].filter(link => link.show);
+  }, [isLoggedIn, isAdmin, isReviewer]);
+
+  useEffect(() => {
+    const activeIndex = navLinks.findIndex(link => isActive(link.href));
+    const activeLinkElement = linkRefs.current[activeIndex];
+
+    if (activeLinkElement) {
+        setUnderlineStyle({
+            left: activeLinkElement.offsetLeft,
+            width: activeLinkElement.offsetWidth,
+            opacity: 1,
+        });
+    } else {
+        setUnderlineStyle({ left: 0, width: 0, opacity: 0 });
+    }
+  }, [pathname, navLinks]);
+
 
   const navLinkClasses = (href: string) => cn(
-    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center",
-    isActive(href) ? "text-accent border-b-2 border-accent" : "border-b-2 border-transparent"
+    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center relative z-10 px-1",
+    isActive(href) ? "text-accent" : ""
   );
 
   const mobileNavLinkClasses = (href: string) => cn(
@@ -80,28 +108,23 @@ const Header = ({ className }: HeaderProps) => {
             </div>
           </Link>
 
-          <nav className="hidden md:flex space-x-4 md:space-x-6 items-center">
-            <Link href="/" className={navLinkClasses('/')}>
-              HOME
-            </Link>
-            <Link href="/about" className={navLinkClasses('/about')}>
-              ABOUT US
-            </Link>
-            {(!isLoggedIn || isAdmin) && (
-              <Link href="/submit" className={navLinkClasses('/submit')}>
-                CALL FOR PAPER SUBMISSION
+          <nav ref={navRef} className="hidden md:flex space-x-4 md:space-x-6 items-center relative">
+            {navLinks.map((link, index) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                ref={el => (linkRefs.current[index] = el)}
+                className={navLinkClasses(link.href)}
+              >
+                {link.icon && <link.icon className="w-4 h-4 mr-1" />}
+                {link.label}
               </Link>
-            )}
-            {isLoggedIn && !isAdmin && !isReviewer && (
-              <Link href="/author/dashboard" className={navLinkClasses('/author/dashboard')}>
-                AUTHOR DASHBOARD
-              </Link>
-            )}
-            {isLoggedIn && isReviewer && (
-              <Link href="/reviewer/dashboard" className={navLinkClasses('/reviewer/dashboard')}>
-                <BadgeCheck className="w-4 h-4 mr-1" /> REVIEWER DASHBOARD
-              </Link>
-            )}
+            ))}
+            <motion.div
+              className="absolute bottom-[-2px] h-0.5 bg-accent"
+              animate={underlineStyle}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+            />
           </nav>
 
           <div className="md:hidden flex items-center gap-2">
@@ -155,47 +178,16 @@ const Header = ({ className }: HeaderProps) => {
             <X size={24} />
           </button>
         </div>
-        <Link
-          href="/"
-          onClick={handleLinkClick}
-          className={mobileNavLinkClasses('/')}
-        >
-          HOME
-        </Link>
-        <Link
-          href="/about"
-          onClick={handleLinkClick}
-          className={mobileNavLinkClasses('/about')}
-        >
-          ABOUT US
-        </Link>
-        {(!isLoggedIn || isAdmin) && (
-          <Link
-            href="/submit"
-            onClick={handleLinkClick}
-            className={mobileNavLinkClasses('/submit')}
-          >
-           CALL FOR PAPER SUBMISSION
-          </Link>
-        )}
-        {isLoggedIn && !isAdmin && !isReviewer && (
-          <Link
-            href="/author/dashboard"
-            onClick={handleLinkClick}
-            className={mobileNavLinkClasses('/author/dashboard')}
-          >
-            AUTHOR DASHBOARD
-          </Link>
-        )}
-        {isLoggedIn && isReviewer && (
-          <Link
-            href="/reviewer/dashboard"
-            onClick={handleLinkClick}
-            className={mobileNavLinkClasses('/reviewer/dashboard')}
-          >
-            <BadgeCheck className="w-4 h-4 mr-1 inline-block" /> REVIEWER DASHBOARD
-          </Link>
-        )}
+        {navLinks.map(link => (
+             <Link
+                key={link.href}
+                href={link.href}
+                onClick={handleLinkClick}
+                className={mobileNavLinkClasses(link.href)}
+             >
+              {link.icon && <link.icon className="w-4 h-4 mr-1 inline-block" />} {link.label}
+             </Link>
+        ))}
       </nav>
     </>
   );

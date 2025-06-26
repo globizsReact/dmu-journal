@@ -51,6 +51,7 @@ export default async function HomePage() {
     getCategories(),
     getLandingPageContent()
   ]);
+  const nextYear = new Date().getFullYear() + 1;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -60,9 +61,11 @@ export default async function HomePage() {
 
         <section className="py-8 bg-secondary text-secondary-foreground text-center">
           <div className="container mx-auto px-4">
-            <p className="text-lg md:text-xl font-semibold">
-              CALL FOR PAPER SUBMISSION FOR 2025
-            </p>
+            <Link href="/submit" className="inline-block hover:underline focus:underline focus:outline-none">
+                <p className="text-lg md:text-xl font-semibold">
+                  CALL FOR PAPER SUBMISSION FOR {nextYear}
+                </p>
+            </Link>
           </div>
         </section>
 
