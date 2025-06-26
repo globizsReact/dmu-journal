@@ -173,11 +173,7 @@ export default function CategoryPage() {
     </div>;
   }
   
-  const categorySpecificBgColor = 
-    category.slug === 'journal-of-humanities-and-social-sciences' ? '#A56D51' :
-    category.slug === 'journal-of-business-and-applied-research' ? '#1C252C' :
-    category.slug === 'journal-of-legal-studies' ? '#2C344C' :
-    undefined;
+  const categorySpecificBgColor = category.bgColor;
 
   return (
     <div className="flex flex-col min-h-screen bg-background">

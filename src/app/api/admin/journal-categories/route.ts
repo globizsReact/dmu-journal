@@ -15,6 +15,7 @@ const categorySchema = z.object({
   iconName: z.string().min(1, 'Icon name is required.'),
   imagePath: z.string().min(1, 'Image path is required.'),
   imageHint: z.string().min(1, 'Image hint is required.'),
+  bgColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Must be a valid hex color code (e.g. #RRGGBB)").optional().or(z.literal('')),
   abbreviation: z.string().optional(),
   language: z.string().optional(),
   issn: z.string().optional(),

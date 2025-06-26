@@ -5,6 +5,7 @@ import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJou
 export interface JournalCategory extends PrismaJournalCategory {
   publishedArticlesCount?: number;
   icon?: LucideIcon;
+  bgColor?: string | null;
 }
 
 export interface JournalPage extends PrismaJournalPage {

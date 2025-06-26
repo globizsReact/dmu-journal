@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -41,6 +42,7 @@ const categorySchema = z.object({
   iconName: z.enum(Object.keys(iconMap) as [IconName, ...IconName[]], { required_error: 'An icon is required.' }),
   imagePath: z.string().min(1, 'An uploaded image is required.'),
   imageHint: z.string().min(1, 'Image hint is required (e.g., science lab).'),
+  bgColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Must be a valid hex color code (e.g. #RRGGBB)").optional().or(z.literal('')),
   abbreviation: z.string().optional(),
   language: z.string().optional(),
   issn: z.string().optional(),
@@ -76,6 +78,7 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
       iconName: (initialData?.iconName as IconName) || undefined,
       imagePath: initialData?.imagePath || '',
       imageHint: initialData?.imageHint || '',
+      bgColor: initialData?.bgColor || '',
       abbreviation: initialData?.abbreviation || '',
       language: initialData?.language || 'English',
       issn: initialData?.issn || '',
@@ -131,6 +134,8 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
     }
   };
 
+  const watchBgColor = form.watch('bgColor');
+
   return (
     <Card>
       <CardHeader>
@@ -178,6 +183,18 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
                   )} />
                   <FormField control={form.control} name="startYear" render={({ field }) => <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
                   <FormField control={form.control} name="copyrightYear" render={({ field }) => <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+                  <FormField control={form.control} name="bgColor" render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                        <FormLabel>Header Background Color</FormLabel>
+                        <div className="flex items-center gap-2">
+                            <FormControl>
+                                <Input {...field} placeholder="#1A8A6D" disabled={isSubmitting} value={field.value ?? ''} />
+                            </FormControl>
+                            <div className="w-10 h-10 rounded-md border" style={{ backgroundColor: watchBgColor || 'transparent' }}></div>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                  )} />
                 </div>
               </div>
               {/* Right side - image upload and preview */}

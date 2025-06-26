@@ -1,3 +1,4 @@
+
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/authUtils';
@@ -13,6 +14,7 @@ const categorySchema = z.object({
   iconName: z.string().min(1, 'Icon name is required.'),
   imagePath: z.string().min(1, 'Image path is required.'),
   imageHint: z.string().min(1, 'Image hint is required.'),
+  bgColor: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, "Must be a valid hex color code (e.g. #RRGGBB)").optional().or(z.literal('')),
   abbreviation: z.string().optional(),
   language: z.string().optional(),
   issn: z.string().optional(),
@@ -88,6 +90,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     if (error.code === 'P2025') {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
+    console.error("Error updating category:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
