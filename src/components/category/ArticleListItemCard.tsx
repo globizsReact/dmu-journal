@@ -23,8 +23,9 @@ const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItem
           <Image
             src={imageUrl}
             alt={entry.title || 'Article image'}
-            layout="fill"
-            objectFit="cover"
+            fill
+            sizes="(max-width: 768px) 100vw, 25vw"
+            className="object-cover"
             data-ai-hint={entry.thumbnailImageHint || entry.imageHint || "scientific research"}
           />
         </div>

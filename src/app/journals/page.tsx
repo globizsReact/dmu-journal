@@ -143,9 +143,9 @@ export default function AllJournalsPage() {
         <Image
           src="https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
           alt="Journals Background"
-          layout="fill"
-          objectFit="cover"
-          className="absolute inset-0 z-0"
+          fill
+          sizes="100vw"
+          className="absolute inset-0 z-0 object-cover"
           data-ai-hint="university campus library"
           priority
         />

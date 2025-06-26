@@ -65,11 +65,8 @@ export default function ForgotPasswordPage() {
         src="/images/login_bg.png"
         alt="Background"
         fill
-        style={{
-          objectFit: 'none',
-          objectPosition: 'right bottom',
-        }}
-        className="absolute inset-0"
+        sizes="100vw"
+        className="absolute inset-0 object-none object-right-bottom"
         priority
       />
       <Header className="relative z-10" />

@@ -114,9 +114,9 @@ export default function FAQPage() {
         <Image
           src="https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
           alt="FAQ Background - People at a help desk"
-          layout="fill"
-          objectFit="cover"
-          className="absolute inset-0 z-0"
+          fill
+          sizes="100vw"
+          className="absolute inset-0 z-0 object-cover"
           data-ai-hint="help desk"
           priority
         />

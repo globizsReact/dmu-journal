@@ -187,7 +187,7 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
                     <FormLabel>Category Thumbnail</FormLabel>
                     {imagePreview && (
                       <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border">
-                        <Image src={toPublicUrl(imagePreview)} alt="Image Preview" layout="fill" objectFit="cover" />
+                        <Image src={toPublicUrl(imagePreview)} alt="Image Preview" fill sizes="33vw" className="object-cover" />
                       </div>
                     )}
                     <FormControl>

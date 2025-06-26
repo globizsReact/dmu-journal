@@ -18,9 +18,9 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
           <Image
             src={toPublicUrl(category.imagePath)}
             alt={category.name}
-            layout="fill"
-            objectFit="cover"
-            className="transition-transform duration-1600 ease-in-out group-hover:scale-125"
+            fill
+            sizes="(max-width: 640px) 100vw, 50vw"
+            className="object-cover transition-transform duration-1600 ease-in-out group-hover:scale-125"
             data-ai-hint={category.imageHint}
           />
           {/* Gradient overlay for text visibility */}

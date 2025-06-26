@@ -143,8 +143,8 @@ export default function JournalPage() {
                 src={category.imagePath}
                 alt={`${category.name} background`}
                 fill
-                style={{ objectFit: "cover" }}
-                className="absolute inset-0 z-0 opacity-30"
+                sizes="100vw"
+                className="object-cover absolute inset-0 z-0 opacity-30"
                 data-ai-hint={category.imageHint}
                 priority
             />

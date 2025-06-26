@@ -234,8 +234,9 @@ export default function AuthorManuscriptDetailsPage() {
                         <Image
                             src={toPublicUrl(manuscript.thumbnailImagePath)}
                             alt="Manuscript thumbnail preview"
-                            layout="fill"
-                            objectFit="cover"
+                            fill
+                            sizes="(max-width: 640px) 100vw, 33vw"
+                            className="object-cover"
                             data-ai-hint={manuscript.thumbnailImageHint || "journal thumbnail"}
                         />
                     </div>

@@ -85,8 +85,9 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
                   <Image
                     src={displayImagePath}
                     alt={`Thumbnail for ${entry.title}`}
-                    layout="fill"
-                    objectFit="cover"
+                    fill
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    className="object-cover"
                     data-ai-hint={displayImageHint || "research graph"}
                   />
                 </div>
