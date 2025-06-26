@@ -14,7 +14,7 @@ const HeroSection = ({ title, subtitle }: HeroSectionProps) => {
         <h1 className="text-4xl md:text-6xl font-headline font-bold text-accent leading-tight mb-6">
           {title}
         </h1>
-        <p className="text-md md:text-lg text-primary-foreground/90 font-body max-w-3xl mx-auto">
+        <p className="text-md md:text-lg text-primary-foreground/90 font-body max-w-3xl mx-auto lg:whitespace-nowrap">
           {subtitle}
         </p>
       </div>
