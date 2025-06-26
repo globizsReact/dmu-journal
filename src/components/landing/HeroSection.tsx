@@ -11,10 +11,10 @@ const HeroSection = ({ title, subtitle }: HeroSectionProps) => {
   return (
     <section className="py-20 md:py-28 bg-primary text-primary-foreground text-center">
       <div className="container mx-auto px-4">
-        <h1 className="text-4xl md:text-6xl font-headline font-bold text-accent leading-tight mb-4">
+        <h1 className="text-4xl md:text-6xl font-headline font-bold text-accent leading-tight mb-6">
           {title}
         </h1>
-        <p className="text-lg md:text-xl text-primary-foreground/90 font-body max-w-3xl mx-auto">
+        <p className="text-md md:text-lg text-primary-foreground/90 font-body max-w-3xl mx-auto">
           {subtitle}
         </p>
       </div>
