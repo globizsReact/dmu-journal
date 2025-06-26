@@ -1,13 +1,12 @@
 
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Menu, X, ShieldCheck, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 
 interface HeaderProps {
   className?: string;
@@ -19,10 +18,6 @@ const Header = ({ className }: HeaderProps) => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const logoSrc = '/images/logo.png';
   const pathname = usePathname();
-
-  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0, opacity: 0 });
-  const navRef = useRef<HTMLDivElement>(null);
-  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -62,24 +57,8 @@ const Header = ({ className }: HeaderProps) => {
     return [...baseLinks, ...conditionalLinks].filter(link => link.show);
   }, [isLoggedIn, isAdmin, isReviewer]);
 
-  useEffect(() => {
-    const activeIndex = navLinks.findIndex(link => isActive(link.href));
-    const activeLinkElement = linkRefs.current[activeIndex];
-
-    if (activeLinkElement) {
-        setUnderlineStyle({
-            left: activeLinkElement.offsetLeft,
-            width: activeLinkElement.offsetWidth,
-            opacity: 1,
-        });
-    } else {
-        setUnderlineStyle({ left: 0, width: 0, opacity: 0 });
-    }
-  }, [pathname, navLinks]);
-
-
   const navLinkClasses = (href: string) => cn(
-    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center relative z-10 px-1",
+    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center px-1",
     isActive(href) ? "text-accent" : ""
   );
 
@@ -108,23 +87,17 @@ const Header = ({ className }: HeaderProps) => {
             </div>
           </Link>
 
-          <nav ref={navRef} className="hidden md:flex space-x-4 md:space-x-6 items-center relative">
-            {navLinks.map((link, index) => (
+          <nav className="hidden md:flex space-x-4 md:space-x-6 items-center">
+            {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                ref={el => (linkRefs.current[index] = el)}
                 className={navLinkClasses(link.href)}
               >
                 {link.icon && <link.icon className="w-4 h-4 mr-1" />}
                 {link.label}
               </Link>
             ))}
-            <motion.div
-              className="absolute bottom-[-2px] h-0.5 bg-accent"
-              animate={underlineStyle}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            />
           </nav>
 
           <div className="md:hidden flex items-center gap-2">
