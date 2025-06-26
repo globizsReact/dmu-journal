@@ -20,6 +20,8 @@ model User {
   password_hash   String
   fullName        String?
   role            String?  @default("author") // e.g., author, reviewer, admin, reviewer_inactive
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
   submittedManuscripts Manuscript[] @relation("SubmittedByUser")
 }
 
