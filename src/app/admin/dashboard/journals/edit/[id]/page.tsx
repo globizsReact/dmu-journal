@@ -88,7 +88,7 @@ export default function EditJournalCategoryPage() {
       
       toast({ title: 'Success', description: 'Journal category updated successfully.' });
       router.push('/admin/dashboard/journals');
-    } catch (error: any) => {
+    } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
