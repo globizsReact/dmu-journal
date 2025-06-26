@@ -23,15 +23,40 @@ async function getCategories(): Promise<JournalCategory[]> {
     }
 }
 
+const defaultContent = {
+  heroTitle: "Accelerating Discovery",
+  heroSubtitle: "By Embracing Open Access, Academic Journals Drives Faster Dissemination Of Rigorous And Impactful Research.",
+  journalSectionTitle: "Dhanamanjuri University Journals Portal",
+  journalSectionSubtitle: "Driven By Knowledge. Defined By Research."
+};
+
+async function getLandingPageContent() {
+  try {
+    const pageData = await prisma.sitePage.findUnique({
+      where: { slug: 'landing-page' },
+    });
+    if (pageData && typeof pageData.content === 'object' && pageData.content) {
+      return { ...defaultContent, ...pageData.content as any };
+    }
+    return defaultContent;
+  } catch (error) {
+    console.error("Failed to fetch landing page content:", error);
+    return defaultContent;
+  }
+}
+
 export default async function HomePage() {
   const universityName = "Dhanamanjuri University";
-  const journalCategories = await getCategories();
+  const [journalCategories, content] = await Promise.all([
+    getCategories(),
+    getLandingPageContent()
+  ]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection title={content.heroTitle} subtitle={content.heroSubtitle} />
 
         <section className="py-8 bg-secondary text-secondary-foreground text-center">
           <div className="container mx-auto px-4">
@@ -44,11 +69,9 @@ export default async function HomePage() {
         <section className="py-12 md:py-16 bg-background">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center mb-10 gap-4 md:gap-6 lg:gap-8 lg:max-w-5xl lg:mx-auto md:justify-center">
-              {/* Search Input on the left */}
               <div className="w-full md:flex-1">
                 <GlobalSearchInput />
               </div>
-              {/* View All Journals Button on the right */}
               <div className="w-full md:w-auto mt-4 md:mt-0">
                 <Button
                   asChild
@@ -62,10 +85,10 @@ export default async function HomePage() {
 
             <div className="text-center mb-12 lg:max-w-5xl lg:mx-auto">
               <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary">
-                {universityName} Journals Portal
+                {content.journalSectionTitle}
               </h2>
               <p className="text-md text-foreground/70 mt-2 font-body">
-                Driven By Knowledge. Defined By Research.
+                {content.journalSectionSubtitle}
               </p>
             </div>
 

@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, Info, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, HelpCircle, Layers } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -16,6 +16,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -33,20 +39,22 @@ interface NavItem {
   disabled?: boolean;
 }
 
-const navItems: NavItem[] = [
+const mainNavItems: NavItem[] = [
   { label: 'Dashboard Overview', icon: LayoutDashboard, href: '/admin/dashboard' },
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: false },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
   { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false },
-  { label: "Manage 'About Us'", icon: Info, href: '/admin/dashboard/pages/about' },
   { label: "Manage FAQ", icon: HelpCircle, href: '/admin/dashboard/faq' },
 ];
 
+const pageNavItems = [
+    { label: 'About Us Page', href: '/admin/dashboard/pages/about' },
+    { label: 'Landing Page', href: '/admin/dashboard/pages/landing' },
+];
+
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const logoSrc = '/images/logo_black.png';
-
 
   return (
     <aside className={cn(
@@ -68,14 +76,13 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
         </div>
       </div>
       <nav className="flex-1 space-y-2">
-        {navItems.map((item) => {
+        {mainNavItems.map((item) => {
           let isActive = pathname === item.href;
           if (item.href === '/admin/dashboard' && pathname !== '/admin/dashboard' && pathname.startsWith('/admin/dashboard/')) {
              isActive = false;
           } else if (item.href !== '/admin/dashboard' && pathname.startsWith(item.href)) {
              isActive = true;
           }
-
 
           return (
             <Link
@@ -90,11 +97,8 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
               )}
               aria-disabled={item.disabled}
               onClick={(e) => {
-                  if (item.disabled) {
-                      e.preventDefault();
-                  } else {
-                      onLinkClick?.();
-                  }
+                  if (item.disabled) e.preventDefault();
+                  else onLinkClick?.();
               }}
             >
               <item.icon className="w-4 h-4" />
@@ -102,6 +106,39 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
             </Link>
           );
         })}
+        
+        {/* Pages Accordion */}
+        <Accordion type="single" collapsible className="w-full" defaultValue={pathname.startsWith('/admin/dashboard/pages') ? 'pages' : undefined}>
+          <AccordionItem value="pages" className="border-none">
+            <AccordionTrigger className={cn(
+                "w-full flex items-center justify-between gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left hover:bg-muted hover:text-primary hover:no-underline",
+                pathname.startsWith('/admin/dashboard/pages') && "bg-muted text-primary"
+            )}>
+              <div className="flex items-center gap-3">
+                <Layers className="w-4 h-4" />
+                Manage Pages
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pt-1 pb-0 pl-8 pr-0 space-y-1">
+              {pageNavItems.map(item => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link 
+                    key={item.label} 
+                    href={item.href} 
+                    onClick={onLinkClick}
+                    className={cn(
+                      "w-full flex items-center gap-3 py-2 px-3 rounded-md text-sm font-medium transition-colors text-left",
+                      isActive ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-foreground hover:bg-muted hover:text-primary"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </nav>
       <div className="mt-auto pt-4 border-t border-border">
          <p className="text-xs text-muted-foreground px-3 mb-2 truncate" title={adminName}>Logged in as: {adminName}</p>
