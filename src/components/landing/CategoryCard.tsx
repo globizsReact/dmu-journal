@@ -12,7 +12,7 @@ const CategoryCard = ({ category, animationDelay = "0s" }: CategoryCardProps) =>
   const Icon = category.icon;
   return (
     <Link href={`/category/${category.slug}`} className="group block animate-slide-in-up" style={{ animationDelay }}>
-      <Card className="h-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card hover:border-primary">
+      <Card className="h-full overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 bg-card">
         <CardHeader className="p-0">
           <div className="relative w-full h-48">
             <Image

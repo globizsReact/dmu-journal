@@ -1,85 +1,60 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import type { Manuscript } from '@prisma/client';
-
-interface Suggestion {
-    id: string;
-    title: string;
-    excerpt: string;
-    authors: string[];
-}
-
-// A simple utility to parse co-authors, robust against different storage formats
-function parseCoAuthors(coAuthors: any): string[] {
-    if (!coAuthors) return [];
-    try {
-        let authorsArray;
-        if (typeof coAuthors === 'string') {
-            authorsArray = JSON.parse(coAuthors);
-        } else if (Array.isArray(coAuthors)) {
-            authorsArray = coAuthors;
-        } else {
-            return [];
-        }
-
-        if (!Array.isArray(authorsArray)) return [];
-
-        return authorsArray.map(author => {
-            if (typeof author === 'object' && author !== null && author.givenName && author.lastName) {
-                return `${author.givenName} ${author.lastName}`;
-            }
-            return 'Unknown Author';
-        }).filter(name => name !== 'Unknown Author');
-
-    } catch (error) {
-        console.error("Failed to parse co-authors:", error);
-        return [];
-    }
-}
-
+import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('query');
-
-  if (!query) {
-    return NextResponse.json({ error: 'Query parameter is required' }, { status: 400 });
-  }
-
   try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('query')?.toLowerCase().trim();
+
+    if (!query || query.length < 2) {
+      return NextResponse.json({ suggestions: [] });
+    }
+
+    // We fetch all published manuscripts and filter in memory.
+    // For a larger dataset, a full-text search index (e.g., with PostgreSQL or a search service) would be better.
     const manuscripts = await prisma.manuscript.findMany({
       where: {
-        status: 'Published',
-        OR: [
-          { articleTitle: { contains: query } },
-          { abstract: { contains: query } },
-          { keywords: { contains: query } },
-        ],
+        status: 'Published', // Only search published manuscripts
       },
-      select: {
-        id: true,
-        articleTitle: true,
-        abstract: true,
-        coAuthors: true,
+      include: {
+        submittedBy: {
+          select: {
+            fullName: true,
+          },
+        },
       },
-      take: 10,
+      take: 100, // Limit initial fetch to avoid performance issues with very large datasets
     });
-    
-    const suggestions: Suggestion[] = manuscripts.map(ms => ({
-      id: ms.id,
-      title: ms.articleTitle,
-      excerpt: ms.abstract.substring(0, 100) + (ms.abstract.length > 100 ? '...' : ''),
-      authors: parseCoAuthors(ms.coAuthors)
-    }));
+
+    const suggestions = manuscripts
+      .map(m => {
+        const plainTextAbstract = getPlainTextFromTiptapJson(m.abstract);
+        const authorName = m.submittedBy?.fullName?.toLowerCase() || '';
+
+        // Check for matches in title, abstract, or author name
+        const isMatch =
+          m.articleTitle.toLowerCase().includes(query) ||
+          plainTextAbstract.toLowerCase().includes(query) ||
+          authorName.includes(query);
+
+        if (isMatch) {
+          return {
+            id: m.id,
+            title: m.articleTitle,
+            excerpt: plainTextAbstract.substring(0, 150) + '...', // Create excerpt from plain text
+            authors: m.submittedBy?.fullName ? [m.submittedBy.fullName] : [],
+          };
+        }
+        return null;
+      })
+      .filter((item): item is NonNullable<typeof item> => item !== null) // Filter out nulls and type guard
+      .slice(0, 10); // Limit to a reasonable number of suggestions
 
     return NextResponse.json({ suggestions });
-
   } catch (error: any) {
-    console.error("Search API error:", error);
-    return NextResponse.json(
-      { error: 'An error occurred while searching for manuscripts.', details: error.message },
-      { status: 500 }
-    );
+    console.error('Search API error:', error);
+    return NextResponse.json({ error: 'Failed to perform search.', details: error.message }, { status: 500 });
   }
 }
