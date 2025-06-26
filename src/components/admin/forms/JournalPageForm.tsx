@@ -19,28 +19,40 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const pageSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
   pageType: z.enum(['RICH_TEXT', 'TABLE']),
-  content: z.any().refine((value, ctx) => {
-    const pageType = ctx.parent.pageType;
-    if (pageType === 'RICH_TEXT') {
-        const text = getPlainTextFromTiptapJson(value);
-        return text.length >= 10;
-    }
-    if (pageType === 'TABLE') {
-        return (
-            Array.isArray(value) &&
-            value.length > 0 &&
-            value.every(
-                (item: any) =>
-                    typeof item.heading === 'string' &&
-                    item.heading.length > 0 &&
-                    item.content &&
-                    typeof item.content === 'object'
-            )
-        );
-    }
-    return false;
-  }, { message: "Content is not valid for the selected page type. Please add content to all headings." }),
+  content: z.any(),
   parentId: z.string().optional(),
+}).superRefine((data, ctx) => {
+    if (data.pageType === 'RICH_TEXT') {
+        const text = getPlainTextFromTiptapJson(data.content);
+        if (text.length < 10) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['content'],
+                message: "Content must contain at least 10 characters of text.",
+            });
+        }
+    }
+    if (data.pageType === 'TABLE') {
+        if (
+            !Array.isArray(data.content) ||
+            data.content.length === 0 ||
+            !data.content.every(
+                (item: any) =>
+                    item.heading &&
+                    typeof item.heading === 'string' &&
+                    item.heading.trim().length > 0 &&
+                    item.content &&
+                    typeof item.content === 'object' &&
+                    getPlainTextFromTiptapJson(item.content).trim().length > 0
+            )
+        ) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['content'],
+                message: "Content is not valid. Please ensure all table headings and content areas are filled out.",
+            });
+        }
+    }
 });
 type PageFormValues = z.infer<typeof pageSchema>;
 
