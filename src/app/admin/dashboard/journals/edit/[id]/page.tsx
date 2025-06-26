@@ -128,7 +128,7 @@ export default function EditJournalCategoryPage() {
         </div>
         
         <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList>
                 <TabsTrigger value="details">Journal Details</TabsTrigger>
                 <TabsTrigger value="pages">Manage Pages</TabsTrigger>
             </TabsList>
