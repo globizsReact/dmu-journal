@@ -10,46 +10,45 @@ export default function TopProgressBar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
-  const primaryTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const secondaryTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Clear any ongoing timers and intervals from previous navigations
-    if (primaryTimerRef.current) clearTimeout(primaryTimerRef.current);
-    if (secondaryTimerRef.current) clearTimeout(secondaryTimerRef.current);
-    if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-
+    // This effect runs when the new page component has started to render.
+    // We make the progress bar animation fast to reflect this.
+    
+    // Clear any existing timers to prevent race conditions from rapid navigation
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+    
+    // Reset and show the progress bar
     setProgress(0);
     setIsVisible(true);
 
-    let currentProg = 0;
-    progressIntervalRef.current = setInterval(() => {
-      currentProg += Math.random() * 20 + 10; // Increment progress a bit more aggressively
-      if (currentProg >= 90) {
-        currentProg = 90;
-        setProgress(currentProg);
-        if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
+    // Animate the loading process quickly
+    timerRef.current = setTimeout(() => {
+      setProgress(90); // Jump quickly to 90%
+    }, 50); // A small delay to allow the initial 0% state to render
+
+    // After a short delay, complete the loading and hide the bar
+    timerRef.current = setTimeout(() => {
+      setProgress(100);
+      
+      // After the '100%' animation completes, start the fade-out
+      timerRef.current = setTimeout(() => {
+        setIsVisible(false);
         
-        // Now that we're at 90%, this useEffect is running because the page has "loaded".
-        // So, complete to 100% and then fade out.
-        setProgress(100);
-        primaryTimerRef.current = setTimeout(() => {
-          setIsVisible(false);
-          // After fade out, reset progress
-          secondaryTimerRef.current = setTimeout(() => {
-            setProgress(0);
-          }, 300); // Corresponds to opacity transition duration
-        }, 250); // Reduced time for 100% to be visible before fading (was 500ms)
-      } else {
-        setProgress(currentProg);
-      }
-    }, 50); // Reduced interval for progress simulation (was 80ms)
+        // After it's hidden, reset the progress for the next navigation
+        timerRef.current = setTimeout(() => {
+          setProgress(0);
+        }, 300); // Match the opacity transition duration in the style
+      }, 200); // Let the 100% bar be visible for a moment
+    }, 300);
 
     return () => {
-      if (progressIntervalRef.current) clearInterval(progressIntervalRef.current);
-      if (primaryTimerRef.current) clearTimeout(primaryTimerRef.current);
-      if (secondaryTimerRef.current) clearTimeout(secondaryTimerRef.current);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
     };
   }, [pathname, searchParams]);
 
@@ -64,7 +63,7 @@ export default function TopProgressBar() {
         zIndex: 9999,
         opacity: isVisible ? 1 : 0,
         transition: 'opacity 0.3s ease-out',
-        pointerEvents: 'none', // Ensure it doesn't block interactions
+        pointerEvents: 'none',
       }}
     >
       <div
@@ -72,8 +71,8 @@ export default function TopProgressBar() {
           width: `${progress}%`,
           height: '100%',
           backgroundColor: 'hsl(var(--accent))',
-          transition: progress === 100 && isVisible ? 'width 0.15s linear' : 'width 0.05s linear' , // Faster transitions
-          boxShadow: '0 0 10px hsl(var(--accent)), 0 0 5px hsl(var(--accent))' // Optional: add a glow effect
+          transition: 'width 0.2s ease-out',
+          boxShadow: '0 0 10px hsl(var(--accent)), 0 0 5px hsl(var(--accent))',
         }}
       />
     </div>
