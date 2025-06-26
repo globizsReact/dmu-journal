@@ -14,8 +14,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
-import { Loader2 } from 'lucide-react';
-import LoadingFAQPage from './loading'; // Import the skeleton loader
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface FaqItem {
   id: string;
@@ -74,7 +73,31 @@ export default function FAQPage() {
 
   const renderContent = () => {
     if (isLoading) {
-      return <LoadingFAQPage />;
+      return (
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+          <aside className="w-full md:w-1/4 lg:w-1/5">
+            <Skeleton className="h-7 w-2/3 mb-4 px-3" />
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </aside>
+          <section className="w-full md:w-3/4 lg:w-4/5">
+            {[...Array(2)].map((_, sectionIndex) => (
+              <div key={sectionIndex} className="mb-10">
+                <Skeleton className="h-8 md:h-9 w-1/3 mb-6" />
+                <div className="space-y-3">
+                  {[...Array(3)].map((_, itemIndex) => (
+                    <Skeleton key={itemIndex} className="h-14 w-full rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </section>
+        </div>
+      );
     }
     if (error) {
       return <div className="text-center py-10 text-destructive">{error}</div>;
