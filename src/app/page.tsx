@@ -70,11 +70,12 @@ export default async function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 lg:max-w-5xl lg:mx-auto">
-              {journalCategories.map((category) => (
+              {journalCategories.map((category, index) => (
                 <JournalPublicationCard
                   key={category.id}
                   category={category}
                   universityName={universityName}
+                  priority={index < 2}
                 />
               ))}
             </div>

@@ -72,6 +72,7 @@ const Header = ({ className }: HeaderProps) => {
               height={40}
               data-ai-hint="university logo"
               className="rounded-full"
+              style={{ height: 'auto' }}
             />
             <div className="hidden lg:block">
               <h1 className="text-xl md:text-2xl font-headline">Dhanamanjuri University</h1>
@@ -139,6 +140,7 @@ const Header = ({ className }: HeaderProps) => {
                 height={32}
                 data-ai-hint="university logo"
                 className="rounded-full"
+                style={{ height: 'auto' }}
               />
               <div>
                 <h1 className="text-base font-headline text-primary-foreground">DM University</h1>

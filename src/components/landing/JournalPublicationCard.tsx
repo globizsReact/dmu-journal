@@ -8,9 +8,10 @@ import { toPublicUrl } from '@/lib/urlUtils';
 interface JournalPublicationCardProps {
   category: JournalCategory;
   universityName: string;
+  priority?: boolean;
 }
 
-const JournalPublicationCard = ({ category, universityName }: JournalPublicationCardProps) => {
+const JournalPublicationCard = ({ category, universityName, priority = false }: JournalPublicationCardProps) => {
   return (
     <Link href={`/category/${category.slug}`} className="group block h-full">
       <Card className="h-full flex flex-col overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-card rounded-none">
@@ -22,6 +23,7 @@ const JournalPublicationCard = ({ category, universityName }: JournalPublication
             sizes="(max-width: 640px) 100vw, 50vw"
             className="object-cover transition-transform duration-1600 ease-in-out group-hover:scale-125"
             data-ai-hint={category.imageHint}
+            priority={priority}
           />
           {/* Gradient overlay for text visibility */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent pointer-events-none"></div>
