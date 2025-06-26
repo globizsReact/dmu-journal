@@ -1,4 +1,3 @@
-
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -12,101 +11,107 @@ datasource db {
 }
 
 model User {
-  id            Int      @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   fullName      String?
-  username      String   @unique
-  email         String   @unique
+  username      String       @unique
+  email         String       @unique
   password_hash String
-  role          String?  @default("author") // e.g., 'admin', 'author', 'reviewer', 'reviewer_inactive'
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  role          String?      @default("author")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
   manuscripts   Manuscript[]
 }
 
 model Manuscript {
-  id                      String    @id @default(cuid())
-  articleTitle            String    @db.Text
-  abstract                Json
-  keywords                String?
-  status                  String    @default("Submitted") // e.g., 'Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'
-  isSpecialReview         Boolean   @default(false)
-  
-  // File Names
-  coverLetterFileName     String?
-  manuscriptFileName      String
-  supplementaryFilesName  String?
-  thumbnailImagePath      String?
-  thumbnailImageHint      String?
-  
-  // Author & Co-Authors
-  authorAgreement         Boolean   @default(false)
-  coAuthors               Json?     // Storing as JSON array of objects
-  
-  // Relationships
-  submittedById           Int
-  submittedBy             User      @relation(fields: [submittedById], references: [id])
-  journalCategoryId       String
-  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
-  
-  // Timestamps
-  submittedAt             DateTime  @default(now())
-  updatedAt               DateTime  @updatedAt
-
-  // Metrics
-  views                   Int?      @default(0)
-  downloads               Int?      @default(0)
-  citations               Int?      @default(0)
+  id                     String          @id @default(cuid())
+  articleTitle           String
+  abstract               Json
+  keywords               String?
+  journalCategory        JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  journalCategoryId      String
+  isSpecialReview        Boolean?        @default(false)
+  authorAgreement        Boolean         @default(false)
+  coAuthors              Json?
+  status                 String          @default("Submitted")
+  submittedById          Int
+  submittedBy            User            @relation(fields: [submittedById], references: [id])
+  submittedAt            DateTime        @default(now())
+  publishedAt            DateTime?
+  coverLetterFileName    String?
+  manuscriptFileName     String
+  supplementaryFilesName String?
+  thumbnailImagePath     String?
+  thumbnailImageHint     String?
+  views                  Int?            @default(0)
+  downloads              Int?            @default(0)
+  citations              Int?            @default(0)
+  articleType            String?
 }
 
 model JournalCategory {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  slug        String   @unique
-  description Json
-  iconName    String
-  imagePath   String
-  imageHint   String
-  order       Int      @default(0)
-  
-  // Optional metadata fields
-  abbreviation    String?
-  language        String?
-  issn            String?
-  doiBase         String?
-  startYear       Int?
-  displayIssn     String?
-  copyrightYear   Int?
-  
-  // Relationship
-  manuscripts Manuscript[]
+  id                   String        @id @default(cuid())
+  name                 String        @unique
+  slug                 String        @unique
+  description          Json
+  iconName             String
+  imagePath            String
+  imageHint            String
+  abbreviation         String?
+  language             String?
+  issn                 String?
+  doiBase              String?
+  startYear            Int?
+  publishedArticles    Manuscript[]
+  order                Int           @default(0)
+  displayIssn          String?
+  copyrightYear        Int?
+  scope                Json?
+  pages                JournalPage[]
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
 }
 
-// Model for static site pages like 'About Us', 'Landing Page', etc.
+model JournalPage {
+  id                String          @id @default(cuid())
+  title             String
+  content           Json?
+  order             Int
+  journalCategory   JournalCategory @relation(fields: [journalCategoryId], references: [id], onDelete: Cascade)
+  journalCategoryId String
+  parentId          String?
+  parent            JournalPage?    @relation("SubPages", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subPages          JournalPage[]   @relation("SubPages")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
 model SitePage {
   id             String    @id @default(cuid())
   slug           String    @unique
   title          String
   content        Json
-  coverImagePath String?
-  coverImageHint String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+  coverImagePath String?
+  coverImageHint String?
 }
 
-// Model for FAQ Categories
 model FaqCategory {
-  id      String    @id @default(cuid())
-  title   String
-  order   Int       @default(0)
-  items   FaqItem[]
+  id        String    @id @default(cuid())
+  title     String
+  order     Int
+  items     FaqItem[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
-// Model for individual FAQ Items
 model FaqItem {
-  id          String      @id @default(cuid())
-  question    String
-  answer      Json
-  order       Int         @default(0)
-  categoryId  String
-  category    FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id         String      @id @default(cuid())
+  question   String
+  answer     Json
+  order      Int
+  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
