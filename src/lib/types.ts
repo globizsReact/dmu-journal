@@ -12,6 +12,10 @@ export interface JournalPage extends PrismaJournalPage {
   children?: JournalPage[];
 }
 
+export interface PageWithChildren extends PrismaJournalPage {
+  children: PageWithChildren[];
+}
+
 export interface JournalEntry {
   id: string; 
   title: string;

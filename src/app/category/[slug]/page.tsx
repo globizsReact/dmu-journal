@@ -8,7 +8,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
-import type { JournalCategory, JournalEntry } from '@/lib/types';
+import type { JournalCategory, JournalEntry, PageWithChildren } from '@/lib/types';
 import { ArrowLeft, BookOpen, ChevronDown, FileText, Info, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -21,16 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface PageWithChildren {
-  id: string;
-  title: string;
-  slug: string;
-  content: any;
-  order: number;
-  parentId: string | null;
-  children: PageWithChildren[];
-}
 
 export default function CategoryPage() {
   const params = useParams();

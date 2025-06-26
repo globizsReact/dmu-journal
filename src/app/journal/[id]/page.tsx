@@ -6,14 +6,21 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import JournalView from '@/components/journal/JournalView';
-import type { JournalEntry, JournalCategory } from '@/lib/types';
+import type { JournalEntry, JournalCategory, PageWithChildren } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen } from 'lucide-react';
+import { ArrowLeft, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import LoadingJournalPage from './loading'; // Import the skeleton component
+import LoadingJournalPage from './loading';
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from '@/lib/utils';
 
 export default function JournalPage() {
   const params = useParams();
@@ -22,6 +29,7 @@ export default function JournalPage() {
 
   const [entry, setEntry] = useState<JournalEntry | null>(null);
   const [category, setCategory] = useState<JournalCategory | null>(null);
+  const [pages, setPages] = useState<PageWithChildren[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,6 +45,7 @@ export default function JournalPage() {
       const data = await response.json();
       setEntry(data.manuscript);
       setCategory(data.category);
+      setPages(data.pages);
     } catch (err: any) {
       console.error(`Error fetching journal entry with ID ${id}:`, err);
       setError(err.message || 'An unexpected error occurred.');
@@ -48,10 +57,8 @@ export default function JournalPage() {
   const handleIncrement = useCallback(async (type: 'views' | 'downloads' | 'citations') => {
     if (!id) return;
 
-    // Optimistic UI update
     setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) + 1 } : null);
     
-    // Give user feedback for interactive clicks
     if (type === 'downloads') {
       toast({ title: "Downloading...", description: "Your PDF download will begin shortly (mock)." });
     }
@@ -66,12 +73,10 @@ export default function JournalPage() {
         body: JSON.stringify({ type })
       });
       if (!response.ok) {
-        // Revert on API error
         setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) - 1 } : null);
       }
     } catch (error) {
       console.error(`Failed to increment ${type} count`, error);
-      // Revert on network error
       setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) - 1 } : null);
     }
   }, [id, toast]);
@@ -85,17 +90,15 @@ export default function JournalPage() {
     }
   }, [id, fetchJournalData]);
   
-  // Effect for incrementing view count
   useEffect(() => {
-    if (id && !isLoading && entry) { // Ensure entry is loaded before trying to increment
+    if (id && !isLoading && entry) {
         const viewCounted = sessionStorage.getItem(`viewed_${id}`);
         if (!viewCounted) {
             handleIncrement('views');
             sessionStorage.setItem(`viewed_${id}`, 'true');
         }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isLoading, entry]); // handleIncrement is memoized and safe
+  }, [id, isLoading, entry, handleIncrement]);
 
 
   if (isLoading) {
@@ -123,15 +126,6 @@ export default function JournalPage() {
       </div>
     );
   }
-  
-  const subNavItems = [
-    { label: "Home", href: "/", icon: Home },
-    { label: "About DMUJ", href: "/about-dmuj", icon: Info },
-    { label: "Publication Policy", href: "/publication-policy", icon: FileText },
-    { label: "Ethics Policy", href: "/ethics-policy", icon: Shield },
-    { label: "Authors Section", href: "/authors-section", icon: Users },
-    { label: "Journal Issues", href: `/category/${category.slug}/issues`, icon: BookOpen },
-  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/40">
@@ -167,21 +161,38 @@ export default function JournalPage() {
       </section>
 
       <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-30">
-        <div className="container mx-auto px-4 h-14">
-          <div className="flex items-center justify-center h-full overflow-x-auto whitespace-nowrap">
-            {subNavItems.map((item, index) => (
-              <React.Fragment key={item.label}>
-                <Link
-                  href={item.href}
-                  className="px-3 py-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
-                >
-                  {item.label}
-                </Link>
-                {index < subNavItems.length - 1 && (
-                  <Separator orientation="vertical" className="h-4 bg-border/70" />
-                )}
-              </React.Fragment>
-            ))}
+        <div className="container mx-auto px-4">
+          <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
+            <Link href={`/category/${category.slug}`} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-foreground hover:text-primary">
+              Home
+            </Link>
+            {pages.map(page => {
+                const hasChildren = page.children && page.children.length > 0;
+                if (hasChildren) {
+                    return (
+                        <DropdownMenu key={page.id}>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-foreground">
+                                    {page.title}
+                                    <ChevronDown className="w-4 h-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {page.children.map(child => (
+                                    <DropdownMenuItem key={child.id} asChild>
+                                        <Link href={`/category/${category.slug}?page=${child.slug}`}>{child.title}</Link>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    );
+                }
+                return (
+                    <Link key={page.id} href={`/category/${category.slug}?page=${page.slug}`} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-foreground hover:text-primary">
+                        {page.title}
+                    </Link>
+                );
+            })}
           </div>
         </div>
       </nav>
