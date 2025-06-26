@@ -151,7 +151,7 @@ export default function JournalPage() {
         )}
         <div className="absolute inset-0 bg-primary/70 z-0"></div>
         <div className="relative z-10 container mx-auto px-4 text-center">
-          <p className="text-lg md:text-xl font-medium opacity-90">Journal Of {category.name}</p>
+          <p className="text-lg md:text-xl font-medium opacity-90">{category.name}</p>
           <h1 className="text-3xl md:text-5xl font-headline font-bold mt-2 mb-3 text-white">
             {entry.title}
           </h1>
