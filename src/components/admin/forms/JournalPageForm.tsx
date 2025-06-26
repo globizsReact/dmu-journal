@@ -26,10 +26,20 @@ const pageSchema = z.object({
         return text.length >= 10;
     }
     if (pageType === 'TABLE') {
-        return value && Array.isArray(value.headers) && Array.isArray(value.rows);
+        return (
+            Array.isArray(value) &&
+            value.length > 0 &&
+            value.every(
+                (item: any) =>
+                    typeof item.heading === 'string' &&
+                    item.heading.length > 0 &&
+                    item.content &&
+                    typeof item.content === 'object'
+            )
+        );
     }
     return false;
-  }, { message: "Content is not valid for the selected page type." }),
+  }, { message: "Content is not valid for the selected page type. Please add content to all headings." }),
   parentId: z.string().optional(),
 });
 type PageFormValues = z.infer<typeof pageSchema>;
@@ -42,6 +52,10 @@ interface JournalPageFormProps {
   parentPages: { id: string, title: string }[];
 }
 
+const defaultRichText = { type: 'doc', content: [{ type: 'paragraph' }] };
+const defaultTableContent = [{ heading: 'First Requirement', content: defaultRichText }];
+
+
 export default function JournalPageForm({ initialData, onSubmit, isSubmitting, journalId, parentPages }: JournalPageFormProps) {
   const router = useRouter();
   const form = useForm<PageFormValues>({
@@ -49,7 +63,7 @@ export default function JournalPageForm({ initialData, onSubmit, isSubmitting, j
     defaultValues: {
       title: initialData?.title || '',
       pageType: initialData?.pageType || 'RICH_TEXT',
-      content: initialData?.content || { type: 'doc', content: [{ type: 'paragraph' }] },
+      content: initialData?.content || defaultRichText,
       parentId: initialData?.parentId || undefined,
     },
   });
@@ -95,15 +109,15 @@ export default function JournalPageForm({ initialData, onSubmit, isSubmitting, j
                  <Select onValueChange={(value) => {
                     field.onChange(value);
                     if (value === 'RICH_TEXT') {
-                        form.setValue('content', { type: 'doc', content: [{ type: 'paragraph' }] });
+                        form.setValue('content', defaultRichText, { shouldValidate: true });
                     } else if (value === 'TABLE') {
-                        form.setValue('content', { headers: ['Header 1'], rows: [['Cell 1']] });
+                        form.setValue('content', defaultTableContent, { shouldValidate: true });
                     }
                  }} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Select a content type" /></SelectTrigger></FormControl>
                   <SelectContent>
-                    <SelectItem value="RICH_TEXT">Rich Text</SelectItem>
-                    <SelectItem value="TABLE">Table</SelectItem>
+                    <SelectItem value="RICH_TEXT">Rich Text (paragraphs, lists, etc.)</SelectItem>
+                    <SelectItem value="TABLE">Requirements Table (Heading + Content)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

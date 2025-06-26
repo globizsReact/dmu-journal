@@ -4,144 +4,104 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Trash2, Plus } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Trash2, PlusCircle } from 'lucide-react';
+import TiptapEditor from './TiptapEditor';
+import type { JSONContent } from '@tiptap/core';
 
-interface TableData {
-  headers: string[];
-  rows: string[][];
+interface RequirementRow {
+  heading: string;
+  content: JSONContent;
 }
 
 interface TableEditorProps {
   value: any;
-  onChange: (value: TableData) => void;
+  onChange: (value: RequirementRow[]) => void;
   disabled?: boolean;
 }
 
+const defaultContent: JSONContent = {
+  type: 'doc',
+  content: [{ type: 'paragraph' }],
+};
+
 export default function TableEditor({ value, onChange, disabled }: TableEditorProps) {
-  const [data, setData] = useState<TableData>({ headers: [''], rows: [['']] });
+  const [rows, setRows] = useState<RequirementRow[]>([]);
 
   useEffect(() => {
-    if (value && Array.isArray(value.headers) && Array.isArray(value.rows)) {
-      setData(value);
+    if (Array.isArray(value) && value.length > 0 && value.every(item => 'heading' in item && 'content' in item)) {
+      setRows(value);
     } else {
-      // Initialize with a default structure if value is invalid
-      setData({ headers: ['Header 1'], rows: [['Cell 1']] });
+      // Initialize with a default structure if value is invalid or empty
+      setRows([{ heading: '', content: defaultContent }]);
     }
   }, [value]);
 
-  const updateParent = (newData: TableData) => {
-    setData(newData);
-    onChange(newData);
+  const updateParent = (newRows: RequirementRow[]) => {
+    setRows(newRows);
+    onChange(newRows);
   };
 
-  const handleHeaderChange = (index: number, newHeader: string) => {
-    const newHeaders = [...data.headers];
-    newHeaders[index] = newHeader;
-    updateParent({ ...data, headers: newHeaders });
+  const handleHeadingChange = (index: number, newHeading: string) => {
+    const newRows = [...rows];
+    newRows[index].heading = newHeading;
+    updateParent(newRows);
   };
-
-  const addColumn = () => {
-    const newHeaders = [...data.headers, `Header ${data.headers.length + 1}`];
-    const newRows = data.rows.map(row => [...row, '']);
-    updateParent({ headers: newHeaders, rows: newRows });
-  };
-
-  const removeColumn = (index: number) => {
-    if (data.headers.length <= 1) return;
-    const newHeaders = data.headers.filter((_, i) => i !== index);
-    const newRows = data.rows.map(row => row.filter((_, i) => i !== index));
-    updateParent({ headers: newHeaders, rows: newRows });
-  };
-
-  const handleCellChange = (rowIndex: number, colIndex: number, newValue: string) => {
-    const newRows = [...data.rows];
-    newRows[rowIndex][colIndex] = newValue;
-    updateParent({ ...data, rows: newRows });
+  
+  const handleContentChange = (index: number, newContent: JSONContent) => {
+    const newRows = [...rows];
+    newRows[index].content = newContent;
+    updateParent(newRows);
   };
 
   const addRow = () => {
-    const newRow = Array(data.headers.length).fill('');
-    updateParent({ ...data, rows: [...data.rows, newRow] });
+    const newRows = [...rows, { heading: 'New Requirement', content: defaultContent }];
+    updateParent(newRows);
   };
 
   const removeRow = (index: number) => {
-    if (data.rows.length <= 1 && data.headers.length <= 1) return;
-     if (data.rows.length <= 1) {
-        const newRows = [Array(data.headers.length).fill('')];
-        updateParent({ ...data, rows: newRows });
-        return;
-    }
-    const newRows = data.rows.filter((_, i) => i !== index);
-    updateParent({ ...data, rows: newRows });
+    if (rows.length <= 1) return;
+    const newRows = rows.filter((_, i) => i !== index);
+    updateParent(newRows);
   };
 
   return (
-    <div className="p-4 border rounded-md space-y-4 bg-muted/20">
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {data.headers.map((header, colIndex) => (
-                <TableHead key={colIndex}>
-                  <div className="flex items-center gap-2 min-w-[200px]">
-                    <Input
-                      value={header}
-                      onChange={(e) => handleHeaderChange(colIndex, e.target.value)}
-                      placeholder={`Header ${colIndex + 1}`}
-                      disabled={disabled}
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive shrink-0"
-                      onClick={() => removeColumn(colIndex)}
-                      disabled={disabled || data.headers.length <= 1}
-                      title="Remove column"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableHead>
-              ))}
-              <TableHead className="text-right pr-2">
-                <Button type="button" size="sm" onClick={addColumn} disabled={disabled}><Plus className="h-4 w-4 mr-1" /> Col</Button>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.rows.map((row, rowIndex) => (
-              <TableRow key={rowIndex}>
-                {row.map((cell, colIndex) => (
-                  <TableCell key={colIndex}>
-                    <Input
-                      value={cell}
-                      onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
-                      placeholder="Enter value"
-                      disabled={disabled}
-                    />
-                  </TableCell>
-                ))}
-                <TableCell className="text-right pr-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive"
-                    onClick={() => removeRow(rowIndex)}
-                    disabled={disabled}
-                    title="Remove row"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <Button type="button" variant="outline" onClick={addRow} disabled={disabled}><Plus className="h-4 w-4 mr-1" /> Add Row</Button>
+    <div className="space-y-4 rounded-md border p-4">
+      {rows.map((row, index) => (
+        <div key={index} className="rounded-lg border bg-muted/50 p-4 space-y-4 relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={() => removeRow(index)}
+            disabled={disabled || rows.length <= 1}
+            title="Remove this requirement"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Heading</label>
+            <Input
+              value={row.heading}
+              onChange={(e) => handleHeadingChange(index, e.target.value)}
+              placeholder="e.g., Manuscript Title"
+              disabled={disabled}
+            />
+          </div>
+          <div className="space-y-2">
+             <label className="text-sm font-medium">Content</label>
+            <TiptapEditor
+                content={row.content}
+                onChange={(content) => handleContentChange(index, content)}
+                isSubmitting={!!disabled}
+            />
+          </div>
+        </div>
+      ))}
+       <Button type="button" variant="outline" onClick={addRow} disabled={disabled} className="border-dashed">
+            <PlusCircle className="h-4 w-4 mr-2" /> Add Requirement
+      </Button>
     </div>
   );
 }
