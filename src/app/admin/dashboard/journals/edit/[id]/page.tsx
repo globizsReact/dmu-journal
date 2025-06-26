@@ -11,8 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import JournalCategoryPagesManager from '@/components/admin/JournalCategoryPagesManager';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
   <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
@@ -20,7 +18,9 @@ const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
     <span>/</span>
     <Link href="/admin/dashboard/journals" className="hover:text-primary">Journals</Link>
     <span>/</span>
-    <span className="font-medium text-foreground truncate">{categoryName}</span>
+    <Link href={`/admin/dashboard/journals/view/${useParams().id}`} className="hover:text-primary">View</Link>
+    <span>/</span>
+    <span className="font-medium text-foreground truncate">Edit: {categoryName}</span>
   </div>
 );
 
@@ -88,7 +88,7 @@ export default function EditJournalCategoryPage() {
       if (!response.ok) throw new Error(data.error || 'Failed to update category.');
       
       toast({ title: 'Success', description: 'Journal category updated successfully.' });
-      router.push('/admin/dashboard/journals');
+      router.push(`/admin/dashboard/journals/view/${id}`);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
@@ -121,44 +121,19 @@ export default function EditJournalCategoryPage() {
      <div className="space-y-4">
         <div className="space-y-2">
             <Button asChild variant="outline" size="sm" className="w-fit">
-                <Link href="/admin/dashboard/journals">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to All Journals
+                <Link href={`/admin/dashboard/journals/view/${id}`}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> Back to View Page
                 </Link>
             </Button>
             <Breadcrumbs categoryName={category.name} />
         </div>
         
-        <Tabs defaultValue="details" className="w-full">
-            <TabsList className="border bg-muted/50 p-1 h-auto">
-                <TabsTrigger value="details" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-                    Journal Details
-                </TabsTrigger>
-                <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
-                    Manage Pages
-                </TabsTrigger>
-            </TabsList>
-            <TabsContent value="details" className="mt-4">
-                <JournalCategoryForm
-                    initialData={category}
-                    onSubmit={handleSubmit}
-                    isSubmitting={isSubmitting}
-                    authToken={authToken}
-                />
-            </TabsContent>
-            <TabsContent value="pages" className="mt-4">
-                 <Card>
-                     <CardHeader>
-                        <JournalCategoryPagesManager.Title />
-                     </CardHeader>
-                     <CardContent className="p-6 pt-0">
-                        <JournalCategoryPagesManager.Content 
-                            journalCategoryId={id} 
-                            authToken={authToken} 
-                        />
-                     </CardContent>
-                </Card>
-            </TabsContent>
-        </Tabs>
+        <JournalCategoryForm
+            initialData={category}
+            onSubmit={handleSubmit}
+            isSubmitting={isSubmitting}
+            authToken={authToken}
+        />
     </div>
   );
 }
