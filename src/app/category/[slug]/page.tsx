@@ -197,7 +197,7 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-             <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}><FileText className="w-4 h-4" />Articles</Link>
+             <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>Home</Link>
               {pages.map(page => {
                   const hasChildren = page.children.length > 0;
                   if (hasChildren) {
