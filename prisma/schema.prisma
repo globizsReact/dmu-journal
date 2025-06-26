@@ -11,107 +11,119 @@ datasource db {
 }
 
 model User {
-  id            Int          @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   fullName      String?
-  username      String       @unique
-  email         String       @unique
+  username      String   @unique
+  email         String   @unique
   password_hash String
-  role          String?      @default("author")
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  manuscripts   Manuscript[]
+  role          String?  @default("author") // admin, author, reviewer, reviewer_inactive
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  manuscripts Manuscript[]
+}
+
+model JournalCategory {
+  id                     String          @id @default(cuid())
+  name                   String          @unique
+  slug                   String          @unique
+  description            Json
+  order                  Int             @default(0)
+  iconName               String
+  imagePath              String
+  imageHint              String
+  publishedArticlesCount Int?
+  scope                  Json?
+  abbreviation           String?
+  language               String?
+  issn                   String?
+  displayIssn            String?
+  doiBase                String?
+  startYear              Int?
+  copyrightYear          Int?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  manuscripts            Manuscript[]
+  journalPages           JournalPage[]
 }
 
 model Manuscript {
   id                     String          @id @default(cuid())
-  articleTitle           String
+  articleTitle           String          @db.VarChar(255)
   abstract               Json
-  keywords               String?
-  journalCategory        JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  keywords               String?         @db.VarChar(255)
   journalCategoryId      String
-  isSpecialReview        Boolean?        @default(false)
-  authorAgreement        Boolean         @default(false)
+  isSpecialReview        Boolean         @default(false)
+  coverLetterFileName    String?         @db.VarChar(255)
+  manuscriptFileName     String          @db.VarChar(255)
+  supplementaryFilesName String?         @db.VarChar(255)
+  thumbnailImagePath     String?         @db.VarChar(255)
+  thumbnailImageHint     String?         @db.VarChar(255)
+  authorAgreement        Boolean
   coAuthors              Json?
   status                 String          @default("Submitted")
-  submittedById          Int
-  submittedBy            User            @relation(fields: [submittedById], references: [id])
   submittedAt            DateTime        @default(now())
-  publishedAt            DateTime?
-  coverLetterFileName    String?
-  manuscriptFileName     String
-  supplementaryFilesName String?
-  thumbnailImagePath     String?
-  thumbnailImageHint     String?
+  submittedById          Int
   views                  Int?            @default(0)
   downloads              Int?            @default(0)
   citations              Int?            @default(0)
   articleType            String?
-}
+  journalCategory        JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  submittedBy            User            @relation(fields: [submittedById], references: [id])
 
-model JournalCategory {
-  id                   String        @id @default(cuid())
-  name                 String        @unique
-  slug                 String        @unique
-  description          Json
-  iconName             String
-  imagePath            String
-  imageHint            String
-  abbreviation         String?
-  language             String?
-  issn                 String?
-  doiBase              String?
-  startYear            Int?
-  publishedArticles    Manuscript[]
-  order                Int           @default(0)
-  displayIssn          String?
-  copyrightYear        Int?
-  scope                Json?
-  pages                JournalPage[]
-  createdAt            DateTime      @default(now())
-  updatedAt            DateTime      @updatedAt
-}
-
-model JournalPage {
-  id                String          @id @default(cuid())
-  title             String
-  content           Json?
-  order             Int
-  journalCategory   JournalCategory @relation(fields: [journalCategoryId], references: [id], onDelete: Cascade)
-  journalCategoryId String
-  parentId          String?
-  parent            JournalPage?    @relation("SubPages", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subPages          JournalPage[]   @relation("SubPages")
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  @@index([journalCategoryId])
+  @@index([submittedById])
 }
 
 model SitePage {
-  id             String    @id @default(cuid())
-  slug           String    @unique
+  id             String   @id @default(cuid())
+  slug           String   @unique
   title          String
   content        Json
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  coverImagePath String?
-  coverImageHint String?
+  coverImagePath String?  @db.VarChar(255)
+  coverImageHint String?  @db.VarChar(255)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model FaqCategory {
   id        String    @id @default(cuid())
   title     String
-  order     Int
-  items     FaqItem[]
+  order     Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  items     FaqItem[]
 }
 
 model FaqItem {
   id         String      @id @default(cuid())
   question   String
   answer     Json
-  order      Int
-  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  order      Int         @default(0)
   categoryId String
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@index([categoryId])
+}
+
+model JournalPage {
+  id                String          @id @default(cuid())
+  title             String
+  slug              String
+  content           Json?
+  order             Int
+  journalCategoryId String
+  parentId          String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  journalCategory   JournalCategory @relation(fields: [journalCategoryId], references: [id], onDelete: Cascade)
+  parent            JournalPage?    @relation("JournalSubPages", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children          JournalPage[]   @relation("JournalSubPages")
+
+  @@unique([journalCategoryId, slug])
+  @@index([journalCategoryId])
+  @@index([parentId])
 }

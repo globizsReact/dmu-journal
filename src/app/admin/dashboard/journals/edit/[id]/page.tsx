@@ -6,11 +6,12 @@ import { useParams, useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import JournalCategoryForm from '@/components/admin/forms/JournalCategoryForm';
 import type { JournalCategory } from '@prisma/client';
-import LoadingEditJournalCategoryPage from './loading'; // Import the skeleton loader
+import LoadingEditJournalCategoryPage from './loading';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import JournalCategoryPagesManager from '@/components/admin/JournalCategoryPagesManager';
 
 const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
   <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
@@ -116,7 +117,7 @@ export default function EditJournalCategoryPage() {
   }
 
   return (
-     <div className="space-y-4">
+     <div className="space-y-6">
         <div className="space-y-2">
             <Button asChild variant="outline" size="sm" className="w-fit">
                 <Link href="/admin/dashboard/journals">
@@ -131,6 +132,7 @@ export default function EditJournalCategoryPage() {
             isSubmitting={isSubmitting}
             authToken={authToken}
         />
+        <JournalCategoryPagesManager journalCategoryId={id} authToken={authToken} />
     </div>
   );
 }

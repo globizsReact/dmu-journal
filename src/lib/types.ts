@@ -1,21 +1,25 @@
 
 import type { LucideIcon } from 'lucide-react';
-import type { JournalCategory as PrismaJournalCategory } from '@prisma/client';
+import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJournalPage } from '@prisma/client';
 
 export interface JournalCategory extends PrismaJournalCategory {
-  publishedArticlesCount?: number; // This can be added dynamically
-  icon?: LucideIcon; // This can be added dynamically
+  publishedArticlesCount?: number;
+  icon?: LucideIcon;
+}
+
+export interface JournalPage extends PrismaJournalPage {
+  children?: JournalPage[];
 }
 
 export interface JournalEntry {
   id: string; 
   title: string;
-  abstract: any; // Changed from content: string to abstract: any
+  abstract: any; 
   date: string; 
   categoryId: string;
   excerpt: string; 
   authors?: string[] | { name: string }[];
-  coAuthors?: { name: string }[]; // Keep this for prisma relation if needed
+  coAuthors?: { name: string }[]; 
   doiSuffix?: string; 
   imagePath?: string; 
   imageHint?: string; 
@@ -23,7 +27,7 @@ export interface JournalEntry {
   downloads?: number;
   citations?: number;
   keywords?: string[] | string;
-  articleType?: string; // e.g., "Full Length Research Paper"
+  articleType?: string;
   thumbnailImagePath?: string;
   thumbnailImageHint?: string;
 }

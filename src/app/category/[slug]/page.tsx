@@ -2,264 +2,42 @@
 "use client"; 
 
 import * as React from 'react';
-import type { ReactNode } from 'react';
-import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
 import type { JournalCategory, JournalEntry } from '@/lib/types';
-import { ArrowLeft, Home, Info, FileText, Shield, Users, BookOpen, LayoutList, Loader2 } from 'lucide-react';
+import { ArrowLeft, BookOpen, ChevronDown, FileText, Info, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-type TabKey = 'OVERVIEW' | 'ABOUT_DMUJ' | 'PUBLICATION_POLICY' | 'ETHICS_POLICY' | 'AUTHORS_SECTION' | 'JOURNAL_ISSUES';
-
-// Moved TABS_CONFIG outside the component
-const TABS_CONFIG: { key: TabKey; label: string; icon: React.ElementType }[] = [
-  { key: 'OVERVIEW', label: 'Articles', icon: FileText },
-  { key: 'ABOUT_DMUJ', label: 'About DMUJ', icon: Info },
-  { key: 'PUBLICATION_POLICY', label: 'Publication Policy', icon: FileText },
-  { key: 'ETHICS_POLICY', label: 'Ethics Policy', icon: Shield },
-  { key: 'AUTHORS_SECTION', label: 'Authors Section', icon: Users },
-  { key: 'JOURNAL_ISSUES', label: 'Journal Issues', icon: BookOpen },
-];
-
-// ForwardRef for TabButton to get its DOM element for measurements
-const TabButton = React.forwardRef<
-  HTMLButtonElement,
-  {
-    onClick: () => void;
-    isActive: boolean;
-    label: string;
-    icon: React.ElementType;
-  }
->(({ onClick, isActive, label, icon: Icon }, ref) => {
-  return (
-    <button
-      ref={ref}
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md",
-        "transition-colors hover:text-primary",
-        isActive ? "font-semibold text-primary" : "text-foreground"
-      )}
-      role="tab"
-      aria-selected={isActive}
-    >
-      <Icon className="w-4 h-4" />
-      {label}
-    </button>
-  );
-});
-TabButton.displayName = 'TabButton';
-
-
-// Content Components for Tabs (remain unchanged, but ensure they are correctly defined as before)
-const AboutDMUJContent = () => (
-  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4 py-8">
-    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-      About DMUJ
-    </h2>
-    <p>
-      Welcome to the Dhanamanjuri University Journals (DMUJ) portal. This section provides comprehensive
-      information about DMUJ, our mission, vision, and the overarching objectives that guide our commitment
-      to fostering scholarly research and academic publishing excellence.
-    </p>
-    <p>
-      DMUJ is dedicated to the dissemination of high-quality, peer-reviewed research across a diverse
-      range of academic disciplines. We strive to support the academic community by providing a platform
-      for researchers to share their findings, innovations, and insights with a global audience.
-    </p>
-    <p>
-      Our core values include academic integrity, rigorous peer review, open access principles (where applicable),
-      and the promotion of interdisciplinary collaboration. We aim to contribute significantly to the body of
-      knowledge and support the intellectual development of scholars at all stages of their careers.
-    </p>
-    <p>
-      Explore further to learn about our specific journals, editorial policies, and submission guidelines.
-    </p>
-  </div>
-);
-
-const PublicationPolicyContent = () => (
-  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
-    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-      Publication Policy
-    </h2>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Peer Review Process</h3>
-      <p>
-        All manuscripts submitted to Dhanamanjuri University Journals undergo a rigorous double-blind peer review
-        process. Submissions are first assessed by the editorial team for suitability and adherence to journal
-        guidelines. Manuscripts that pass this initial screening are then sent to at least two independent
-        reviewers who are experts in the field. Reviewers provide detailed feedback and recommendations,
-        which form the basis for the editorial decision (accept, minor revisions, major revisions, or reject).
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Open Access</h3>
-      <p>
-        Dhanamanjuri University Journals are committed to promoting the widest possible dissemination of research.
-        Many of our journals operate on an open access model, ensuring that published articles are freely available
-        to the global academic community and the public. Specific open access policies, including any applicable
-        Article Processing Charges (APCs), are detailed on individual journal pages.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Copyright and Licensing</h3>
-      <p>
-        Authors retain copyright of their work published in DMUJ. Articles are typically published under a
-        Creative Commons license (e.g., CC BY), which allows for broad reuse with proper attribution.
-        Specific licensing terms are outlined during the submission process and on the article's publication page.
-      </p>
-    </section>
-     <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Archiving</h3>
-      <p>
-        To ensure long-term access and preservation of scholarly content, DMUJ utilizes digital archiving solutions.
-        Published articles are deposited in recognized academic repositories and digital archives.
-      </p>
-    </section>
-  </div>
-);
-
-const EthicsPolicyContent = () => (
-  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
-    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-      Ethics Policy
-    </h2>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Commitment to Integrity</h3>
-      <p>
-        Dhanamanjuri University Journals (DMUJ) are committed to upholding the highest standards of publication ethics.
-        We adhere to the principles outlined by organizations such as the Committee on Publication Ethics (COPE).
-        Integrity, honesty, and transparency are paramount in all aspects of our publishing process.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Authorship and Contributions</h3>
-      <p>
-        All listed authors must have made a significant intellectual contribution to the research and manuscript preparation.
-        The corresponding author is responsible for ensuring all co-authors have approved the final manuscript and agree
-        to its submission. Any changes to authorship post-submission must be approved by all authors.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Plagiarism and Originality</h3>
-      <p>
-        Submissions must be original work and not previously published elsewhere, nor under consideration by another
-        journal. DMUJ employs plagiarism detection software to screen all submissions. Manuscripts found to contain
-        plagiarized content will be rejected. Proper citation and attribution of sources are mandatory.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Data Sharing and Reproducibility</h3>
-      <p>
-        Authors are encouraged to share their data and make their research methods transparent to facilitate reproducibility.
-        Specific data sharing policies may vary by journal and discipline.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Conflicts of Interest</h3>
-      <p>
-        Authors, reviewers, and editors must disclose any potential conflicts of interest that could influence their
-        judgment or the integrity of the publication process. This includes financial, personal, or professional relationships.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Corrections and Retractions</h3>
-      <p>
-        DMUJ will issue corrections or retractions if significant errors or misconduct are identified post-publication,
-        following COPE guidelines.
-      </p>
-    </section>
-  </div>
-);
-
-const AuthorsSectionContent = () => (
-  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6 py-8">
-    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-      Authors Section
-    </h2>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Submission Guidelines</h3>
-      <p>
-        Authors wishing to submit their manuscripts to Dhanamanjuri University Journals (DMUJ) should carefully
-        review the specific guidelines for the target journal. General guidelines include manuscript formatting,
-        word limits, citation styles (e.g., APA, MLA, Chicago), and requirements for figures and tables.
-        Submissions are typically made through our online submission portal.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Manuscript Preparation</h3>
-      <p>
-        Manuscripts should be well-structured, clearly written in English, and free of grammatical errors.
-        Ensure that the research methodology is sound and the findings are presented logically.
-        Include an abstract, keywords, introduction, methods, results, discussion, and conclusion, as appropriate
-        for the article type. Anonymize the manuscript for double-blind peer review by removing author-identifying
-        information from the main text and properties.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Copyright and Permissions</h3>
-      <p>
-        Authors are responsible for obtaining necessary permissions for any copyrighted material (e.g., figures, tables)
-        reproduced from other sources. Upon acceptance, authors will typically be asked to sign a copyright agreement
-        or a license-to-publish form.
-      </p>
-    </section>
-    <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Review Process</h3>
-      <p>
-        Familiarize yourself with our peer review process. Authors will receive feedback from reviewers and the
-        editorial team. Prompt and thorough responses to reviewer comments are crucial for timely publication.
-      </p>
-    </section>
-     <section>
-      <h3 className="text-2xl font-headline font-semibold text-primary/90 !mb-2">Contact Information</h3>
-      <p>
-        For any queries regarding submissions or the publication process, please contact the editorial office
-        of the respective journal. Contact details can be found on each journal's dedicated page.
-      </p>
-    </section>
-  </div>
-);
-
-const CategoryIssuesContent = ({ category }: { category: JournalCategory | null }) => (
-  <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4 py-8">
-    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-      Journal Issues for {category?.name || 'this category'}
-    </h2>
-    <p>
-      This page will list all the past and current journal issues for <strong>{category?.name || 'this category'}</strong>.
-      Each issue could be presented with its volume number, issue number, publication date, and a link to view
-      the articles contained within that specific issue.
-    </p>
-    <p>
-      Currently, detailed issue listings are under development. Please check back later for updates.
-    </p>
-    <p>
-      Future enhancements could include:
-    </p>
-    <ul className="list-disc pl-5 space-y-1">
-      <li>A searchable and filterable list of issues.</li>
-      <li>Table of contents for each issue.</li>
-      <li>Links to download full issues if available.</li>
-      <li>Details of special issues or thematic collections.</li>
-    </ul>
-  </div>
-);
-
+interface PageWithChildren {
+  id: string;
+  title: string;
+  slug: string;
+  content: any;
+  order: number;
+  parentId: string | null;
+  children: PageWithChildren[];
+}
 
 export default function CategoryPage() {
   const params = useParams();
-  const slug = params.slug as string;
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const slug = params.slug as string;
+  const pageSlug = searchParams.get('page');
 
   const [category, setCategory] = useState<JournalCategory | null>(null);
   const [allCategoryJournals, setAllCategoryJournals] = useState<JournalEntry[]>([]);
@@ -267,10 +45,18 @@ export default function CategoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<string>("Most Recent");
-  const [activeTab, setActiveTab] = useState<TabKey>('OVERVIEW');
-  
-  const [underlineStyle, setUnderlineStyle] = useState({ width: 0, left: 0 });
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [pages, setPages] = useState<PageWithChildren[]>([]);
+
+  const activePage = useMemo(() => {
+    if (!pageSlug || pages.length === 0) return null;
+    for (const page of pages) {
+      if (page.slug === pageSlug) return page;
+      const childPage = page.children.find(child => child.slug === pageSlug);
+      if (childPage) return childPage;
+    }
+    return null;
+  }, [pageSlug, pages]);
+
 
   useEffect(() => {
     if (!slug) {
@@ -288,9 +74,10 @@ export default function CategoryPage() {
           const errData = await response.json();
           throw new Error(errData.error || 'Failed to fetch category data.');
         }
-        const data: { category: JournalCategory; journals: JournalEntry[] } = await response.json();
+        const data: { category: JournalCategory; journals: JournalEntry[], pages: PageWithChildren[] } = await response.json();
         setCategory(data.category);
         setAllCategoryJournals(data.journals);
+        setPages(data.pages);
       } catch (err: any) {
         console.error(`Error fetching data for slug ${slug}:`, err);
         setError(err.message);
@@ -310,7 +97,6 @@ export default function CategoryPage() {
       } else if (selectedView === "Most View") {
         sortedJournals.sort((a, b) => (b.views || 0) - (a.views || 0));
       } else if (selectedView === "Most Shared") {
-         // Use downloads as a proxy for shares since 'shares' doesn't exist in the model
         sortedJournals.sort((a, b) => (b.downloads || 0) - (a.downloads || 0));
       }
       setDisplayedEntries(sortedJournals);
@@ -319,63 +105,72 @@ export default function CategoryPage() {
     }
   }, [allCategoryJournals, selectedView]);
 
-
   useEffect(() => {
-    if (!category) {
-      setUnderlineStyle({ width: 0, left: 0 });
-      return;
-    }
-
-    const activeTabIndex = TABS_CONFIG.findIndex(tab => tab.key === activeTab);
-    const activeTabElement = tabRefs.current[activeTabIndex];
-    if (activeTabElement) {
-      const timeoutId = setTimeout(() => {
-        setUnderlineStyle({
-          width: activeTabElement.offsetWidth,
-          left: activeTabElement.offsetLeft,
-        });
-      }, 0);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [activeTab, category]); 
-
-  // The main `loading.tsx` file handles the full-page skeleton.
-  // This hook handles the case where the category itself is not found after loading.
-  useEffect(() => {
-    if (!isLoading && !category && !error) { // Added !error to prevent redirect on fetch fail
+    if (!isLoading && !category && !error) {
       setError("Category not found.");
     }
-  }, [isLoading, category, router, error]);
+  }, [isLoading, category, error]);
 
-  if (isLoading || !category) {
-    // Show a minimal loader or rely on the main loading.tsx.
-    // Returning the loading.tsx skeleton here prevents a flash of unstyled content.
-    return (
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <section className="py-10 md:py-16 bg-secondary">
-          <div className="container mx-auto px-4">
-            <Skeleton className="h-6 w-1/4 mb-2" />
-            <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
-          </div>
-        </section>
-        <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-wrap justify-center md:justify-start items-center py-3 gap-4">
-              <Skeleton className="h-8 w-20" />
-              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-24" />)}
+  const renderContent = () => {
+    if (activePage) {
+        return (
+            <div className="py-8">
+                 <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                    {activePage.title}
+                </h2>
+                <TiptapRenderer 
+                    jsonContent={activePage.content}
+                    className="prose lg:prose-xl max-w-none font-body text-foreground/80"
+                />
             </div>
-          </div>
-        </nav>
-        <main className="flex-1 container mx-auto px-4 py-8">
-           <div className="flex justify-center items-center py-20">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="ml-4 text-lg">Loading Category...</p>
-           </div>
-        </main>
-        <Footer />
-      </div>
+        );
+    }
+    // Default content (Article List)
+    return (
+        <>
+            <section className="my-12">
+              <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category?.name}</h2>
+              <TiptapRenderer
+                jsonContent={category?.description}
+                className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+              />
+            </section>
+
+            <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
+            
+            <div className="space-y-8">
+              {displayedEntries.length > 0 ? (
+                displayedEntries.map((entry) => (
+                  <ArticleListItemCard 
+                    key={entry.id} 
+                    entry={{...entry, imagePath: category?.imagePath, imageHint: category?.imageHint}}
+                    categoryName={category?.name || ''}
+                  />
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
+              )}
+            </div>
+
+            <div className="mt-12 text-center">
+                <Button asChild variant="outline">
+                    <Link href="/" className="inline-flex items-center">
+                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Journals
+                    </Link>
+                </Button>
+            </div>
+        </>
     );
+  };
+  
+  if (isLoading || !category) {
+    return <div className="flex flex-col min-h-screen">
+      <Header />
+      <section className="py-10 md:py-16 bg-secondary"><div className="container mx-auto px-4"><Skeleton className="h-6 w-1/4 mb-2" /><Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" /></div></section>
+      <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm"><div className="container mx-auto px-4"><div className="flex flex-wrap justify-center md:justify-start items-center py-3 gap-4"><Skeleton className="h-8 w-20" />{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-24" />)}</div></div></nav>
+      <main className="flex-1 container mx-auto px-4 py-8"><div className="flex justify-center items-center py-20"><Loader2 className="h-12 w-12 animate-spin text-primary" /><p className="ml-4 text-lg">Loading Category...</p></div></main>
+      <Footer />
+    </div>;
   }
   
   const categorySpecificBgColor = 
@@ -387,15 +182,7 @@ export default function CategoryPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
-
-      {/* Hero/Title Section */}
-      <section
-        className={cn(
-          "py-10 md:py-16 text-secondary-foreground",
-          !categorySpecificBgColor && "bg-secondary" // Apply default if no specific color
-        )}
-        style={categorySpecificBgColor ? { backgroundColor: categorySpecificBgColor } : {}}
-      >
+      <section className={cn("py-10 md:py-16 text-secondary-foreground",!categorySpecificBgColor && "bg-secondary")} style={categorySpecificBgColor ? { backgroundColor: categorySpecificBgColor } : {}}>
         <div className="container mx-auto px-4 text-center md:text-left">
           <p className="text-lg font-medium opacity-90">Dhanamanjuri University</p>
           <h1 className="text-4xl md:text-5xl font-headline font-bold mt-1 mb-4">{category.name}</h1>
@@ -410,98 +197,50 @@ export default function CategoryPage() {
         </div>
       </section>
 
-      {/* Tab Navigation Bar */}
+      {/* Dynamic Tab Navigation */}
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            {TABS_CONFIG.map((tabInfo, index) => (
-              <TabButton
-                key={tabInfo.key}
-                ref={el => (tabRefs.current[index] = el)}
-                label={tabInfo.label}
-                icon={tabInfo.icon}
-                isActive={activeTab === tabInfo.key}
-                onClick={() => setActiveTab(tabInfo.key)}
-              />
-            ))}
-            <div
-              className="absolute bottom-0 h-0.5 bg-primary transition-all duration-300 ease-in-out"
-              style={{
-                width: `${underlineStyle.width}px`,
-                left: `${underlineStyle.left}px`,
-              }}
-            />
+             <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}><FileText className="w-4 h-4" />Articles</Link>
+              {pages.map(page => {
+                  const hasChildren = page.children.length > 0;
+                  if (hasChildren) {
+                      return (
+                          <DropdownMenu key={page.id}>
+                              <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md", page.children.some(c => c.slug === pageSlug) ? 'font-semibold text-primary bg-muted' : 'text-foreground')}>
+                                      {page.title}
+                                      <ChevronDown className="w-4 h-4" />
+                                  </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent>
+                                  {page.children.map(child => (
+                                      <DropdownMenuItem key={child.id} asChild>
+                                          <Link href={`/category/${slug}?page=${child.slug}`}>{child.title}</Link>
+                                      </DropdownMenuItem>
+                                  ))}
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      );
+                  }
+                  return (
+                      <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", page.slug === pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>{page.title}</Link>
+                  );
+              })}
           </div>
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4 py-8">
-        {error && (
-            <div className="text-center py-10 text-destructive bg-destructive/10 rounded-lg">
-                <h2 className="text-2xl font-bold mb-2">An Error Occurred</h2>
-                <p>{error}</p>
-            </div>
+      <main className="flex-1 container mx-auto px-4">
+        {error ? (
+          <div className="text-center py-10 text-destructive bg-destructive/10 rounded-lg"><h2 className="text-2xl font-bold mb-2">An Error Occurred</h2><p>{error}</p></div>
+        ) : (
+          renderContent()
         )}
-        {!error && activeTab === 'OVERVIEW' && (
-          <>
-            <section className="mb-12">
-              <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category.name}</h2>
-              {category.scope?.introduction && <p className="text-foreground/80 mb-4 font-body">{category.scope.introduction}</p>}
-              {category.scope?.topics && category.scope.topics.length > 0 && (
-                <ul className="list-disc list-inside space-y-1 mb-4 font-body text-foreground/80 pl-4">
-                  {category.scope.topics.map(topic => <li key={topic}>{topic}</li>)}
-                </ul>
-              )}
-              {category.scope?.conclusion && <p className="text-foreground/80 font-body">{category.scope.conclusion}</p>}
-              {!category.scope && (
-                <TiptapRenderer
-                  jsonContent={category.description}
-                  className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
-                />
-              )}
-            </section>
-
-            <ViewFilters selectedView={selectedView} onSelectView={setSelectedView} />
-            
-            <div className="space-y-8">
-              {displayedEntries.length > 0 ? (
-                displayedEntries.map((entry) => (
-                  <ArticleListItemCard 
-                    key={entry.id} 
-                    entry={{...entry, imagePath: category.imagePath, imageHint: category.imageHint}}
-                    categoryName={category.name}
-                  />
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8 text-lg">No journal entries found for this category currently.</p>
-              )}
-            </div>
-
-
-            <div className="mt-12 text-center">
-                <Button asChild variant="outline">
-                    <Link href="/" className="inline-flex items-center">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Back to All Journals
-                    </Link>
-                </Button>
-            </div>
-          </>
-        )}
-        {!error && activeTab === 'ABOUT_DMUJ' && <AboutDMUJContent />}
-        {!error && activeTab === 'PUBLICATION_POLICY' && <PublicationPolicyContent />}
-        {!error && activeTab === 'ETHICS_POLICY' && <EthicsPolicyContent />}
-        {!error && activeTab === 'AUTHORS_SECTION' && <AuthorsSectionContent />}
-        {!error && activeTab === 'JOURNAL_ISSUES' && <CategoryIssuesContent category={category} />}
       </main>
 
-      {/* ISSN and Copyright Section */}
       {(category.displayIssn || category.copyrightYear) && (
-        <section className="py-6 border-t border-border mt-12">
-          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            {category.displayIssn && <p>{category.displayIssn}</p>}
-            {category.copyrightYear && <p>&copy; {category.copyrightYear} DM University, All Rights Reserved.</p>}
-          </div>
-        </section>
+        <section className="py-6 border-t border-border mt-12"><div className="container mx-auto px-4 text-center text-sm text-muted-foreground">{category.displayIssn && <p>{category.displayIssn}</p>}{category.copyrightYear && <p>&copy; {category.copyrightYear} DM University, All Rights Reserved.</p>}</div></section>
       )}
       <Footer />
     </div>
