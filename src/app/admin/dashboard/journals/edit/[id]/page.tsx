@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -12,12 +11,7 @@ import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import JournalCategoryPagesManager from '@/components/admin/JournalCategoryPagesManager';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
   <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
@@ -94,7 +88,7 @@ export default function EditJournalCategoryPage() {
       
       toast({ title: 'Success', description: 'Journal category updated successfully.' });
       router.push('/admin/dashboard/journals');
-    } catch (error: any) {
+    } catch (error: any) => {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
       setIsSubmitting(false);
@@ -133,42 +127,33 @@ export default function EditJournalCategoryPage() {
             <Breadcrumbs categoryName={category.name} />
         </div>
         
-        <Accordion type="multiple" defaultValue={['item-1']} className="w-full space-y-4">
-            <AccordionItem value="item-1" asChild>
+        <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="details">Journal Details</TabsTrigger>
+                <TabsTrigger value="pages">Manage Pages</TabsTrigger>
+            </TabsList>
+            <TabsContent value="details" className="mt-4">
+                <JournalCategoryForm
+                    initialData={category}
+                    onSubmit={handleSubmit}
+                    isSubmitting={isSubmitting}
+                    authToken={authToken}
+                />
+            </TabsContent>
+            <TabsContent value="pages" className="mt-4">
                  <Card>
-                    <AccordionTrigger className="w-full hover:no-underline p-0">
-                        <CardHeader className="flex-1 text-left p-6">
-                            <CardTitle>Edit Journal Details</CardTitle>
-                        </CardHeader>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <JournalCategoryForm
-                            initialData={category}
-                            onSubmit={handleSubmit}
-                            isSubmitting={isSubmitting}
-                            authToken={authToken}
-                            hideCardShell={true}
-                        />
-                    </AccordionContent>
-                </Card>
-            </AccordionItem>
-            
-            <AccordionItem value="item-2" asChild>
-                 <Card>
-                     <AccordionTrigger className="w-full hover:no-underline p-0">
-                        <CardHeader className="flex-1 text-left p-6">
-                           <JournalCategoryPagesManager.Title />
-                        </CardHeader>
-                     </AccordionTrigger>
-                     <AccordionContent>
+                     <CardHeader>
+                        <JournalCategoryPagesManager.Title />
+                     </CardHeader>
+                     <CardContent className="p-6 pt-0">
                         <JournalCategoryPagesManager.Content 
                             journalCategoryId={id} 
                             authToken={authToken} 
                         />
-                     </AccordionContent>
+                     </CardContent>
                 </Card>
-            </AccordionItem>
-        </Accordion>
+            </TabsContent>
+        </Tabs>
     </div>
   );
 }

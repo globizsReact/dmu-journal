@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -212,7 +211,7 @@ export default function JournalCategoryPagesManager({ journalCategoryId, authTok
       <CardHeader>
         <ManagerTitle />
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-6 pt-0">
         <ManagerContent journalCategoryId={journalCategoryId} authToken={authToken} />
       </CardContent>
     </Card>
