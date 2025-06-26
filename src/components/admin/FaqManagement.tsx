@@ -2,40 +2,159 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, PlusCircle, Pencil, Trash2, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import { Loader2, AlertTriangle, PlusCircle, Pencil, Trash2, ArrowUp, ArrowDown, GripVertical, FileUp, CheckCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AddEditFaqCategoryDialog from './dialogs/AddEditFaqCategoryDialog';
 import AddEditFaqItemDialog from './dialogs/AddEditFaqItemDialog';
 import DeleteFaqCategoryDialog from './dialogs/DeleteFaqCategoryDialog';
 import DeleteFaqItemDialog from './dialogs/DeleteFaqItemDialog';
-import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
-import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import TiptapRenderer from '../shared/TiptapRenderer';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import Image from 'next/image';
+import { toPublicUrl } from '@/lib/urlUtils';
 
-interface FaqItem {
-  id: string;
-  question: string;
-  answer: any;
-  order: number;
+// --- Interfaces & Types ---
+interface FaqItem { id: string; question: string; answer: any; order: number; }
+interface FaqCategory { id: string; title: string; order: number; items: FaqItem[]; }
+
+const MAX_FILE_SIZE_MB = 2;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+const pageSettingsSchema = z.object({
+  coverImagePath: z.string().optional(),
+  coverImageHint: z.string().optional(),
+});
+type PageSettingsFormValues = z.infer<typeof pageSettingsSchema>;
+
+// --- Component: PageSettings ---
+function FaqPageSettings({ authToken, initialData }: { authToken: string, initialData: PageSettingsFormValues | null }) {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(initialData?.coverImagePath || null);
+
+  const form = useForm<PageSettingsFormValues>({
+    resolver: zodResolver(pageSettingsSchema),
+    defaultValues: initialData || { coverImagePath: '', coverImageHint: '' },
+  });
+
+  useEffect(() => {
+    form.reset(initialData || { coverImagePath: '', coverImageHint: '' });
+    setImagePreview(initialData?.coverImagePath || null);
+  }, [initialData, form]);
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !authToken) return;
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+        toast({ title: "File Too Large", description: `Cover image must be less than ${MAX_FILE_SIZE_MB}MB.`, variant: "destructive" });
+        return;
+    }
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setUploadError(null);
+    setFileName(file.name);
+    form.setValue('coverImagePath', '');
+    setImagePreview(URL.createObjectURL(file));
+
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await fetch('/api/admin/uploads/presigned-url', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${authToken}` },
+            body: formData,
+        });
+        const { publicUrl, error } = await response.json();
+        if (!response.ok) throw new Error(error || 'Failed to upload file.');
+        form.setValue('coverImagePath', publicUrl, { shouldValidate: true });
+        setUploadSuccess(true);
+    } catch (error: any) {
+        setUploadError(error.message);
+        toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+        setImagePreview(form.getValues('coverImagePath'));
+    } finally {
+        setIsUploading(false);
+    }
+  };
+
+  const onSubmit = async (values: PageSettingsFormValues) => {
+    setIsSubmitting(true);
+    try {
+        const response = await fetch('/api/admin/pages/faq', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            body: JSON.stringify(values),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to update page settings.');
+        toast({ title: 'Success', description: 'FAQ page settings updated successfully.' });
+    } catch (error: any) {
+        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>FAQ Page Settings</CardTitle>
+        <CardDescription>Manage the cover photo for the public FAQ page.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <fieldset className="border p-4 rounded-md">
+              <legend className="text-lg font-headline font-semibold text-primary px-2">Cover Photo</legend>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-4">
+                  <FormField control={form.control} name="coverImagePath" render={() => (
+                    <FormItem>
+                      <FormLabel>Upload Image</FormLabel>
+                      <FormControl>
+                          <Button type="button" variant="outline" asChild disabled={isUploading || isSubmitting} className="w-full mt-2"><label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2"><FileUp className="w-4 h-4" />{isUploading ? 'Uploading...' : 'Choose Cover Photo'}</label></Button>
+                      </FormControl>
+                      <Input id="image-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={isUploading || isSubmitting}/>
+                      {fileName && (<div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">{isUploading && <Loader2 className="w-4 h-4 animate-spin" />}{uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}{uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}<span className="truncate">{fileName}</span></div>)}
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="coverImageHint" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image Hint</FormLabel>
+                      <FormControl><Input {...field} value={field.value ?? ''} placeholder="e.g., person thinking, question marks" disabled={isSubmitting || isUploading} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                </div>
+                <div>
+                  <FormLabel>Preview</FormLabel>
+                  {imagePreview ? (<div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border"><Image src={toPublicUrl(imagePreview)} alt="Image Preview" fill sizes="33vw" className="object-cover" /></div>) : (<div className="mt-2 aspect-video w-full flex items-center justify-center bg-muted rounded-md"><p className="text-sm text-muted-foreground">No image uploaded</p></div>)}
+                </div>
+              </div>
+            </fieldset>
+            <div className="flex justify-end pt-4"><Button type="submit" disabled={isSubmitting || isUploading}>{(isSubmitting || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}<Save className="mr-2 h-4 w-4" /> Save Settings</Button></div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
 }
 
-interface FaqCategory {
-  id: string;
-  title: string;
-  order: number;
-  items: FaqItem[];
-}
-
+// --- Component: FaqManagement ---
 export default function FaqManagement() {
   const [categories, setCategories] = useState<FaqCategory[]>([]);
+  const [pageSettings, setPageSettings] = useState<PageSettingsFormValues | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [authToken, setAuthToken] = useState<string | null>(null);
@@ -52,17 +171,15 @@ export default function FaqManagement() {
 
   const [isSavingOrder, setIsSavingOrder] = useState(false);
 
-
   const fetchFaqs = useCallback(async (token: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/public/faq', {
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
+      const response = await fetch('/api/public/faq', { headers: { 'Authorization': `Bearer ${token}` } });
       if (!response.ok) throw new Error('Failed to fetch FAQs');
-      const data: FaqCategory[] = await response.json();
-      setCategories(data);
+      const data = await response.json();
+      setCategories(data.faqData);
+      setPageSettings(data.pageSettings);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -77,51 +194,23 @@ export default function FaqManagement() {
     else setIsLoading(false);
   }, [fetchFaqs]);
   
-  const handleSuccess = () => {
-    if (authToken) fetchFaqs(authToken);
-  };
-  
-  const handleOpenAddCategory = () => {
-    setEditingCategory(null);
-    setIsCategoryDialogOpen(true);
-  };
-  
-  const handleOpenEditCategory = (category: FaqCategory) => {
-    setEditingCategory(category);
-    setIsCategoryDialogOpen(true);
-  };
-  
-  const handleOpenAddItem = (categoryId: string) => {
-    setEditingItem(null);
-    setCurrentItemParentCategory(categoryId);
-    setIsItemDialogOpen(true);
-  };
-
-  const handleOpenEditItem = (item: FaqItem, categoryId: string) => {
-    setEditingItem(item);
-    setCurrentItemParentCategory(categoryId);
-    setIsItemDialogOpen(true);
-  };
+  const handleSuccess = () => { if (authToken) fetchFaqs(authToken); };
+  const handleOpenAddCategory = () => { setEditingCategory(null); setIsCategoryDialogOpen(true); };
+  const handleOpenEditCategory = (category: FaqCategory) => { setEditingCategory(category); setIsCategoryDialogOpen(true); };
+  const handleOpenAddItem = (categoryId: string) => { setEditingItem(null); setCurrentItemParentCategory(categoryId); setIsItemDialogOpen(true); };
+  const handleOpenEditItem = (item: FaqItem, categoryId: string) => { setEditingItem(item); setCurrentItemParentCategory(categoryId); setIsItemDialogOpen(true); };
   
   const saveOrder = async (type: 'category' | 'item', orderedItems: {id: string}[]) => {
-     if (!authToken) {
-        toast({ title: 'Error', description: "Authentication token not found.", variant: 'destructive' });
-        return;
-    }
+     if (!authToken) { toast({ title: 'Error', description: "Authentication token not found.", variant: 'destructive' }); return; }
     setIsSavingOrder(true);
     const orderedIds = orderedItems.map(item => item.id);
-
     try {
-        const response = await fetch('/api/admin/faq/reorder', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-            body: JSON.stringify({ type, orderedIds }),
-        });
+        const response = await fetch('/api/admin/faq/reorder', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` }, body: JSON.stringify({ type, orderedIds }) });
         if (!response.ok) throw new Error(`Failed to save new ${type} order.`);
         toast({ title: 'Success', description: `${type.charAt(0).toUpperCase() + type.slice(1)} order saved.` });
     } catch (error: any) {
         toast({ title: 'Error', description: error.message, variant: 'destructive' });
-        if (authToken) fetchFaqs(authToken); // Revert on error
+        if (authToken) fetchFaqs(authToken);
     } finally {
         setIsSavingOrder(false);
     }
@@ -132,7 +221,7 @@ export default function FaqManagement() {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     const [movedItem] = newCategories.splice(index, 1);
     newCategories.splice(targetIndex, 0, movedItem);
-    setCategories(newCategories); // Optimistic update
+    setCategories(newCategories);
     saveOrder('category', newCategories);
   };
 
@@ -142,24 +231,20 @@ export default function FaqManagement() {
     const targetIndex = direction === 'up' ? itemIndex - 1 : itemIndex + 1;
     const [movedItem] = items.splice(itemIndex, 1);
     items.splice(targetIndex, 0, movedItem);
-    setCategories(newCategories); // Optimistic update
+    setCategories(newCategories);
     saveOrder('item', items);
   };
 
-
-  if (isLoading) {
-    return <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  }
-  if (error) {
-    return <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /> {error}</div>;
-  }
+  if (isLoading) { return <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>; }
+  if (error) { return <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /> {error}</div>; }
 
   return (
     <>
+      {authToken && <FaqPageSettings authToken={authToken} initialData={pageSettings} />}
       <Card>
         <CardHeader className="flex flex-row justify-between items-start">
           <div>
-            <CardTitle>Manage FAQs</CardTitle>
+            <CardTitle>Manage FAQ Content</CardTitle>
             <CardDescription>Add, edit, or remove frequently asked questions.</CardDescription>
           </div>
           <Button onClick={handleOpenAddCategory}><PlusCircle className="mr-2 h-4 w-4" /> Add New Category</Button>
@@ -210,35 +295,10 @@ export default function FaqManagement() {
       </Card>
       
       {/* Dialogs */}
-      <AddEditFaqCategoryDialog
-        isOpen={isCategoryDialogOpen}
-        onClose={() => setIsCategoryDialogOpen(false)}
-        onSuccess={handleSuccess}
-        authToken={authToken || ''}
-        category={editingCategory}
-      />
-      <AddEditFaqItemDialog
-        isOpen={isItemDialogOpen}
-        onClose={() => setIsItemDialogOpen(false)}
-        onSuccess={handleSuccess}
-        authToken={authToken || ''}
-        item={editingItem}
-        categoryId={currentItemParentCategory}
-      />
-      <DeleteFaqCategoryDialog
-        isOpen={!!deletingCategory}
-        onClose={() => setDeletingCategory(null)}
-        onSuccess={handleSuccess}
-        authToken={authToken || ''}
-        category={deletingCategory}
-      />
-      <DeleteFaqItemDialog
-        isOpen={!!deletingItem}
-        onClose={() => setDeletingItem(null)}
-        onSuccess={handleSuccess}
-        authToken={authToken || ''}
-        item={deletingItem}
-      />
+      <AddEditFaqCategoryDialog isOpen={isCategoryDialogOpen} onClose={() => setIsCategoryDialogOpen(false)} onSuccess={handleSuccess} authToken={authToken || ''} category={editingCategory}/>
+      <AddEditFaqItemDialog isOpen={isItemDialogOpen} onClose={() => setIsItemDialogOpen(false)} onSuccess={handleSuccess} authToken={authToken || ''} item={editingItem} categoryId={currentItemParentCategory}/>
+      <DeleteFaqCategoryDialog isOpen={!!deletingCategory} onClose={() => setDeletingCategory(null)} onSuccess={handleSuccess} authToken={authToken || ''} category={deletingCategory}/>
+      <DeleteFaqItemDialog isOpen={!!deletingItem} onClose={() => setDeletingItem(null)} onSuccess={handleSuccess} authToken={authToken || ''} item={deletingItem}/>
     </>
   );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, AlertTriangle } from 'lucide-react';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 const metadataItems = [
   "Abbreviation: J. Biophys. Struct. Biol.",
@@ -31,6 +33,8 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
 interface PageData {
     title: string;
     content: any; // JSON from Tiptap
+    coverImagePath?: string | null;
+    coverImageHint?: string | null;
 }
 
 export default function AboutUsPage() {
@@ -59,6 +63,8 @@ export default function AboutUsPage() {
         fetchContent();
     }, []);
 
+  const heroImage = toPublicUrl(pageData?.coverImagePath) || "https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -67,12 +73,12 @@ export default function AboutUsPage() {
       {/* Hero Section */}
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
-          src="https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-          alt="About Us Background"
+          src={heroImage}
+          alt={pageData?.coverImageHint || "About Us Background"}
           fill
           sizes="100vw"
           className="absolute inset-0 z-0 object-cover"
-          data-ai-hint="university campus"
+          data-ai-hint={pageData?.coverImageHint || "university campus"}
           priority
         />
         <div className="absolute inset-0 bg-black/50 z-10" />

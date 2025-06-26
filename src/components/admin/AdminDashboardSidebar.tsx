@@ -3,7 +3,7 @@
 
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, HelpCircle, Layers } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, HelpCircle, Layers, Settings } from 'lucide-react';
 import Image from 'next/image';
 import {
   AlertDialog,
@@ -44,17 +44,19 @@ const mainNavItems: NavItem[] = [
   { label: 'Manage Journals', icon: BookIcon, href: '/admin/dashboard/journals', disabled: false },
   { label: 'All Manuscripts', icon: FileText, href: '/admin/dashboard/manuscripts' },
   { label: 'Manage Users', icon: Users, href: '/admin/dashboard/users', disabled: false },
-  { label: "Manage FAQ", icon: HelpCircle, href: '/admin/dashboard/faq' },
 ];
 
 const pageNavItems = [
     { label: 'About Us Page', href: '/admin/dashboard/pages/about' },
     { label: 'Landing Page', href: '/admin/dashboard/pages/landing' },
+    { label: "Manage FAQ", href: '/admin/dashboard/faq' },
 ];
 
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
   const pathname = usePathname();
   const logoSrc = '/images/logo_black.png';
+  
+  const isPagesActive = pathname.startsWith('/admin/dashboard/pages') || pathname.startsWith('/admin/dashboard/faq');
 
   return (
     <aside className={cn(
@@ -108,11 +110,11 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
         })}
         
         {/* Pages Accordion */}
-        <Accordion type="single" collapsible className="w-full" defaultValue={pathname.startsWith('/admin/dashboard/pages') ? 'pages' : undefined}>
+        <Accordion type="single" collapsible className="w-full" defaultValue={isPagesActive ? 'pages' : undefined}>
           <AccordionItem value="pages" className="border-none">
             <AccordionTrigger className={cn(
                 "w-full flex items-center justify-between gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors text-left hover:bg-muted hover:text-primary hover:no-underline",
-                pathname.startsWith('/admin/dashboard/pages') && "bg-muted text-primary"
+                isPagesActive && "bg-muted text-primary"
             )}>
               <div className="flex items-center gap-3">
                 <Layers className="w-4 h-4" />
@@ -121,7 +123,7 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
             </AccordionTrigger>
             <AccordionContent className="pt-1 pb-0 pl-8 pr-0 space-y-1">
               {pageNavItems.map(item => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || pathname.startsWith(item.href);
                 return (
                   <Link 
                     key={item.label} 

@@ -4,14 +4,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/authUtils';
 import { z } from 'zod';
-import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 const pageSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters.'),
-  content: z.any().refine((value) => {
-    const text = getPlainTextFromTiptapJson(value);
-    return text.length >= 10;
-  }, { message: "Content must contain at least 10 characters of text." }),
   coverImagePath: z.string().optional(),
   coverImageHint: z.string().optional(),
 });
@@ -24,9 +18,9 @@ async function checkAdminAuth(request: NextRequest) {
   return decoded;
 }
 
-const PAGE_SLUG = 'about-us';
+const PAGE_SLUG = 'faq';
 
-// GET the 'About Us' page content
+// GET the 'FAQ' page content
 export async function GET(request: NextRequest) {
   if (!await checkAdminAuth(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -34,11 +28,10 @@ export async function GET(request: NextRequest) {
   try {
     const page = await prisma.sitePage.findUnique({ where: { slug: PAGE_SLUG } });
     if (!page) {
-      // Return a default structure if it doesn't exist yet
       return NextResponse.json({
           slug: PAGE_SLUG,
-          title: 'About Us',
-          content: { type: 'doc', content: [{ type: 'paragraph' }] },
+          title: 'FAQ',
+          content: {}, // FAQ content is stored elsewhere
           coverImagePath: null,
           coverImageHint: null,
       });
@@ -49,7 +42,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PUT (upsert) the 'About Us' page content
+// PUT (upsert) the 'FAQ' page content
 export async function PUT(request: NextRequest) {
   if (!await checkAdminAuth(request)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -61,12 +54,18 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', issues: validation.error.issues }, { status: 400 });
     }
 
-    const { title, content, coverImagePath, coverImageHint } = validation.data;
+    const { coverImagePath, coverImageHint } = validation.data;
 
     const updatedPage = await prisma.sitePage.upsert({
       where: { slug: PAGE_SLUG },
-      update: { title, content, coverImagePath, coverImageHint },
-      create: { slug: PAGE_SLUG, title, content, coverImagePath, coverImageHint },
+      update: { coverImagePath, coverImageHint },
+      create: { 
+        slug: PAGE_SLUG, 
+        title: 'FAQ Page Settings', 
+        content: {}, // FAQ content is managed separately
+        coverImagePath, 
+        coverImageHint 
+      },
     });
 
     return NextResponse.json(updatedPage);

@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/accordion";
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
 import { Skeleton } from '@/components/ui/skeleton';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 interface FaqItem {
   id: string;
@@ -26,6 +27,16 @@ interface FaqCategory {
   id: string;
   title: string;
   items: FaqItem[];
+}
+
+interface PageSettings {
+    coverImagePath?: string | null;
+    coverImageHint?: string | null;
+}
+
+interface FaqPageData {
+    pageSettings: PageSettings | null;
+    faqData: FaqCategory[];
 }
 
 const metadataItems = [
@@ -47,7 +58,7 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
 );
 
 export default function FAQPage() {
-  const [faqSections, setFaqSections] = useState<FaqCategory[]>([]);
+  const [pageData, setPageData] = useState<FaqPageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -61,7 +72,7 @@ export default function FAQPage() {
           throw new Error('Failed to load FAQs. Please try again later.');
         }
         const data = await response.json();
-        setFaqSections(data);
+        setPageData(data);
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -71,17 +82,20 @@ export default function FAQPage() {
     fetchFaqs();
   }, []);
 
+  const heroImage = toPublicUrl(pageData?.pageSettings?.coverImagePath) || "https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+  const heroImageHint = pageData?.pageSettings?.coverImageHint || "help desk";
+
   const renderContent = () => {
     if (isLoading) {
+      // The loading.tsx file handles the initial server-side load.
+      // This is a fallback for client-side state changes.
       return (
         <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
           <aside className="w-full md:w-1/4 lg:w-1/5">
             <Skeleton className="h-7 w-2/3 mb-4 px-3" />
             <div className="space-y-2">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" />
             </div>
           </aside>
           <section className="w-full md:w-3/4 lg:w-4/5">
@@ -102,7 +116,7 @@ export default function FAQPage() {
     if (error) {
       return <div className="text-center py-10 text-destructive">{error}</div>;
     }
-    if (faqSections.length === 0) {
+    if (!pageData || pageData.faqData.length === 0) {
         return <div className="text-center py-10 text-muted-foreground">No FAQs have been added yet.</div>;
     }
     return (
@@ -117,7 +131,7 @@ export default function FAQPage() {
                 </nav>
             </aside>
             <section className="w-full md:w-3/4 lg:w-4/5">
-                {faqSections.map((section) => (
+                {pageData.faqData.map((section) => (
                 <div key={section.id} className="mb-10">
                     <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
                     {section.title}
@@ -148,12 +162,12 @@ export default function FAQPage() {
       {/* Hero Section */}
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
-          src="https://images.pexels.com/photos/3769021/pexels-photo-3769021.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
-          alt="FAQ Background - People at a help desk"
+          src={heroImage}
+          alt="FAQ Background"
           fill
           sizes="100vw"
           className="absolute inset-0 z-0 object-cover"
-          data-ai-hint="help desk"
+          data-ai-hint={heroImageHint}
           priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />

@@ -1,3 +1,4 @@
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -16,87 +17,96 @@ model User {
   username      String   @unique
   email         String   @unique
   password_hash String
-  role          String?  @default("author") // e.g., 'author', 'reviewer', 'admin', 'reviewer_inactive'
+  role          String?  @default("author") // e.g., 'admin', 'author', 'reviewer', 'reviewer_inactive'
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  submittedManuscripts Manuscript[] @relation("SubmittedBy")
-}
-
-model JournalCategory {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  slug      String    @unique
-  description Json
-  iconName  String
-  imagePath String
-  imageHint String
-  abbreviation String?
-  language  String?
-  issn      String?
-  doiBase   String?
-  startYear Int?
-  displayIssn String?
-  copyrightYear Int?
-  order     Int       @default(0)
-  manuscripts Manuscript[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  scope     Json?
+  manuscripts   Manuscript[]
 }
 
 model Manuscript {
-  id                     String    @id @default(cuid())
-  articleTitle           String    @db.VarChar(255)
-  abstract               Json
-  keywords               String?   @db.VarChar(255)
-  status                 String    @default("Submitted") // e.g., Submitted, In Review, Accepted, Published, Suspended, Rejected
-  submittedAt            DateTime  @default(now())
-  publishedAt            DateTime?
-  journalCategoryId      String
-  isSpecialReview        Boolean   @default(false)
-  authorAgreement        Boolean   @default(false)
-  coAuthors              Json?
-  submittedById          Int
-  coverLetterFileName    String?
-  manuscriptFileName     String
-  supplementaryFilesName String?
-  thumbnailImagePath     String?
-  thumbnailImageHint     String?
-
-  views                  Int?      @default(0)
-  downloads              Int?      @default(0)
-  citations              Int?      @default(0)
+  id                      String    @id @default(cuid())
+  articleTitle            String    @db.Text
+  abstract                Json
+  keywords                String?
+  status                  String    @default("Submitted") // e.g., 'Submitted', 'In Review', 'Accepted', 'Published', 'Suspended', 'Rejected'
+  isSpecialReview         Boolean   @default(false)
   
-  journalCategory        JournalCategory @relation(fields: [journalCategoryId], references: [id])
-  submittedBy            User      @relation("SubmittedBy", fields: [submittedById], references: [id])
+  // File Names
+  coverLetterFileName     String?
+  manuscriptFileName      String
+  supplementaryFilesName  String?
+  thumbnailImagePath      String?
+  thumbnailImageHint      String?
+  
+  // Author & Co-Authors
+  authorAgreement         Boolean   @default(false)
+  coAuthors               Json?     // Storing as JSON array of objects
+  
+  // Relationships
+  submittedById           Int
+  submittedBy             User      @relation(fields: [submittedById], references: [id])
+  journalCategoryId       String
+  journalCategory         JournalCategory @relation(fields: [journalCategoryId], references: [id])
+  
+  // Timestamps
+  submittedAt             DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  // Metrics
+  views                   Int?      @default(0)
+  downloads               Int?      @default(0)
+  citations               Int?      @default(0)
 }
 
+model JournalCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description Json
+  iconName    String
+  imagePath   String
+  imageHint   String
+  order       Int      @default(0)
+  
+  // Optional metadata fields
+  abbreviation    String?
+  language        String?
+  issn            String?
+  doiBase         String?
+  startYear       Int?
+  displayIssn     String?
+  copyrightYear   Int?
+  
+  // Relationship
+  manuscripts Manuscript[]
+}
+
+// Model for static site pages like 'About Us', 'Landing Page', etc.
 model SitePage {
-    id        String    @id @default(cuid())
-    slug      String    @unique
-    title     String
-    content   Json
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  title          String
+  content        Json
+  coverImagePath String?
+  coverImageHint String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
 
+// Model for FAQ Categories
 model FaqCategory {
-  id        String    @id @default(cuid())
-  title     String    @unique
-  order     Int       @default(0)
-  items     FaqItem[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id      String    @id @default(cuid())
+  title   String
+  order   Int       @default(0)
+  items   FaqItem[]
 }
 
+// Model for individual FAQ Items
 model FaqItem {
-  id         String      @id @default(cuid())
-  question   String
-  answer     Json
-  order      Int         @default(0)
-  categoryId String
-  category   FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id          String      @id @default(cuid())
+  question    String
+  answer      Json
+  order       Int         @default(0)
+  categoryId  String
+  category    FaqCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 }
