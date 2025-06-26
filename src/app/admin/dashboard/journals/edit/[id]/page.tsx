@@ -128,9 +128,13 @@ export default function EditJournalCategoryPage() {
         </div>
         
         <Tabs defaultValue="details" className="w-full">
-            <TabsList>
-                <TabsTrigger value="details">Journal Details</TabsTrigger>
-                <TabsTrigger value="pages">Manage Pages</TabsTrigger>
+            <TabsList className="border">
+                <TabsTrigger value="details" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Journal Details
+                </TabsTrigger>
+                <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                    Manage Pages
+                </TabsTrigger>
             </TabsList>
             <TabsContent value="details" className="mt-4">
                 <JournalCategoryForm
