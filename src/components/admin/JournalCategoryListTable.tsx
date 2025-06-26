@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BookIcon, Pencil, Trash2, Loader2, ArrowUp, ArrowDown, MoreVertical } from 'lucide-react';
+import { BookIcon, Pencil, Trash2, Loader2, ArrowUp, ArrowDown, MoreVertical, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DeleteJournalCategoryDialog from './dialogs/DeleteJournalCategoryDialog';
 import {
@@ -23,6 +23,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
@@ -186,11 +187,18 @@ export default function JournalCategoryListTable() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                                 <DropdownMenuItem asChild className="cursor-pointer">
+                                  <Link href={`/admin/dashboard/journals/view/${category.id}`}>
+                                    <Eye className="mr-2 h-4 w-4" />
+                                    <span>View</span>
+                                  </Link>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild className="cursor-pointer">
                                   <Link href={`/admin/dashboard/journals/edit/${category.id}`}>
                                     <Pencil className="mr-2 h-4 w-4" />
                                     <span>Edit</span>
                                   </Link>
                                 </DropdownMenuItem>
+                                <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => setDeletingCategory(category)} className="cursor-pointer text-destructive focus:text-destructive">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     <span>Delete</span>
