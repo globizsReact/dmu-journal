@@ -16,7 +16,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 
@@ -32,9 +31,17 @@ interface Page {
 interface JournalCategoryPagesManagerProps {
   journalCategoryId: string;
   authToken: string;
+  hideCardShell?: boolean;
 }
 
-export default function JournalCategoryPagesManager({ journalCategoryId, authToken }: JournalCategoryPagesManagerProps) {
+const ManagerTitle = () => (
+    <>
+        <CardTitle>Manage Journal Pages</CardTitle>
+        <CardDescription>Add, edit, and organize pages for this journal category.</CardDescription>
+    </>
+);
+
+const ManagerContent = ({ journalCategoryId, authToken }: { journalCategoryId: string; authToken: string; }) => {
   const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +140,6 @@ export default function JournalCategoryPagesManager({ journalCategoryId, authTok
     }
   };
 
-
   const renderPageList = (pageList: Page[], parentList: Page[]) => (
     <ul className="space-y-2">
       {pageList.map((page, index) => (
@@ -166,24 +172,16 @@ export default function JournalCategoryPagesManager({ journalCategoryId, authTok
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row justify-between items-start">
-          <div>
-            <CardTitle>Manage Journal Pages</CardTitle>
-            <CardDescription>Add, edit, and organize pages for this journal category.</CardDescription>
-          </div>
-          <Button asChild><Link href={`/admin/dashboard/journals/${journalCategoryId}/pages/new`}><PlusCircle className="mr-2 h-4 w-4" /> Add Page</Link></Button>
-        </CardHeader>
-        <CardContent>
-          {isLoading && <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
-          {error && <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /> {error}</div>}
-          {!isLoading && !error && (
-            pages.length > 0 ? renderPageList(pages, pages) : <p className="text-center text-muted-foreground py-4">No pages created yet for this journal.</p>
-          )}
-        </CardContent>
-      </Card>
+      <div className="flex justify-end mb-4">
+        <Button asChild><Link href={`/admin/dashboard/journals/${journalCategoryId}/pages/new`}><PlusCircle className="mr-2 h-4 w-4" /> Add Page</Link></Button>
+      </div>
+      {isLoading && <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
+      {error && <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /> {error}</div>}
+      {!isLoading && !error && (
+        pages.length > 0 ? renderPageList(pages, pages) : <p className="text-center text-muted-foreground py-4">No pages created yet for this journal.</p>
+      )}
 
-       <AlertDialog open={!!deletingPage} onOpenChange={() => setDeletingPage(null)}>
+      <AlertDialog open={!!deletingPage} onOpenChange={() => setDeletingPage(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
@@ -201,4 +199,25 @@ export default function JournalCategoryPagesManager({ journalCategoryId, authTok
       </AlertDialog>
     </>
   );
+};
+
+
+export default function JournalCategoryPagesManager({ journalCategoryId, authToken, hideCardShell = false }: JournalCategoryPagesManagerProps) {
+  if (hideCardShell) {
+    return <ManagerContent journalCategoryId={journalCategoryId} authToken={authToken} />;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <ManagerTitle />
+      </CardHeader>
+      <CardContent>
+        <ManagerContent journalCategoryId={journalCategoryId} authToken={authToken} />
+      </CardContent>
+    </Card>
+  );
 }
+
+JournalCategoryPagesManager.Title = ManagerTitle;
+JournalCategoryPagesManager.Content = ManagerContent;

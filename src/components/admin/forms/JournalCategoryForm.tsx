@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -57,9 +58,10 @@ interface JournalCategoryFormProps {
   onSubmit: (values: CategoryFormValues) => Promise<void>;
   isSubmitting: boolean;
   authToken: string;
+  hideCardShell?: boolean;
 }
 
-export default function JournalCategoryForm({ initialData, onSubmit, isSubmitting, authToken }: JournalCategoryFormProps) {
+export default function JournalCategoryForm({ initialData, onSubmit, isSubmitting, authToken, hideCardShell = false }: JournalCategoryFormProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -131,6 +133,98 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
     }
   };
 
+  const formContent = (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left side - form fields */}
+          <div className="md:col-span-2 space-y-6">
+            <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
+            <FormField control={form.control} name="description" render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                        <TiptapEditor
+                            content={field.value}
+                            onChange={field.onChange}
+                            isSubmitting={isSubmitting}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )} />
+            <FormField control={form.control} name="imageHint" render={({ field }) => <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g., science lab, law books" disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField control={form.control} name="abbreviation" render={({ field }) => <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="language" render={({ field }) => <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="issn" render={({ field }) => <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="doiBase" render={({ field }) => <FormItem><FormLabel>DOI Base</FormLabel><FormControl><Input {...field} placeholder="e.g., 10.5897/JBSB" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="displayIssn" render={({ field }) => <FormItem><FormLabel>Display ISSN</FormLabel><FormControl><Input {...field} placeholder="e.g., ISSN: 2141-2200" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="iconName" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Icon</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}><FormControl><SelectTrigger>{field.value ? <div className="flex items-center">{iconMap[field.value as IconName]} {field.value}</div> : "Select an icon"}</SelectTrigger></FormControl>
+                    <SelectContent>{Object.keys(iconMap).map(iconName => (<SelectItem key={iconName} value={iconName}><div className="flex items-center">{iconMap[iconName as IconName]} {iconName}</div></SelectItem>))}</SelectContent>
+                  </Select><FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="startYear" render={({ field }) => <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+              <FormField control={form.control} name="copyrightYear" render={({ field }) => <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
+            </div>
+          </div>
+          {/* Right side - image upload and preview */}
+          <div className="space-y-4">
+            <FormField control={form.control} name="imagePath" render={() => (
+              <FormItem>
+                <FormLabel>Category Thumbnail</FormLabel>
+                {imagePreview && (
+                  <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border">
+                    <Image src={toPublicUrl(imagePreview)} alt="Image Preview" fill sizes="33vw" className="object-cover" />
+                  </div>
+                )}
+                <FormControl>
+                  <Button type="button" variant="outline" asChild disabled={isUploading || isSubmitting} className="w-full mt-2">
+                    <label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2">
+                      <FileUp className="w-4 h-4" />
+                      {isUploading ? 'Uploading...' : 'Choose Image'}
+                    </label>
+                  </Button>
+                </FormControl>
+                <Input id="image-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/jpg" disabled={isUploading || isSubmitting}/>
+                {fileName && (
+                  <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
+                    {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
+                    {uploadError && <AlertCircle className="w-4 h-4 text-destructive" />}
+                    <span className="truncate">{fileName}</span>
+                  </div>
+                )}
+                <FormMessage />
+              </FormItem>
+            )} />
+          </div>
+        </div>
+        <div className="flex justify-end gap-3 pt-6 border-t mt-6">
+          <Button type="button" variant="outline" onClick={() => router.push('/admin/dashboard/journals')} disabled={isSubmitting || isUploading}>
+            <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
+          </Button>
+          <Button type="submit" disabled={isSubmitting || isUploading}>
+            {(isSubmitting || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {initialData ? 'Save Changes' : 'Create Category'}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+
+  if (hideCardShell) {
+    return (
+      <CardContent className="pt-6">
+        {formContent}
+      </CardContent>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -142,87 +236,7 @@ export default function JournalCategoryForm({ initialData, onSubmit, isSubmittin
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Left side - form fields */}
-              <div className="md:col-span-2 space-y-6">
-                <FormField control={form.control} name="name" render={({ field }) => <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
-                <FormField control={form.control} name="description" render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                            <TiptapEditor
-                                content={field.value}
-                                onChange={field.onChange}
-                                isSubmitting={isSubmitting}
-                            />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField control={form.control} name="imageHint" render={({ field }) => <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input {...field} placeholder="e.g., science lab, law books" disabled={isSubmitting} /></FormControl><FormMessage /></FormItem>} />
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="abbreviation" render={({ field }) => <FormItem><FormLabel>Abbreviation</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="language" render={({ field }) => <FormItem><FormLabel>Language</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="issn" render={({ field }) => <FormItem><FormLabel>ISSN</FormLabel><FormControl><Input {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="doiBase" render={({ field }) => <FormItem><FormLabel>DOI Base</FormLabel><FormControl><Input {...field} placeholder="e.g., 10.5897/JBSB" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="displayIssn" render={({ field }) => <FormItem><FormLabel>Display ISSN</FormLabel><FormControl><Input {...field} placeholder="e.g., ISSN: 2141-2200" disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="iconName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Icon</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isSubmitting}><FormControl><SelectTrigger>{field.value ? <div className="flex items-center">{iconMap[field.value as IconName]} {field.value}</div> : "Select an icon"}</SelectTrigger></FormControl>
-                        <SelectContent>{Object.keys(iconMap).map(iconName => (<SelectItem key={iconName} value={iconName}><div className="flex items-center">{iconMap[iconName as IconName]} {iconName}</div></SelectItem>))}</SelectContent>
-                      </Select><FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="startYear" render={({ field }) => <FormItem><FormLabel>Start Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                  <FormField control={form.control} name="copyrightYear" render={({ field }) => <FormItem><FormLabel>Copyright Year</FormLabel><FormControl><Input type="number" {...field} disabled={isSubmitting} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>} />
-                </div>
-              </div>
-              {/* Right side - image upload and preview */}
-              <div className="space-y-4">
-                <FormField control={form.control} name="imagePath" render={() => (
-                  <FormItem>
-                    <FormLabel>Category Thumbnail</FormLabel>
-                    {imagePreview && (
-                      <div className="mt-2 aspect-video w-full relative rounded-md overflow-hidden border">
-                        <Image src={toPublicUrl(imagePreview)} alt="Image Preview" fill sizes="33vw" className="object-cover" />
-                      </div>
-                    )}
-                    <FormControl>
-                      <Button type="button" variant="outline" asChild disabled={isUploading || isSubmitting} className="w-full mt-2">
-                        <label htmlFor="image-upload" className="cursor-pointer flex items-center gap-2">
-                          <FileUp className="w-4 h-4" />
-                          {isUploading ? 'Uploading...' : 'Choose Image'}
-                        </label>
-                      </Button>
-                    </FormControl>
-                    <Input id="image-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/jpg" disabled={isUploading || isSubmitting}/>
-                    {fileName && (
-                      <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
-                        {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
-                        {uploadError && <AlertCircle className="w-4 h-4 text-destructive" />}
-                        <span className="truncate">{fileName}</span>
-                      </div>
-                    )}
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-              <Button type="button" variant="outline" onClick={() => router.push('/admin/dashboard/journals')} disabled={isSubmitting || isUploading}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting || isUploading}>
-                {(isSubmitting || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {initialData ? 'Save Changes' : 'Create Category'}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        {formContent}
       </CardContent>
     </Card>
   );

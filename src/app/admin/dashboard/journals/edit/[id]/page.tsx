@@ -7,11 +7,17 @@ import { useToast } from '@/hooks/use-toast';
 import JournalCategoryForm from '@/components/admin/forms/JournalCategoryForm';
 import type { JournalCategory } from '@prisma/client';
 import LoadingEditJournalCategoryPage from './loading';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertTriangle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import JournalCategoryPagesManager from '@/components/admin/JournalCategoryPagesManager';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const Breadcrumbs = ({ categoryName }: { categoryName: string }) => (
   <div className="text-sm text-muted-foreground flex items-center gap-1.5 flex-wrap">
@@ -117,7 +123,7 @@ export default function EditJournalCategoryPage() {
   }
 
   return (
-     <div className="space-y-6">
+     <div className="space-y-4">
         <div className="space-y-2">
             <Button asChild variant="outline" size="sm" className="w-fit">
                 <Link href="/admin/dashboard/journals">
@@ -126,13 +132,43 @@ export default function EditJournalCategoryPage() {
             </Button>
             <Breadcrumbs categoryName={category.name} />
         </div>
-        <JournalCategoryForm
-            initialData={category}
-            onSubmit={handleSubmit}
-            isSubmitting={isSubmitting}
-            authToken={authToken}
-        />
-        <JournalCategoryPagesManager journalCategoryId={id} authToken={authToken} />
+        
+        <Accordion type="multiple" defaultValue={['item-1']} className="w-full space-y-4">
+            <AccordionItem value="item-1" asChild>
+                 <Card>
+                    <AccordionTrigger className="w-full hover:no-underline p-0">
+                        <CardHeader className="flex-1 text-left p-6">
+                            <CardTitle>Edit Journal Details</CardTitle>
+                        </CardHeader>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <JournalCategoryForm
+                            initialData={category}
+                            onSubmit={handleSubmit}
+                            isSubmitting={isSubmitting}
+                            authToken={authToken}
+                            hideCardShell={true}
+                        />
+                    </AccordionContent>
+                </Card>
+            </AccordionItem>
+            
+            <AccordionItem value="item-2" asChild>
+                 <Card>
+                     <AccordionTrigger className="w-full hover:no-underline p-0">
+                        <CardHeader className="flex-1 text-left p-6">
+                           <JournalCategoryPagesManager.Title />
+                        </CardHeader>
+                     </AccordionTrigger>
+                     <AccordionContent>
+                        <JournalCategoryPagesManager.Content 
+                            journalCategoryId={id} 
+                            authToken={authToken} 
+                        />
+                     </AccordionContent>
+                </Card>
+            </AccordionItem>
+        </Accordion>
     </div>
   );
 }
