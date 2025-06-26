@@ -162,7 +162,7 @@ export default function JournalPage() {
 
       <nav className="bg-card border-b border-border shadow-sm sticky top-0 z-30">
         <div className="container mx-auto px-4">
-          <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
+          <div className="relative flex flex-wrap justify-center items-center py-1.5 gap-1">
             <Link href={`/category/${category.slug}`} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors text-foreground hover:text-primary">
               Home
             </Link>
