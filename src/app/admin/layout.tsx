@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, type ReactNode } from 'react';
@@ -7,7 +8,7 @@ import AdminLoginForm from '@/components/admin/AdminLoginForm';
 import { Loader2, Menu as MenuIcon } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -142,6 +143,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     className="p-0 w-64"
                     aria-labelledby="admin-sidebar-title"
                   >
+                      {/* Visually hidden title for accessibility as required by Radix Dialog (Sheet) */}
+                      <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
                       <AdminDashboardSidebar
                           adminName={adminName}
                           onLogout={handleLogout}
