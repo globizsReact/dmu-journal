@@ -129,33 +129,33 @@ export default function JournalCategoryListTable() {
   const renderTableBody = () => {
     if (isLoading) {
       return (
-        <tbody>
+        <TableBody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center">
               <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
             </TableCell>
           </TableRow>
-        </tbody>
+        </TableBody>
       );
     }
     if (error) {
       return (
-        <tbody>
+        <TableBody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center text-destructive">{error}</TableCell>
           </TableRow>
-        </tbody>
+        </TableBody>
       );
     }
     if (categories.length === 0) {
       return (
-        <tbody>
+        <TableBody>
           <TableRow>
             <TableCell colSpan={5} className="h-24 text-center">
               No journal categories found. Add one to get started.
             </TableCell>
           </TableRow>
-        </tbody>
+        </TableBody>
       );
     }
     return (

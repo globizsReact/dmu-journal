@@ -79,17 +79,17 @@ export default function ViewJournalCategoryPage() {
 
   if (error) {
     return (
-        <Card className="border-destructive">
-            <CardHeader>
-                <CardTitle className="text-destructive flex items-center gap-2"><AlertTriangle /> Error Loading Category</CardTitle>
-            </Header>
-            <CardContent>
-                <p>{error}</p>
-                 <Button onClick={() => router.back()} variant="outline" className="mt-4">
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
-                </Button>
-            </CardContent>
-        </Card>
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive flex items-center gap-2"><AlertTriangle /> Error Loading Category</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>{error}</p>
+          <Button onClick={() => router.back()} variant="outline" className="mt-4">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
