@@ -7,10 +7,8 @@ import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 const pageSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
-  content: z.any().refine((value) => {
-    const text = getPlainTextFromTiptapJson(value);
-    return text.length >= 10;
-  }, { message: "Content must contain at least 10 characters of text." }),
+  pageType: z.enum(['RICH_TEXT', 'TABLE']),
+  content: z.any(), // Simplified validation for content
   journalId: z.string(),
   parentId: z.string().optional(),
 });
@@ -68,7 +66,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input', issues: validation.error.issues }, { status: 400 });
     }
 
-    const { title, content, journalId, parentId } = validation.data;
+    const { title, content, pageType, journalId, parentId } = validation.data;
     const slug = createSlug(title);
 
     const existingPage = await prisma.journalPage.findUnique({ where: { journalCategoryId_slug: { journalCategoryId: journalId, slug } } });
@@ -87,6 +85,7 @@ export async function POST(request: NextRequest) {
         title,
         slug,
         content,
+        pageType,
         order: newOrder,
         journalCategoryId: journalId,
         parentId: parentId === 'none' ? null : parentId || null,

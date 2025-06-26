@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -128,11 +129,11 @@ export default function EditJournalCategoryPage() {
         </div>
         
         <Tabs defaultValue="details" className="w-full">
-            <TabsList className="border">
-                <TabsTrigger value="details" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsList className="border bg-muted/50 p-1 h-auto">
+                <TabsTrigger value="details" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                     Journal Details
                 </TabsTrigger>
-                <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="pages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                     Manage Pages
                 </TabsTrigger>
             </TabsList>

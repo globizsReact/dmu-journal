@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import TableView from '@/components/category/TableView';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,10 +109,14 @@ export default function CategoryPage() {
                  <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
                     {activePage.title}
                 </h2>
-                <TiptapRenderer 
-                    jsonContent={activePage.content}
-                    className="prose lg:prose-xl max-w-none font-body text-foreground/80"
-                />
+                {activePage.pageType === 'TABLE' ? (
+                    <TableView content={activePage.content} />
+                ) : (
+                    <TiptapRenderer 
+                        jsonContent={activePage.content}
+                        className="prose lg:prose-xl max-w-none font-body text-foreground/80"
+                    />
+                )}
             </div>
         );
     }
