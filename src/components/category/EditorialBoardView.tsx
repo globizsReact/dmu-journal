@@ -6,7 +6,6 @@ import Image from 'next/image';
 
 interface EditorialBoardViewProps {
   members: EditorialBoardMember[];
-  pageTitle: string;
 }
 
 const EditorialBoardCard = ({ member }: { member: EditorialBoardMember }) => (
@@ -37,11 +36,10 @@ const EditorialBoardCard = ({ member }: { member: EditorialBoardMember }) => (
   </div>
 );
 
-export default function EditorialBoardView({ members, pageTitle }: EditorialBoardViewProps) {
+export default function EditorialBoardView({ members }: EditorialBoardViewProps) {
     if (!members) {
         return (
              <div className="py-8">
-                <h2 className="text-2xl font-headline font-bold text-primary mb-6">{pageTitle}</h2>
                 <p className="text-muted-foreground">Loading editorial board...</p>
             </div>
         )
@@ -50,7 +48,6 @@ export default function EditorialBoardView({ members, pageTitle }: EditorialBoar
     if (members.length === 0) {
     return (
       <div className="py-8">
-        <h2 className="text-2xl font-headline font-bold text-primary mb-6">{pageTitle}</h2>
         <p className="text-muted-foreground">The editorial board for this journal has not been established yet.</p>
       </div>
     );
@@ -58,7 +55,6 @@ export default function EditorialBoardView({ members, pageTitle }: EditorialBoar
 
   return (
     <div className="space-y-12">
-        <h2 className="text-2xl font-headline font-bold text-primary">{pageTitle}</h2>
         {members.map(member => (
           <EditorialBoardCard key={member.id} member={member} />
         ))}

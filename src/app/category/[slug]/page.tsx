@@ -129,7 +129,7 @@ export default function CategoryPage() {
                   {activePage.title}
               </h2>
               {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
-                  <EditorialBoardView members={editorialBoard} pageTitle={activePage.title}/>
+                  <EditorialBoardView members={editorialBoard} />
               ) : (
                   <>
                    {activePage.pageType === 'TABLE' ? (
@@ -217,7 +217,7 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-bold text-primary' : 'text-foreground')}>Home</Link>
+            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors", !pageSlug ? 'font-bold text-primary' : 'text-foreground hover:text-primary')}>Home</Link>
             {pages.map(page => {
               const hasChildren = page.children.length > 0;
               if (hasChildren) {
@@ -234,12 +234,8 @@ export default function CategoryPage() {
                         <Button
                           variant="ghost"
                           className={cn(
-                            "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors hover:bg-transparent hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
-                            isParentActive
-                              ? 'font-bold text-primary'
-                              : openDropdownId === page.id
-                              ? 'text-primary'
-                              : 'text-foreground'
+                            "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0",
+                             isParentActive ? 'font-bold text-primary' : openDropdownId === page.id ? 'text-primary' : 'text-foreground hover:text-primary'
                           )}
                         >
                           {page.title}
@@ -264,7 +260,7 @@ export default function CategoryPage() {
                 );
               }
               return (
-                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", page.slug === pageSlug ? 'font-bold text-primary' : 'text-foreground')}>{page.title}</Link>
+                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors", page.slug === pageSlug ? 'font-bold text-primary' : 'text-foreground hover:text-primary')}>{page.title}</Link>
               );
             })}
           </div>
