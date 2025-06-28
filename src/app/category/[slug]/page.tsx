@@ -232,7 +232,7 @@ export default function CategoryPage() {
                         onMouseLeave={() => setOpenDropdownId(null)}
                       >
                         {page.children.map(child => (
-                          <DropdownMenuItem key={child.id} asChild className="cursor-pointer whitespace-nowrap">
+                          <DropdownMenuItem key={child.id} asChild className="cursor-pointer whitespace-nowrap hover:bg-muted focus:bg-muted">
                             <Link href={`/category/${slug}?page=${child.slug}`}>{child.title}</Link>
                           </DropdownMenuItem>
                         ))}
