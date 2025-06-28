@@ -2,7 +2,7 @@
 "use client"; 
 
 import * as React from 'react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -40,6 +40,7 @@ export default function CategoryPage() {
   const [selectedView, setSelectedView] = useState<string>("Most Recent");
   const [pages, setPages] = useState<PageWithChildren[]>([]);
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const menuLeaveTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const activePage = useMemo(() => {
     if (!pageSlug || pages.length === 0) return null;
@@ -106,11 +107,25 @@ export default function CategoryPage() {
     }
   }, [isLoading, category, error]);
 
+  const handleMenuEnter = (pageId: string) => {
+    if (menuLeaveTimeout.current) {
+        clearTimeout(menuLeaveTimeout.current);
+        menuLeaveTimeout.current = null;
+    }
+    setOpenDropdownId(pageId);
+  };
+
+  const handleMenuLeave = () => {
+      menuLeaveTimeout.current = setTimeout(() => {
+          setOpenDropdownId(null);
+      }, 200); // 200ms delay to allow moving to dropdown content
+  };
+
   const renderContent = () => {
     if (activePage) {
         return (
             <div className="py-8">
-                 <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                 <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
                     {activePage.title}
                 </h2>
                 {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
@@ -206,10 +221,10 @@ export default function CategoryPage() {
                   <div
                     key={page.id}
                     className="relative"
-                    onMouseEnter={() => setOpenDropdownId(page.id)}
-                    onMouseLeave={() => setOpenDropdownId(null)}
+                    onMouseEnter={() => handleMenuEnter(page.id)}
+                    onMouseLeave={handleMenuLeave}
                   >
-                    <DropdownMenu open={openDropdownId === page.id} onOpenChange={(isOpen) => setOpenDropdownId(isOpen ? page.id : null)}>
+                    <DropdownMenu open={openDropdownId === page.id}>
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="ghost"
@@ -227,8 +242,6 @@ export default function CategoryPage() {
                       <DropdownMenuContent
                         align="start"
                         className="mt-1 w-auto min-w-[200px]"
-                        onMouseEnter={() => setOpenDropdownId(page.id)}
-                        onMouseLeave={() => setOpenDropdownId(null)}
                       >
                         {page.children.map(child => (
                           <DropdownMenuItem key={child.id} asChild className="cursor-pointer whitespace-nowrap hover:bg-muted focus:bg-muted">
