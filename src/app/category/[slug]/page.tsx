@@ -125,7 +125,7 @@ export default function CategoryPage() {
     if (activePage) {
         return (
             <div className="py-8">
-              <h2 className="text-2xl font-headline font-bold text-primary mb-6">
+              <h2 className="text-xl font-headline font-bold text-primary mb-6">
                   {activePage.title}
               </h2>
               {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
@@ -149,7 +149,7 @@ export default function CategoryPage() {
     return (
         <>
             <section className="my-12">
-              <h2 className="text-2xl font-headline text-primary mb-4 font-bold">Scope Of The {category?.name}</h2>
+              <h2 className="text-xl font-headline text-primary mb-4 font-bold">Scope Of The {category?.name}</h2>
               <TiptapRenderer
                 jsonContent={category?.description}
                 className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
@@ -221,6 +221,7 @@ export default function CategoryPage() {
             {pages.map(page => {
               const hasChildren = page.children.length > 0;
               if (hasChildren) {
+                 const isParentActive = activePage && (activePage.id === page.id || activePage.parentId === page.id);
                 return (
                   <div
                     key={page.id}
@@ -233,9 +234,11 @@ export default function CategoryPage() {
                         <Button
                           variant="ghost"
                           className={cn(
-                            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
-                            (openDropdownId === page.id)
+                            "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors hover:bg-transparent hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
+                            isParentActive
                               ? 'font-bold text-primary'
+                              : openDropdownId === page.id
+                              ? 'text-primary'
                               : 'text-foreground'
                           )}
                         >
