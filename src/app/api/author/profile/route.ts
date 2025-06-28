@@ -11,6 +11,8 @@ const profileUpdateSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
   email: z.string().email('Invalid email address.'),
   avatarUrl: z.string().url().optional().or(z.literal('')),
+  department: z.string().optional(),
+  instituteName: z.string().optional(),
 });
 
 export async function GET(request: NextRequest) {
@@ -39,6 +41,8 @@ export async function GET(request: NextRequest) {
         email: true,
         role: true,
         avatarUrl: true,
+        department: true,
+        instituteName: true,
       },
     });
 
@@ -84,7 +88,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid input data.', issues: validation.error.flatten().fieldErrors }, { status: 400 });
     }
 
-    const { fullName, username, email, avatarUrl } = validation.data;
+    const { fullName, username, email, avatarUrl, department, instituteName } = validation.data;
 
     // Check for username/email conflicts with OTHER users
     const existingUserByUsername = await prisma.user.findUnique({ where: { username } });
@@ -106,6 +110,8 @@ export async function PUT(request: NextRequest) {
         username,
         email,
         avatarUrl,
+        department,
+        instituteName,
       },
       select: { // Only return non-sensitive fields
         id: true,
@@ -114,6 +120,8 @@ export async function PUT(request: NextRequest) {
         email: true,
         role: true,
         avatarUrl: true,
+        department: true,
+        instituteName: true,
       }
     });
 

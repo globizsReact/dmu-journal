@@ -28,6 +28,8 @@ model User {
   role                    UserRole       @default(author)
   submittedManuscripts    Manuscript[]   @relation("SubmittedBy")
   avatarUrl               String?        @db.VarChar(255)
+  department              String?        @db.VarChar(255)
+  instituteName           String?        @db.VarChar(255)
   createdAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
 }

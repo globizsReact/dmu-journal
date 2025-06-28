@@ -302,6 +302,8 @@ const profileFormSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
   email: z.string().email('Invalid email address.'),
   avatarUrl: z.string().url().optional().or(z.literal('')),
+  department: z.string().optional(),
+  instituteName: z.string().optional(),
 });
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
@@ -330,7 +332,7 @@ const EditProfileView = () => {
 
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: { fullName: '', username: '', email: '', avatarUrl: '' },
+    defaultValues: { fullName: '', username: '', email: '', avatarUrl: '', department: '', instituteName: '' },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -500,7 +502,6 @@ const EditProfileView = () => {
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-x-8 gap-y-6">
                   
-                  {/* Left-side column for form fields on desktop */}
                   <div className="md:col-span-2 space-y-6">
                       <FormField control={profileForm.control} name="fullName" render={({ field }) => (
                           <FormItem>
@@ -523,9 +524,22 @@ const EditProfileView = () => {
                               <FormMessage />
                           </FormItem>
                       )} />
+                      <FormField control={profileForm.control} name="department" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Department</FormLabel>
+                              <FormControl><Input placeholder="e.g., Computer Science" {...field} value={field.value ?? ''} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="instituteName" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Institute Name</FormLabel>
+                              <FormControl><Input placeholder="e.g., Dhanamanjuri University" {...field} value={field.value ?? ''} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
                   </div>
                   
-                  {/* Right-side column for avatar on desktop */}
                   <div className="md:col-span-1 flex justify-center md:justify-start">
                       <FormField
                           control={profileForm.control}
