@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 const pageSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
-  pageType: z.enum(['RICH_TEXT', 'TABLE']),
+  pageType: z.enum(['RICH_TEXT', 'TABLE', 'EDITORIAL_BOARD']),
   content: z.any(),
   parentId: z.string().optional(),
 }).superRefine((data, ctx) => {
@@ -53,11 +53,12 @@ const pageSchema = z.object({
             });
         }
     }
+    // No content validation needed for EDITORIAL_BOARD as it's auto-generated
 });
 type PageFormValues = z.infer<typeof pageSchema>;
 
 interface JournalPageFormProps {
-  initialData?: { title: string; content: any; pageType: 'RICH_TEXT' | 'TABLE', parentId: string | null };
+  initialData?: { title: string; content: any; pageType: 'RICH_TEXT' | 'TABLE' | 'EDITORIAL_BOARD', parentId: string | null };
   onSubmit: (values: PageFormValues) => Promise<void>;
   isSubmitting: boolean;
   journalId: string;
@@ -124,46 +125,56 @@ export default function JournalPageForm({ initialData, onSubmit, isSubmitting, j
                         form.setValue('content', defaultRichText, { shouldValidate: true });
                     } else if (value === 'TABLE') {
                         form.setValue('content', defaultTableContent, { shouldValidate: true });
+                    } else if (value === 'EDITORIAL_BOARD') {
+                        form.setValue('content', {}, { shouldValidate: true });
                     }
                  }} defaultValue={field.value} disabled={isSubmitting}>
                   <FormControl><SelectTrigger><SelectValue placeholder="Select a content type" /></SelectTrigger></FormControl>
                   <SelectContent>
                     <SelectItem value="RICH_TEXT">Rich Text (paragraphs, lists, etc.)</SelectItem>
                     <SelectItem value="TABLE">Requirements Table (Heading + Content)</SelectItem>
+                    <SelectItem value="EDITORIAL_BOARD">Editorial Board (Auto-generated)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )} />
 
-            <Controller
-                control={form.control}
-                name="content"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Page Content</FormLabel>
-                        <FormControl>
-                            {watchPageType === 'TABLE' ? (
-                                <TableEditor
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    disabled={isSubmitting}
-                                />
-                            ) : (
-                                <TiptapEditor
-                                    content={field.value}
-                                    onChange={field.onChange}
-                                    isSubmitting={isSubmitting}
-                                />
-                            )}
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
+            {watchPageType !== 'EDITORIAL_BOARD' ? (
+                <Controller
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Page Content</FormLabel>
+                            <FormControl>
+                                {watchPageType === 'TABLE' ? (
+                                    <TableEditor
+                                        value={field.value}
+                                        onChange={field.onChange}
+                                        disabled={isSubmitting}
+                                    />
+                                ) : (
+                                    <TiptapEditor
+                                        content={field.value}
+                                        onChange={field.onChange}
+                                        isSubmitting={isSubmitting}
+                                    />
+                                )}
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            ) : (
+                <div className="text-sm text-muted-foreground bg-muted p-4 rounded-md">
+                    The content for an Editorial Board page is automatically generated from the list of published authors in this journal category. No manual content entry is needed.
+                </div>
+            )}
+
 
             <div className="flex justify-end gap-3 pt-6 border-t mt-6">
-              <Button type="button" variant="outline" onClick={() => router.push(`/admin/dashboard/journals/edit/${journalId}`)} disabled={isSubmitting}>
+              <Button type="button" variant="outline" onClick={() => router.push(`/admin/dashboard/journals/view/${journalId}?tab=pages`)} disabled={isSubmitting}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

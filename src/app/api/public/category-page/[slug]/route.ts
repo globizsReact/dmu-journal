@@ -1,22 +1,7 @@
 
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
-import type { JournalEntry } from '@/lib/types';
-
-// Helper to build a tree structure from a flat list of pages
-function buildPageTree(pages: any[]) {
-    const pageMap = new Map(pages.map(p => [p.id, { ...p, children: [] }]));
-    const rootPages: any[] = [];
-    pages.forEach(p => {
-        if (p.parentId && pageMap.has(p.parentId)) {
-            pageMap.get(p.parentId)?.children.push(pageMap.get(p.id)!);
-        } else {
-            rootPages.push(pageMap.get(p.id)!);
-        }
-    });
-    return rootPages;
-}
+import type { JournalCategory, JournalEntry, PageWithChildren, EditorialBoardMember } from '@/lib/types';
 
 export async function GET(
   request: NextRequest,
@@ -36,51 +21,106 @@ export async function GET(
       return NextResponse.json({ error: 'Category not found' }, { status: 404 });
     }
 
-    const [manuscripts, pages] = await Promise.all([
-      prisma.manuscript.findMany({
-        where: {
-          journalCategoryId: category.id,
-          status: 'Published',
-        },
-        orderBy: {
-          submittedAt: 'desc',
-        },
-      }),
-      prisma.journalPage.findMany({
-        where: { journalCategoryId: category.id },
-        orderBy: { order: 'asc' },
-      })
-    ]);
-
-    const pageTree = buildPageTree(pages);
+    const publishedManuscripts = await prisma.manuscript.findMany({
+      where: {
+        journalCategoryId: category.id,
+        status: 'Published'
+      },
+      select: {
+        id: true,
+        articleTitle: true,
+        abstract: true,
+        submittedAt: true,
+        journalCategoryId: true,
+        submittedById: true,
+        thumbnailImagePath: true,
+        thumbnailImageHint: true,
+        coAuthors: true,
+        views: true,
+        downloads: true,
+        citations: true,
+        keywords: true,
+      }
+    });
     
-    // Transform manuscripts to JournalEntry format for the frontend
-    const journalEntries: JournalEntry[] = manuscripts.map(m => ({
-      id: m.id,
-      title: m.articleTitle,
-      abstract: m.abstract,
-      date: m.submittedAt.toISOString(),
-      categoryId: m.journalCategoryId,
-      excerpt: getPlainTextFromTiptapJson(m.abstract).substring(0, 250) + '...',
-      authors: m.coAuthors && typeof m.coAuthors === 'object' ? (m.coAuthors as any[]).map(a => `${a.givenName} ${a.lastName}`) : [],
-      keywords: m.keywords || undefined,
-      articleType: "Published Article", // This could be a field in the future
-      thumbnailImagePath: m.thumbnailImagePath,
-      thumbnailImageHint: m.thumbnailImageHint,
-      views: m.views,
-      downloads: m.downloads,
-      citations: m.citations,
+    const journalEntries: JournalEntry[] = publishedManuscripts.map(ms => ({
+      id: ms.id,
+      title: ms.articleTitle,
+      abstract: ms.abstract,
+      date: ms.submittedAt.toISOString(),
+      categoryId: ms.journalCategoryId,
+      excerpt: typeof ms.abstract === 'object' && ms.abstract && 'content' in ms.abstract ? (ms.abstract as any).content.map((c: any) => c.content?.map((t: any) => t.text).join(' ')).join(' ').substring(0, 150) + '...' : '',
+      authors: Array.isArray(ms.coAuthors) ? ms.coAuthors.map((a: any) => `${a.title} ${a.givenName} ${a.lastName}`) : [],
+      thumbnailImagePath: ms.thumbnailImagePath || undefined,
+      thumbnailImageHint: ms.thumbnailImageHint || undefined,
+      views: ms.views || 0,
+      downloads: ms.downloads || 0,
+      citations: ms.citations || 0,
+      keywords: ms.keywords || undefined,
     }));
 
-
-    return NextResponse.json({
-      category,
-      journals: journalEntries,
-      pages: pageTree,
+    const pagesResult = await prisma.journalPage.findMany({
+      where: { journalCategoryId: category.id },
+      orderBy: { order: 'asc' },
     });
 
-  } catch (error) {
-    console.error(`Error fetching data for category ${slug}:`, error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const pageMap = new Map(pagesResult.map(p => [p.id, { ...p, children: [] }]));
+    const rootPages: PageWithChildren[] = [];
+    pagesResult.forEach(p => {
+      if (p.parentId && pageMap.has(p.parentId)) {
+        pageMap.get(p.parentId)?.children.push(pageMap.get(p.id)!);
+      } else {
+        rootPages.push(pageMap.get(p.id)!);
+      }
+    });
+
+    // --- New Editorial Board Logic ---
+    let editorialBoard: EditorialBoardMember[] = [];
+    const hasEditorialBoardPage = pagesResult.some(p => p.pageType === 'EDITORIAL_BOARD');
+
+    if (hasEditorialBoardPage) {
+        // We already have the published manuscripts, let's find the unique authors
+        const authorIds = [...new Set(publishedManuscripts.map(m => m.submittedById))];
+
+        const authors = await prisma.user.findMany({
+          where: { id: { in: authorIds } },
+          select: { id: true, fullName: true },
+        });
+
+        editorialBoard = authors.map(author => {
+            const firstManuscript = publishedManuscripts.find(m => m.submittedById === author.id);
+            let affiliation = "Affiliation not available";
+            
+            if (firstManuscript && firstManuscript.coAuthors && Array.isArray(firstManuscript.coAuthors) && firstManuscript.coAuthors.length > 0) {
+              const coAuthorInfo = firstManuscript.coAuthors[0] as any;
+              if (coAuthorInfo.affiliation && coAuthorInfo.country) {
+                affiliation = `${coAuthorInfo.affiliation}, ${coAuthorInfo.country}`;
+              } else if (coAuthorInfo.affiliation) {
+                affiliation = coAuthorInfo.affiliation;
+              }
+            }
+
+            return {
+                id: author.id,
+                fullName: author.fullName || 'Unknown Author',
+                articleNumber: firstManuscript?.id || 'N/A',
+                journalName: category.name,
+                affiliation: affiliation,
+            };
+        });
+    }
+
+
+    const responsePayload = {
+      category,
+      journals: journalEntries,
+      pages: rootPages,
+      editorialBoard: editorialBoard.length > 0 ? editorialBoard : null,
+    };
+
+    return NextResponse.json(responsePayload);
+  } catch (error: any) {
+    console.error(`Error fetching category page data for slug ${slug}:`, error);
+    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }

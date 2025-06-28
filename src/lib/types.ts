@@ -36,3 +36,12 @@ export interface JournalEntry {
   thumbnailImagePath?: string;
   thumbnailImageHint?: string;
 }
+
+export interface EditorialBoardMember {
+  id: number;
+  fullName: string;
+  articleNumber: string;
+  journalName: string;
+  affiliation: string;
+  avatarUrl?: string; // Optional for now
+}

@@ -8,7 +8,7 @@ import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import ArticleListItemCard from '@/components/category/ArticleListItemCard';
 import ViewFilters from '@/components/category/ViewFilters';
-import type { JournalCategory, JournalEntry, PageWithChildren } from '@/lib/types';
+import type { JournalCategory, JournalEntry, PageWithChildren, EditorialBoardMember } from '@/lib/types';
 import { ArrowLeft, BookOpen, ChevronDown, FileText, Info, Loader2, Shield } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
 import TableView from '@/components/category/TableView';
+import EditorialBoardView from '@/components/category/EditorialBoardView';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +33,7 @@ export default function CategoryPage() {
 
   const [category, setCategory] = useState<JournalCategory | null>(null);
   const [allCategoryJournals, setAllCategoryJournals] = useState<JournalEntry[]>([]);
+  const [editorialBoard, setEditorialBoard] = useState<EditorialBoardMember[] | null>(null);
   const [displayedEntries, setDisplayedEntries] = useState<JournalEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,10 +67,11 @@ export default function CategoryPage() {
           const errData = await response.json();
           throw new Error(errData.error || 'Failed to fetch category data.');
         }
-        const data: { category: JournalCategory; journals: JournalEntry[], pages: PageWithChildren[] } = await response.json();
+        const data: { category: JournalCategory; journals: JournalEntry[], pages: PageWithChildren[], editorialBoard: EditorialBoardMember[] | null } = await response.json();
         setCategory(data.category);
         setAllCategoryJournals(data.journals);
         setPages(data.pages);
+        setEditorialBoard(data.editorialBoard);
       } catch (err: any) {
         console.error(`Error fetching data for slug ${slug}:`, err);
         setError(err.message);
@@ -104,6 +107,9 @@ export default function CategoryPage() {
 
   const renderContent = () => {
     if (activePage) {
+        if (activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard) {
+            return <EditorialBoardView members={editorialBoard} />;
+        }
         return (
             <div className="py-8">
                  <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
