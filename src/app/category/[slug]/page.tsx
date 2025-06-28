@@ -149,7 +149,7 @@ export default function CategoryPage() {
     return (
         <>
             <section className="my-12">
-              <h2 className="text-3xl font-headline text-primary mb-4">Scope Of The {category?.name}</h2>
+              <h2 className="text-2xl font-headline text-primary mb-4 font-bold">Scope Of The {category?.name}</h2>
               <TiptapRenderer
                 jsonContent={category?.description}
                 className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
@@ -217,7 +217,7 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", !pageSlug ? 'font-bold text-primary' : 'text-foreground')}>Home</Link>
+            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-bold text-primary' : 'text-foreground')}>Home</Link>
             {pages.map(page => {
               const hasChildren = page.children.length > 0;
               if (hasChildren) {
@@ -233,7 +233,7 @@ export default function CategoryPage() {
                         <Button
                           variant="ghost"
                           className={cn(
-                            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:font-bold hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
+                            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
                             (openDropdownId === page.id)
                               ? 'font-bold text-primary'
                               : 'text-foreground'
@@ -261,7 +261,7 @@ export default function CategoryPage() {
                 );
               }
               return (
-                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", page.slug === pageSlug ? 'font-bold text-primary' : 'text-foreground')}>{page.title}</Link>
+                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", page.slug === pageSlug ? 'font-bold text-primary' : 'text-foreground')}>{page.title}</Link>
               );
             })}
           </div>
