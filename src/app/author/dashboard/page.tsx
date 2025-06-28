@@ -498,20 +498,45 @@ const EditProfileView = () => {
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
                 
-                <div className="flex flex-col md:flex-row-reverse items-start gap-x-8 gap-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-x-8 gap-y-6">
+                  
+                  {/* Left-side column for form fields on desktop */}
+                  <div className="md:col-span-2 space-y-6">
+                      <FormField control={profileForm.control} name="fullName" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="username" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Username</FormLabel>
+                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="email" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Email Address</FormLabel>
+                              <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                  </div>
                   
                   {/* Right-side column for avatar on desktop */}
-                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                  <div className="md:col-span-1 flex justify-center md:justify-start">
                       <FormField
                           control={profileForm.control}
                           name="avatarUrl"
                           render={({ field }) => (
                               <FormItem>
-                                  <FormLabel className="md:not-sr-only text-center md:text-left block w-full">Profile Picture</FormLabel>
+                                  <FormLabel className="text-center md:text-left block w-full">Profile Picture</FormLabel>
                                   <FormControl>
                                       <div className="relative w-32 h-32 group mt-2">
                                           <Avatar className="w-full h-full border-2 border-muted">
-                                              <AvatarImage src={toPublicUrl(imagePreview)} alt={profileForm.getValues('fullName') || 'Avatar Preview'} data-ai-hint="placeholder avatar" />
+                                              <AvatarImage src={toPublicUrl(imagePreview)} alt={profileForm.getValues('fullName') || 'Avatar Preview'} data-ai-hint="placeholder avatar" className="object-cover" />
                                               <AvatarFallback className="text-4xl">
                                                   {getInitials(profileForm.getValues('fullName'))}
                                               </AvatarFallback>
@@ -546,34 +571,9 @@ const EditProfileView = () => {
                           )}
                       />
                   </div>
-
-                  {/* Left-side column for form fields on desktop */}
-                  <div className="flex-grow space-y-6">
-                      <FormField control={profileForm.control} name="fullName" render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Full Name</FormLabel>
-                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                              <FormMessage />
-                          </FormItem>
-                      )} />
-                      <FormField control={profileForm.control} name="username" render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Username</FormLabel>
-                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                              <FormMessage />
-                          </FormItem>
-                      )} />
-                      <FormField control={profileForm.control} name="email" render={({ field }) => (
-                          <FormItem>
-                              <FormLabel>Email Address</FormLabel>
-                              <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
-                              <FormMessage />
-                          </FormItem>
-                      )} />
-                  </div>
                 </div>
 
-              <div className="flex justify-end pt-4 border-t">
+              <div className="flex justify-start pt-4 border-t">
                 <Button type="submit" disabled={isUpdatingProfile || isUploading} className="bg-green-600 hover:bg-green-700">
                   {(isUpdatingProfile || isUploading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                   Save Profile Changes
