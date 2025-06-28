@@ -42,6 +42,8 @@ export interface EditorialBoardMember {
   fullName: string;
   articleNumber: string;
   journalName: string;
-  affiliation: string;
-  avatarUrl?: string; // Optional for now
+  manuscriptTitle: string;
+  department?: string | null;
+  instituteName?: string | null;
+  avatarUrl?: string | null;
 }
