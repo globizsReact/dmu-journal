@@ -498,76 +498,87 @@ const EditProfileView = () => {
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
                 
-                <FormField
-                  control={profileForm.control}
-                  name="avatarUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Profile Picture</FormLabel>
-                      <FormControl>
-                        <div className="relative w-32 h-32 group">
-                          <Avatar className="w-full h-full border-2 border-muted">
-                            <AvatarImage src={toPublicUrl(imagePreview)} alt={profileForm.getValues('fullName') || 'Avatar Preview'} data-ai-hint="placeholder avatar" />
-                            <AvatarFallback className="text-4xl">
-                              {getInitials(profileForm.getValues('fullName'))}
-                            </AvatarFallback>
-                          </Avatar>
-                          <label
-                            htmlFor="avatar-upload"
-                            className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors shadow-md"
-                          >
-                            <Camera className="w-4 h-4" />
-                            <span className="sr-only">Upload picture</span>
-                          </label>
-                          <Input
-                            id="avatar-upload"
-                            type="file"
-                            className="hidden"
-                            onChange={handleFileChange}
-                            accept="image/png, image/jpeg, image/webp"
-                            disabled={isUploading || isUpdatingProfile}
-                          />
-                        </div>
-                      </FormControl>
-                      {fileName && (
-                        <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
-                          {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                          {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
-                          {uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}
-                          <span className="truncate">{fileName}</span>
-                        </div>
-                      )}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField control={profileForm.control} name="fullName" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField control={profileForm.control} name="username" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Username</FormLabel>
-                    <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
-                <FormField control={profileForm.control} name="email" render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )} />
+                <div className="flex flex-col md:flex-row-reverse items-start gap-x-8 gap-y-6">
+                  
+                  {/* Right-side column for avatar on desktop */}
+                  <div className="flex-shrink-0 w-full md:w-auto flex justify-center">
+                      <FormField
+                          control={profileForm.control}
+                          name="avatarUrl"
+                          render={({ field }) => (
+                              <FormItem>
+                                  <FormLabel className="md:not-sr-only text-center md:text-left block w-full">Profile Picture</FormLabel>
+                                  <FormControl>
+                                      <div className="relative w-32 h-32 group mt-2">
+                                          <Avatar className="w-full h-full border-2 border-muted">
+                                              <AvatarImage src={toPublicUrl(imagePreview)} alt={profileForm.getValues('fullName') || 'Avatar Preview'} data-ai-hint="placeholder avatar" />
+                                              <AvatarFallback className="text-4xl">
+                                                  {getInitials(profileForm.getValues('fullName'))}
+                                              </AvatarFallback>
+                                          </Avatar>
+                                          <label
+                                              htmlFor="avatar-upload"
+                                              className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors shadow-md"
+                                          >
+                                              <Camera className="w-4 h-4" />
+                                              <span className="sr-only">Upload picture</span>
+                                          </label>
+                                          <Input
+                                              id="avatar-upload"
+                                              type="file"
+                                              className="hidden"
+                                              onChange={handleFileChange}
+                                              accept="image/png, image/jpeg, image/webp"
+                                              disabled={isUploading || isUpdatingProfile}
+                                          />
+                                      </div>
+                                  </FormControl>
+                                  {fileName && (
+                                      <div className="mt-2 text-sm flex items-center justify-center text-center gap-2 text-muted-foreground">
+                                          {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                          {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
+                                          {uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}
+                                          <span className="truncate max-w-[150px]">{fileName}</span>
+                                      </div>
+                                  )}
+                                  <FormMessage />
+                              </FormItem>
+                          )}
+                      />
+                  </div>
 
-              <Button type="submit" disabled={isUpdatingProfile || isUploading} className="bg-green-600 hover:bg-green-700">
-                {(isUpdatingProfile || isUploading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                Save Profile Changes
-              </Button>
+                  {/* Left-side column for form fields on desktop */}
+                  <div className="flex-grow space-y-6">
+                      <FormField control={profileForm.control} name="fullName" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Full Name</FormLabel>
+                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="username" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Username</FormLabel>
+                              <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                      <FormField control={profileForm.control} name="email" render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Email Address</FormLabel>
+                              <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
+                              <FormMessage />
+                          </FormItem>
+                      )} />
+                  </div>
+                </div>
+
+              <div className="flex justify-end pt-4 border-t">
+                <Button type="submit" disabled={isUpdatingProfile || isUploading} className="bg-green-600 hover:bg-green-700">
+                  {(isUpdatingProfile || isUploading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Save Profile Changes
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>
