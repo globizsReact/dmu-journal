@@ -573,7 +573,7 @@ const EditProfileView = () => {
                   </div>
                 </div>
 
-              <div className="flex justify-start pt-4 border-t">
+              <div className="flex justify-start pt-4">
                 <Button type="submit" disabled={isUpdatingProfile || isUploading} className="bg-green-600 hover:bg-green-700">
                   {(isUpdatingProfile || isUploading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                   Save Profile Changes
