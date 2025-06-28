@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle, MoreVertical, Pencil, Trash2, Undo2, FileUp, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle, MoreVertical, Pencil, Trash2, Undo2, FileUp, CheckCircle, AlertTriangle, Camera } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -41,6 +41,7 @@ import {
 import DeleteManuscriptDialog from '@/components/author/dialogs/DeleteManuscriptDialog';
 import Image from 'next/image';
 import { toPublicUrl } from '@/lib/urlUtils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const MyManuscriptView = () => {
@@ -336,6 +337,13 @@ const EditProfileView = () => {
     resolver: zodResolver(passwordFormSchema),
     defaultValues: { currentPassword: '', newPassword: '', confirmNewPassword: '' },
   });
+  
+  const getInitials = (name: string) => {
+    if (!name) return '?';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0][0].toUpperCase();
+    return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -489,46 +497,50 @@ const EditProfileView = () => {
         <CardContent>
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-                <fieldset className="border p-4 rounded-md">
-                    <legend className="text-lg font-headline font-semibold text-primary px-2">Profile Picture</legend>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 items-center">
-                        <div>
-                            <FormLabel>Preview</FormLabel>
-                            <div className="mt-2 aspect-square w-40 relative rounded-full overflow-hidden border bg-muted">
-                                {imagePreview ? (
-                                    <Image src={toPublicUrl(imagePreview)} alt="Avatar Preview" fill sizes="10vw" className="object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center"><span className="text-xs text-muted-foreground">No Image</span></div>
-                                )}
-                            </div>
+                
+                <FormField
+                  control={profileForm.control}
+                  name="avatarUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Profile Picture</FormLabel>
+                      <FormControl>
+                        <div className="relative w-32 h-32 group">
+                          <Avatar className="w-full h-full border-2 border-muted">
+                            <AvatarImage src={toPublicUrl(imagePreview)} alt={profileForm.getValues('fullName') || 'Avatar Preview'} data-ai-hint="placeholder avatar" />
+                            <AvatarFallback className="text-4xl">
+                              {getInitials(profileForm.getValues('fullName'))}
+                            </AvatarFallback>
+                          </Avatar>
+                          <label
+                            htmlFor="avatar-upload"
+                            className="absolute bottom-1 right-1 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors shadow-md"
+                          >
+                            <Camera className="w-4 h-4" />
+                            <span className="sr-only">Upload picture</span>
+                          </label>
+                          <Input
+                            id="avatar-upload"
+                            type="file"
+                            className="hidden"
+                            onChange={handleFileChange}
+                            accept="image/png, image/jpeg, image/webp"
+                            disabled={isUploading || isUpdatingProfile}
+                          />
                         </div>
-                        <div className="space-y-2">
-                             <FormField control={profileForm.control} name="avatarUrl" render={() => (
-                                <FormItem>
-                                    <FormLabel>Upload New Picture</FormLabel>
-                                    <FormControl>
-                                        <Button type="button" variant="outline" asChild disabled={isUploading || isUpdatingProfile} className="w-full">
-                                            <label htmlFor="avatar-upload" className="cursor-pointer flex items-center gap-2">
-                                                <FileUp className="w-4 h-4" />
-                                                {isUploading ? 'Uploading...' : 'Choose Picture'}
-                                            </label>
-                                        </Button>
-                                    </FormControl>
-                                    <Input id="avatar-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={isUploading || isUpdatingProfile}/>
-                                    {fileName && (
-                                        <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
-                                            {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                                            {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
-                                            {uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}
-                                            <span className="truncate">{fileName}</span>
-                                        </div>
-                                    )}
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
+                      </FormControl>
+                      {fileName && (
+                        <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
+                          {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
+                          {uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}
+                          <span className="truncate">{fileName}</span>
                         </div>
-                    </div>
-                </fieldset>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <FormField control={profileForm.control} name="fullName" render={({ field }) => (
                     <FormItem>
