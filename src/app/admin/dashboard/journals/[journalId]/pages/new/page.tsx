@@ -60,7 +60,7 @@ export default function NewJournalPage() {
       if (!response.ok) throw new Error(data.error || 'Failed to create page.');
       
       toast({ title: 'Success', description: 'Page created successfully.' });
-      router.push(`/admin/dashboard/journals/edit/${journalId}`);
+      router.push(`/admin/dashboard/journals/view/${journalId}?tab=pages`);
     } catch (error: any) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } finally {
@@ -71,8 +71,8 @@ export default function NewJournalPage() {
   return (
     <div className="space-y-4">
       <Button asChild variant="outline" size="sm" className="w-fit">
-        <Link href={`/admin/dashboard/journals/edit/${journalId}`}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Journal
+        <Link href={`/admin/dashboard/journals/view/${journalId}?tab=pages`}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Journal Pages
         </Link>
       </Button>
       <JournalPageForm

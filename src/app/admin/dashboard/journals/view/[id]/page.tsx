@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import type { JournalCategory as JournalCategoryType } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,9 @@ const DetailItem = ({ label, value }: { label: string; value: string | number | 
 export default function ViewJournalCategoryPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const id = params.id as string;
+  const activeTab = searchParams.get('tab');
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +118,7 @@ export default function ViewJournalCategoryPage() {
             </Button>
         </div>
         
-        <Tabs defaultValue="details" className="w-full">
+        <Tabs defaultValue={activeTab === 'pages' ? 'pages' : 'details'} className="w-full">
             <TabsList className="border bg-muted/50 p-1 h-auto">
                 <TabsTrigger value="details" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm">
                     Journal Details
