@@ -20,7 +20,7 @@ export default function AuthorsSectionPage() {
         <h1 className="text-4xl font-headline font-bold text-primary mb-6">
           Authors Section
         </h1>
-        <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-6">
+        <div className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 space-y-6">
           <section>
             <h2 className="text-2xl font-headline font-semibold text-primary/90">Submission Guidelines</h2>
             <p>

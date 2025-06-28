@@ -125,18 +125,22 @@ export default function CategoryPage() {
     if (activePage) {
         return (
             <div className="py-8">
-                 <h2 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-6">
-                    {activePage.title}
-                </h2>
                 {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
-                    <EditorialBoardView members={editorialBoard} />
-                ) : activePage.pageType === 'TABLE' ? (
-                    <TableView content={activePage.content} />
+                    <EditorialBoardView members={editorialBoard} pageTitle={activePage.title}/>
                 ) : (
-                    <TiptapRenderer 
-                        jsonContent={activePage.content}
-                        className="prose lg:prose-xl max-w-none font-body text-foreground/80"
-                    />
+                    <>
+                     <h2 className="text-2xl font-headline font-bold text-primary mb-6">
+                        {activePage.title}
+                     </h2>
+                     {activePage.pageType === 'TABLE' ? (
+                        <TableView content={activePage.content} />
+                     ) : (
+                        <TiptapRenderer 
+                            jsonContent={activePage.content}
+                            className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+                        />
+                     )}
+                    </>
                 )}
             </div>
         );
@@ -220,7 +224,7 @@ export default function CategoryPage() {
                 return (
                   <div
                     key={page.id}
-                    className="relative"
+                    className="group/menu relative"
                     onMouseEnter={() => handleMenuEnter(page.id)}
                     onMouseLeave={handleMenuLeave}
                   >
@@ -242,6 +246,7 @@ export default function CategoryPage() {
                       <DropdownMenuContent
                         align="start"
                         className="mt-1 w-auto min-w-[200px]"
+                        onMouseLeave={handleMenuLeave}
                       >
                         {page.children.map(child => (
                           <DropdownMenuItem key={child.id} asChild className="cursor-pointer whitespace-nowrap hover:bg-muted focus:bg-muted">

@@ -20,7 +20,7 @@ export default function AboutDmujPage() {
         <h1 className="text-4xl font-headline font-bold text-primary mb-6">
           About DMUJ
         </h1>
-        <div className="prose lg:prose-xl max-w-none font-body text-foreground/80 space-y-4">
+        <div className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 space-y-4">
           <p>
             Welcome to the Dhanamanjuri University Journals (DMUJ) portal. This section provides comprehensive
             information about DMUJ, our mission, vision, and the overarching objectives that guide our commitment

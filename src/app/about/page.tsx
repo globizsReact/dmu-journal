@@ -145,7 +145,7 @@ export default function AboutUsPage() {
                     </h2>
                     <TiptapRenderer 
                         jsonContent={pageData.content} 
-                        className="prose lg:prose-lg max-w-none font-body text-foreground/80"
+                        className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
                     />
                 </>
             )}
