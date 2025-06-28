@@ -217,7 +217,7 @@ export default function CategoryPage() {
                           className={cn(
                             "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:font-bold hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
                             page.children.some(c => c.slug === pageSlug)
-                              ? 'font-semibold text-primary bg-muted'
+                              ? 'font-semibold text-primary'
                               : 'text-foreground'
                           )}
                         >
@@ -227,10 +227,12 @@ export default function CategoryPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="start"
-                        className="mt-1 w-[200px]"
+                        className="mt-1 w-auto min-w-[200px]"
+                        onMouseEnter={() => setOpenDropdownId(page.id)}
+                        onMouseLeave={() => setOpenDropdownId(null)}
                       >
                         {page.children.map(child => (
-                          <DropdownMenuItem key={child.id} asChild>
+                          <DropdownMenuItem key={child.id} asChild className="cursor-pointer whitespace-nowrap">
                             <Link href={`/category/${slug}?page=${child.slug}`}>{child.title}</Link>
                           </DropdownMenuItem>
                         ))}
