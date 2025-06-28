@@ -16,9 +16,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { toPublicUrl } from '@/lib/urlUtils';
+
 
 interface DashboardSidebarProps {
   authorName: string;
+  avatarUrl: string | null;
   activeTab: string;
   onTabChange: (tabKey: string) => void;
 }
@@ -38,7 +42,7 @@ const navItems: NavItem[] = [
   { label: 'Logout', icon: LogOut, isLogout: true },
 ];
 
-export default function DashboardSidebar({ authorName, activeTab, onTabChange }: DashboardSidebarProps) {
+export default function DashboardSidebar({ authorName, avatarUrl, activeTab, onTabChange }: DashboardSidebarProps) {
   const router = useRouter();
 
   const handleLogout = () => {
@@ -49,16 +53,30 @@ export default function DashboardSidebar({ authorName, activeTab, onTabChange }:
       localStorage.removeItem('userRole');
       localStorage.removeItem('rememberAuthorLogin'); 
       localStorage.removeItem('rememberedUsername');
+      localStorage.removeItem('avatarUrl');
       window.dispatchEvent(new CustomEvent('authChange'));
     }
     router.push('/submit');
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return 'A';
+    const names = name.split(' ');
+    if (names.length === 1) return names[0][0];
+    return names[0][0] + names[names.length - 1][0];
+  };
+
   return (
     <aside className="w-full lg:w-64 self-start">
-      <div className="mb-6 px-3">
-        <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
-        <p className="text-sm text-muted-foreground">{authorName}</p>
+      <div className="mb-6 px-3 flex items-center gap-3">
+        <Avatar>
+          <AvatarImage src={toPublicUrl(avatarUrl)} alt={authorName} data-ai-hint="placeholder avatar" />
+          <AvatarFallback>{getInitials(authorName)}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-xl font-headline font-semibold text-primary">Author</h2>
+          <p className="text-sm text-muted-foreground">{authorName}</p>
+        </div>
       </div>
       <nav className="space-y-2 px-3 pb-3">
         {navItems.map((item) => {

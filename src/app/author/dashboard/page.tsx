@@ -21,7 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from '@/components/ui/button';
-import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle, MoreVertical, Pencil, Trash2, Undo2 } from 'lucide-react';
+import { Eye, Loader2, Save, KeyRound, FilePlus, FileClock, FileCheck2, IndianRupee, BookUp, FileX2, HelpCircle, MoreVertical, Pencil, Trash2, Undo2, FileUp, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
@@ -39,6 +39,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import DeleteManuscriptDialog from '@/components/author/dialogs/DeleteManuscriptDialog';
+import Image from 'next/image';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 
 const MyManuscriptView = () => {
@@ -290,11 +292,15 @@ const MyManuscriptView = () => {
   );
 };
 
+const MAX_AVATAR_SIZE_MB = 2;
+const MAX_AVATAR_SIZE_BYTES = MAX_AVATAR_SIZE_MB * 1024 * 1024;
+
 const profileFormSchema = z.object({
   fullName: z.string().min(3, 'Full name must be at least 3 characters.').max(100),
   username: z.string().min(3, 'Username must be at least 3 characters.').max(50)
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores.'),
   email: z.string().email('Invalid email address.'),
+  avatarUrl: z.string().url().optional().or(z.literal('')),
 });
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
@@ -315,9 +321,15 @@ const EditProfileView = () => {
   const { toast } = useToast();
   const [authToken, setAuthToken] = useState<string | null>(null);
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: { fullName: '', username: '', email: '' },
+    defaultValues: { fullName: '', username: '', email: '', avatarUrl: '' },
   });
 
   const passwordForm = useForm<PasswordFormValues>({
@@ -350,10 +362,13 @@ const EditProfileView = () => {
       }
       const data = await response.json();
       profileForm.reset(data); // Populate form with fetched data
-      // Update authorName in localStorage if it changed
+      if (data.avatarUrl) {
+        setImagePreview(data.avatarUrl);
+      }
       if (typeof window !== 'undefined' && data.fullName) {
         localStorage.setItem('authorName', data.fullName);
-        window.dispatchEvent(new CustomEvent('authChange')); // Notify header or other components
+        localStorage.setItem('avatarUrl', data.avatarUrl || '');
+        window.dispatchEvent(new CustomEvent('authChange')); 
       }
     } catch (error: any) {
       toast({ title: "Error Fetching Profile", description: error.message, variant: "destructive" });
@@ -361,6 +376,44 @@ const EditProfileView = () => {
       setIsLoadingProfile(false);
     }
   };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !authToken) return;
+
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      toast({ title: "File Too Large", description: `Profile picture must be less than ${MAX_AVATAR_SIZE_MB}MB.`, variant: "destructive" });
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadSuccess(false);
+    setUploadError(null);
+    setFileName(file.name);
+    profileForm.setValue('avatarUrl', '');
+    setImagePreview(URL.createObjectURL(file));
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/author/uploads/presigned-url', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${authToken}` },
+        body: formData,
+      });
+      const { publicUrl, error } = await response.json();
+      if (!response.ok) throw new Error(error || 'Failed to upload file.');
+      profileForm.setValue('avatarUrl', publicUrl, { shouldValidate: true });
+      setUploadSuccess(true);
+    } catch (error: any) {
+      setUploadError(error.message);
+      toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
+      setImagePreview(profileForm.getValues('avatarUrl'));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   const onProfileSubmit = async (values: ProfileFormValues) => {
     if (!authToken) return;
@@ -378,8 +431,9 @@ const EditProfileView = () => {
       const updatedData = await response.json();
       toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
       profileForm.reset(updatedData); // Reset with new data to reflect changes
-       if (typeof window !== 'undefined' && updatedData.fullName) {
-        localStorage.setItem('authorName', updatedData.fullName);
+       if (typeof window !== 'undefined') {
+        localStorage.setItem('authorName', updatedData.fullName || '');
+        localStorage.setItem('avatarUrl', updatedData.avatarUrl || '');
         window.dispatchEvent(new CustomEvent('authChange'));
       }
     } catch (error: any) {
@@ -435,29 +489,71 @@ const EditProfileView = () => {
         <CardContent>
           <Form {...profileForm}>
             <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-6">
-              <FormField control={profileForm.control} name="fullName" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={profileForm.control} name="username" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <FormField control={profileForm.control} name="email" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-              <Button type="submit" disabled={isUpdatingProfile} className="bg-green-600 hover:bg-green-700">
-                {isUpdatingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                <fieldset className="border p-4 rounded-md">
+                    <legend className="text-lg font-headline font-semibold text-primary px-2">Profile Picture</legend>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 items-center">
+                        <div>
+                            <FormLabel>Preview</FormLabel>
+                            <div className="mt-2 aspect-square w-40 relative rounded-full overflow-hidden border bg-muted">
+                                {imagePreview ? (
+                                    <Image src={toPublicUrl(imagePreview)} alt="Avatar Preview" fill sizes="10vw" className="object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center"><span className="text-xs text-muted-foreground">No Image</span></div>
+                                )}
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                             <FormField control={profileForm.control} name="avatarUrl" render={() => (
+                                <FormItem>
+                                    <FormLabel>Upload New Picture</FormLabel>
+                                    <FormControl>
+                                        <Button type="button" variant="outline" asChild disabled={isUploading || isUpdatingProfile} className="w-full">
+                                            <label htmlFor="avatar-upload" className="cursor-pointer flex items-center gap-2">
+                                                <FileUp className="w-4 h-4" />
+                                                {isUploading ? 'Uploading...' : 'Choose Picture'}
+                                            </label>
+                                        </Button>
+                                    </FormControl>
+                                    <Input id="avatar-upload" type="file" className="hidden" onChange={handleFileChange} accept="image/png, image/jpeg, image/webp" disabled={isUploading || isUpdatingProfile}/>
+                                    {fileName && (
+                                        <div className="mt-2 text-sm flex items-center gap-2 text-muted-foreground">
+                                            {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                                            {uploadSuccess && <CheckCircle className="w-4 h-4 text-green-500" />}
+                                            {uploadError && <AlertTriangle className="w-4 h-4 text-destructive" />}
+                                            <span className="truncate">{fileName}</span>
+                                        </div>
+                                    )}
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <FormField control={profileForm.control} name="fullName" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Full Name</FormLabel>
+                    <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={profileForm.control} name="username" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl><Input {...field} disabled={isUpdatingProfile} /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )} />
+                <FormField control={profileForm.control} name="email" render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl><Input type="email" {...field} disabled={isUpdatingProfile} /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )} />
+
+              <Button type="submit" disabled={isUpdatingProfile || isUploading} className="bg-green-600 hover:bg-green-700">
+                {(isUpdatingProfile || isUploading) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                 Save Profile Changes
               </Button>
             </form>
@@ -511,6 +607,7 @@ const EditProfileView = () => {
 
 export default function AuthorDashboardPage() {
   const [authorName, setAuthorName] = useState("Loading...");
+  const [authorAvatar, setAuthorAvatar] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const router = useRouter();
   const { toast } = useToast();
@@ -530,7 +627,9 @@ export default function AuthorDashboardPage() {
       const isLoggedIn = localStorage.getItem('isAuthorLoggedIn') === 'true';
       const storedName = localStorage.getItem('authorName');
       const token = localStorage.getItem('authToken');
+      const avatar = localStorage.getItem('avatarUrl');
       setAuthToken(token);
+      setAuthorAvatar(avatar);
       
       if (!isLoggedIn) {
         router.push('/submit'); 
@@ -548,9 +647,11 @@ export default function AuthorDashboardPage() {
 
       const handleAuthChange = () => {
         const updatedName = localStorage.getItem('authorName');
+        const updatedAvatar = localStorage.getItem('avatarUrl');
         if (updatedName) {
           setAuthorName(updatedName);
         }
+        setAuthorAvatar(updatedAvatar);
       };
       window.addEventListener('authChange', handleAuthChange);
       return () => {
@@ -619,6 +720,7 @@ export default function AuthorDashboardPage() {
       <div className="flex flex-col lg:flex-row flex-1 container mx-auto py-8 px-4 md:px-6 lg:px-8">
         <DashboardSidebar 
           authorName={authorName} 
+          avatarUrl={authorAvatar}
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />

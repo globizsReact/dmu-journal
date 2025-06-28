@@ -186,6 +186,7 @@ export default function SubmitPage() {
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'User'); 
           localStorage.setItem('userRole', data.user.role || 'author');
+          localStorage.setItem('avatarUrl', data.user.avatarUrl || '');
 
           if (values.rememberMe && values.username) {
             localStorage.setItem('rememberAuthorLogin', 'true');
