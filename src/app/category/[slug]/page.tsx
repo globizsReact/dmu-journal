@@ -125,23 +125,23 @@ export default function CategoryPage() {
     if (activePage) {
         return (
             <div className="py-8">
-                {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
-                    <EditorialBoardView members={editorialBoard} pageTitle={activePage.title}/>
-                ) : (
-                    <>
-                     <h2 className="text-2xl font-headline font-bold text-primary mb-6">
-                        {activePage.title}
-                     </h2>
-                     {activePage.pageType === 'TABLE' ? (
-                        <TableView content={activePage.content} />
-                     ) : (
-                        <TiptapRenderer 
-                            jsonContent={activePage.content}
-                            className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
-                        />
-                     )}
-                    </>
-                )}
+              <h2 className="text-2xl font-headline font-bold text-primary mb-6">
+                  {activePage.title}
+              </h2>
+              {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
+                  <EditorialBoardView members={editorialBoard} pageTitle={activePage.title}/>
+              ) : (
+                  <>
+                   {activePage.pageType === 'TABLE' ? (
+                      <TableView content={activePage.content} />
+                   ) : (
+                      <TiptapRenderer 
+                          jsonContent={activePage.content}
+                          className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+                      />
+                   )}
+                  </>
+              )}
             </div>
         );
     }
@@ -217,7 +217,7 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>Home</Link>
+            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", !pageSlug ? 'font-bold text-primary' : 'text-foreground')}>Home</Link>
             {pages.map(page => {
               const hasChildren = page.children.length > 0;
               if (hasChildren) {
@@ -234,8 +234,8 @@ export default function CategoryPage() {
                           variant="ghost"
                           className={cn(
                             "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:font-bold hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
-                            page.children.some(c => c.slug === pageSlug)
-                              ? 'font-semibold text-primary'
+                            (page.children.some(c => c.slug === pageSlug) || openDropdownId === page.id)
+                              ? 'font-bold text-primary'
                               : 'text-foreground'
                           )}
                         >
@@ -246,6 +246,7 @@ export default function CategoryPage() {
                       <DropdownMenuContent
                         align="start"
                         className="mt-1 w-auto min-w-[200px]"
+                        onMouseEnter={() => handleMenuEnter(page.id)}
                         onMouseLeave={handleMenuLeave}
                       >
                         {page.children.map(child => (
@@ -259,7 +260,7 @@ export default function CategoryPage() {
                 );
               }
               return (
-                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", page.slug === pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>{page.title}</Link>
+                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", page.slug === pageSlug ? 'font-bold text-primary' : 'text-foreground')}>{page.title}</Link>
               );
             })}
           </div>
