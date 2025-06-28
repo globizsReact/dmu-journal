@@ -7,7 +7,7 @@ import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
 
 const pageSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters.'),
-  pageType: z.enum(['RICH_TEXT', 'TABLE']),
+  pageType: z.enum(['RICH_TEXT', 'TABLE', 'EDITORIAL_BOARD']),
   content: z.any(), // Simplified validation for content
   journalId: z.string(),
   parentId: z.string().optional(),
