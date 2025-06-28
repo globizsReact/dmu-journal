@@ -7,7 +7,7 @@ import type { JournalCategory as JournalCategoryType } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, ArrowLeft, Pencil, FlaskConical, Library, Briefcase, Scale, type LucideIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowLeft, Pencil, FlaskConical, Library, Briefcase, Scale, type LucideIcon, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
@@ -181,8 +181,15 @@ export default function ViewJournalCategoryPage() {
             </TabsContent>
             <TabsContent value="pages" className="mt-4">
                  <Card>
-                     <CardHeader>
-                        <JournalCategoryPagesManager.Title />
+                     <CardHeader className="flex flex-row items-start justify-between">
+                        <div>
+                          <JournalCategoryPagesManager.Title />
+                        </div>
+                        <Button asChild>
+                          <Link href={`/admin/dashboard/journals/${id}/pages/new`}>
+                            <PlusCircle className="mr-2 h-4 w-4" /> Add Page
+                          </Link>
+                        </Button>
                      </CardHeader>
                      <CardContent className="p-6 pt-0">
                         <JournalCategoryPagesManager.Content 

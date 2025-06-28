@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle, PlusCircle, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Loader2, AlertTriangle, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import {
@@ -172,9 +172,6 @@ const ManagerContent = ({ journalCategoryId, authToken }: { journalCategoryId: s
 
   return (
     <>
-      <div className="flex justify-end mb-4">
-        <Button asChild><Link href={`/admin/dashboard/journals/${journalCategoryId}/pages/new`}><PlusCircle className="mr-2 h-4 w-4" /> Add Page</Link></Button>
-      </div>
       {isLoading && <div className="flex justify-center items-center py-10"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>}
       {error && <div className="text-center py-10 text-destructive"><AlertTriangle className="mx-auto h-8 w-8 mb-2" /> {error}</div>}
       {!isLoading && !error && (
