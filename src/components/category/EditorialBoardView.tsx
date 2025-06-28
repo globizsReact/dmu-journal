@@ -9,8 +9,8 @@ interface EditorialBoardViewProps {
 }
 
 const EditorialBoardCard = ({ member }: { member: EditorialBoardMember }) => (
-  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 text-center sm:text-left">
-    <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 rounded-full sm:rounded-lg overflow-hidden bg-muted shadow-md">
+  <div className="flex flex-col sm:flex-row items-start gap-6 text-left">
+    <div className="relative w-32 h-32 sm:w-40 sm:h-40 flex-shrink-0 rounded-full sm:rounded-lg overflow-hidden bg-muted shadow-md self-center sm:self-start">
       <Image
         src={member.avatarUrl || `https://placehold.co/200x200.png`}
         alt={`Portrait of ${member.fullName}`}
@@ -39,25 +39,17 @@ const EditorialBoardCard = ({ member }: { member: EditorialBoardMember }) => (
 export default function EditorialBoardView({ members }: EditorialBoardViewProps) {
   if (!members || members.length === 0) {
     return (
-      <div className="py-16 text-center">
-        <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-4">
-          Editorial Board
-        </h2>
+      <div className="py-8">
         <p className="text-muted-foreground">The editorial board for this journal has not been established yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="py-12">
-      <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-12 text-center">
-        Editorial Board
-      </h2>
-      <div className="max-w-3xl mx-auto space-y-12">
+    <div className="space-y-12">
         {members.map(member => (
           <EditorialBoardCard key={member.id} member={member} />
         ))}
-      </div>
     </div>
   );
 }

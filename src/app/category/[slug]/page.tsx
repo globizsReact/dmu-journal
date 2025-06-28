@@ -108,15 +108,14 @@ export default function CategoryPage() {
 
   const renderContent = () => {
     if (activePage) {
-        if (activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard) {
-            return <EditorialBoardView members={editorialBoard} />;
-        }
         return (
             <div className="py-8">
                  <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
                     {activePage.title}
                 </h2>
-                {activePage.pageType === 'TABLE' ? (
+                {activePage.pageType === 'EDITORIAL_BOARD' && editorialBoard ? (
+                    <EditorialBoardView members={editorialBoard} />
+                ) : activePage.pageType === 'TABLE' ? (
                     <TableView content={activePage.content} />
                 ) : (
                     <TiptapRenderer 
