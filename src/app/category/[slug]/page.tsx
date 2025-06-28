@@ -39,6 +39,7 @@ export default function CategoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedView, setSelectedView] = useState<string>("Most Recent");
   const [pages, setPages] = useState<PageWithChildren[]>([]);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 
   const activePage = useMemo(() => {
     if (!pageSlug || pages.length === 0) return null;
@@ -198,32 +199,50 @@ export default function CategoryPage() {
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
-             <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>Home</Link>
-              {pages.map(page => {
-                  const hasChildren = page.children.length > 0;
-                  if (hasChildren) {
-                      return (
-                          <DropdownMenu key={page.id}>
-                              <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md", page.children.some(c => c.slug === pageSlug) ? 'font-semibold text-primary bg-muted' : 'text-foreground')}>
-                                      {page.title}
-                                      <ChevronDown className="w-4 h-4" />
-                                  </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent>
-                                  {page.children.map(child => (
-                                      <DropdownMenuItem key={child.id} asChild>
-                                          <Link href={`/category/${slug}?page=${child.slug}`}>{child.title}</Link>
-                                      </DropdownMenuItem>
-                                  ))}
-                              </DropdownMenuContent>
-                          </DropdownMenu>
-                      );
-                  }
-                  return (
-                      <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:text-primary", page.slug === pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>{page.title}</Link>
-                  );
-              })}
+            <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", !pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>Home</Link>
+            {pages.map(page => {
+              const hasChildren = page.children.length > 0;
+              if (hasChildren) {
+                return (
+                  <div
+                    key={page.id}
+                    className="relative"
+                    onMouseEnter={() => setOpenDropdownId(page.id)}
+                    onMouseLeave={() => setOpenDropdownId(null)}
+                  >
+                    <DropdownMenu open={openDropdownId === page.id} onOpenChange={(isOpen) => setOpenDropdownId(isOpen ? page.id : null)}>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          className={cn(
+                            "flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-transparent hover:font-bold hover:text-primary focus-visible:ring-0 focus-visible:ring-offset-0",
+                            page.children.some(c => c.slug === pageSlug)
+                              ? 'font-semibold text-primary bg-muted'
+                              : 'text-foreground'
+                          )}
+                        >
+                          {page.title}
+                          <ChevronDown className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="mt-1 w-[200px]"
+                      >
+                        {page.children.map(child => (
+                          <DropdownMenuItem key={child.id} asChild>
+                            <Link href={`/category/${slug}?page=${child.slug}`}>{child.title}</Link>
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                );
+              }
+              return (
+                <Link key={page.id} href={`/category/${slug}?page=${page.slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:font-bold hover:text-primary", page.slug === pageSlug ? 'font-semibold text-primary' : 'text-foreground')}>{page.title}</Link>
+              );
+            })}
           </div>
         </div>
       </nav>
