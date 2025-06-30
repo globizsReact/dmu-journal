@@ -18,7 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const LoginSchema = z.object({
@@ -91,7 +91,14 @@ export default function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) 
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted p-4">
       <Card className="w-full max-w-md shadow-xl bg-card">
         <CardHeader className="flex flex-col items-center justify-center gap-3 pt-8 pb-6 text-center">
-            <ShieldAlert className="w-12 h-12 text-primary mb-2" />
+            <Image
+              src={logoSrc}
+              alt="DMU Journal Logo"
+              width={60}
+              height={60}
+              className="rounded-full"
+              data-ai-hint="university logo"
+            />
             <CardTitle className="text-2xl font-headline text-primary">Admin Panel Login</CardTitle>
             <CardDescription className="text-sm text-muted-foreground">
               Dhanamanjuri University Journals
