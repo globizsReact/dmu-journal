@@ -58,12 +58,12 @@ const Header = ({ className }: HeaderProps) => {
   }, [isLoggedIn, isAdmin, isReviewer]);
 
   const navLinkClasses = (href: string) => cn(
-    "text-sm font-medium hover:text-accent transition-colors py-1 flex items-center px-1",
+    "text-sm font-medium hover:underline underline-offset-4 py-1 flex items-center px-1",
     isActive(href) ? "text-accent" : ""
   );
 
   const mobileNavLinkClasses = (href: string) => cn(
-    "block py-3 text-md font-medium text-primary-foreground hover:text-accent transition-colors",
+    "block py-3 text-md font-medium text-primary-foreground hover:underline underline-offset-4",
     isActive(href) && "text-accent font-bold"
   );
 
