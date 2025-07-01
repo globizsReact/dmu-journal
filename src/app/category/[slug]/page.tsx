@@ -199,10 +199,10 @@ export default function CategoryPage() {
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
       <section className={cn("py-10 md:py-16 text-secondary-foreground",!categorySpecificBgColor && "bg-secondary")} style={categorySpecificBgColor ? { backgroundColor: categorySpecificBgColor } : {}}>
-        <div className="container mx-auto px-4 text-center md:text-left">
+        <div className="container mx-auto px-4 text-center">
           <p className="text-lg font-medium opacity-90">Dhanamanjuri University</p>
           <h1 className="text-4xl md:text-5xl font-headline font-bold mt-1 mb-4">{category.name}</h1>
-          <div className="flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-sm opacity-80">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm opacity-80">
             {category.abbreviation && <span>Abbreviation: {category.abbreviation}</span>}
             {category.language && <span>Language: {category.language}</span>}
             {category.issn && <span>ISSN: {category.issn}</span>}
@@ -216,7 +216,7 @@ export default function CategoryPage() {
       {/* Dynamic Tab Navigation */}
       <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="relative flex flex-wrap justify-center md:justify-start items-center py-1.5 gap-1">
+          <div className="relative flex flex-wrap justify-center items-center py-1.5 gap-1">
             <Link href={`/category/${slug}`} className={cn("flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors", !pageSlug ? 'font-bold text-primary' : 'text-foreground hover:text-primary')}>Home</Link>
             {pages.map(page => {
               const hasChildren = page.children.length > 0;
@@ -267,7 +267,7 @@ export default function CategoryPage() {
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         {error ? (
           <div className="text-center py-10 text-destructive bg-destructive/10 rounded-lg"><h2 className="text-2xl font-bold mb-2">An Error Occurred</h2><p>{error}</p></div>
         ) : (
