@@ -10,10 +10,10 @@ export default function LoadingCategoryPage() {
       
       {/* Skeleton for Hero/Title Section */}
       <section className="py-10 md:py-16 bg-secondary">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 flex flex-col items-center text-center">
           <Skeleton className="h-6 w-1/4 mb-2" />
           <Skeleton className="h-10 md:h-12 w-3/4 md:w-1/2 mb-4" />
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-4 w-20" />
             ))}
@@ -22,9 +22,9 @@ export default function LoadingCategoryPage() {
       </section>
 
       {/* Skeleton for Sub-Navigation Bar */}
-      <nav className="bg-card border-b border-border sticky top-0 z-40">
+      <nav className="bg-card border-b border-border sticky top-0 z-40 shadow-sm">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap items-center py-3 gap-4">
+          <div className="flex flex-wrap justify-center items-center py-3 gap-4">
             {[...Array(6)].map((_, i) => (
               <Skeleton key={i} className="h-8 w-24" />
             ))}
@@ -32,20 +32,13 @@ export default function LoadingCategoryPage() {
         </div>
       </nav>
       
-      <main className="flex-1 container mx-auto px-4 py-8">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         {/* Skeleton for Scope Section */}
-        <section className="mb-12">
-          <Skeleton className="h-8 w-3/5 mb-4" />
+        <section className="my-12">
+          <Skeleton className="h-8 w-2/5 mb-4" />
           <Skeleton className="h-4 w-full mb-2" />
           <Skeleton className="h-4 w-full mb-2" />
           <Skeleton className="h-4 w-5/6 mb-4" />
-          <div className="space-y-2 mb-4 pl-4">
-            {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-4 w-1/2" />
-            ))}
-          </div>
-          <Skeleton className="h-4 w-full mb-2" />
-          <Skeleton className="h-4 w-3/4" />
         </section>
 
         {/* Skeleton for ViewFilters */}
@@ -59,7 +52,7 @@ export default function LoadingCategoryPage() {
         {/* Skeleton for Article List */}
         <div className="space-y-8">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex flex-col md:flex-row items-start gap-6 p-6 border border-border rounded-lg shadow-sm">
+            <div key={i} className="flex flex-col md:flex-row items-start gap-6 p-6 border border-border rounded-lg shadow-sm bg-card">
               <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0">
                 <Skeleton className="aspect-[4/3] w-full rounded-md" />
               </div>
