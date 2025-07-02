@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Eye, Download, MessageSquareQuote, FileText, Users, ListOrdered, BarChart3 } from 'lucide-react';
+import { Eye, Download, MessageSquareQuote } from 'lucide-react';
 import { Button } from '../ui/button';
 import TiptapRenderer from '../shared/TiptapRenderer';
 import { toPublicUrl } from '@/lib/urlUtils';
@@ -32,19 +32,11 @@ interface JournalViewProps {
 const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
   const copyrightText = `Copyright © ${new Date().getFullYear()} Author(S) Retain The Copyright Of This Article. This Article Is Published Under The Terms Of The University`;
 
-  const actionLinks = [
-    { label: "Full Text PDF", action: () => onIncrement('downloads'), icon: FileText },
-    { label: "Authors", href: "#authors", icon: Users },
-    { label: "Articles", href: `/category/${category.slug}`, icon: ListOrdered },
-    { label: "Citations", action: () => onIncrement('citations'), icon: MessageSquareQuote },
-    { label: "Article Metrics", href: "#metrics", icon: BarChart3 },
-  ];
-
   const displayImagePath = toPublicUrl(entry.thumbnailImagePath || category.imagePath);
   const displayImageHint = entry.thumbnailImageHint || category.imageHint;
 
   return (
-    <>
+    <div className="bg-card shadow-lg rounded-lg p-6 md:p-8">
       {entry.articleType && (
         <Badge variant="secondary" className="mb-6 text-sm py-1 px-3">
           {entry.articleType}
@@ -97,37 +89,6 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
         </section>
       </div>
 
-      {/* Action Bar */}
-      <div className="my-8 py-3 bg-primary/90 text-primary-foreground rounded-md">
-        <div className="container mx-auto px-2">
-            <div className="flex flex-wrap items-center justify-center md:justify-around gap-x-3 gap-y-2">
-                {actionLinks.map((link, index) => (
-                <React.Fragment key={link.label}>
-                    {link.action ? (
-                      <Button
-                        onClick={link.action}
-                        variant="ghost"
-                        className="text-sm font-medium hover:bg-primary/80 hover:text-accent h-auto px-2 py-1 flex items-center gap-1"
-                      >
-                        {link.label}
-                      </Button>
-                    ) : (
-                      <Link
-                        href={link.href || '#'}
-                        className="text-sm font-medium hover:text-accent transition-colors px-2 py-1 flex items-center gap-1"
-                      >
-                        {link.label}
-                      </Link>
-                    )}
-                    {index < actionLinks.length - 1 && (
-                    <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                    )}
-                </React.Fragment>
-                ))}
-            </div>
-        </div>
-      </div>
-
       {/* Abstract Section */}
       <div className="my-8">
         <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
@@ -162,7 +123,7 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
           {copyrightText}
         </p>
       </div>
-    </>
+    </div>
   );
 };
 

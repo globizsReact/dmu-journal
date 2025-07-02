@@ -11,7 +11,6 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
-import { Separator } from '@/components/ui/separator';
 import LoadingJournalPage from './loading';
 import { useToast } from '@/hooks/use-toast';
 import {
