@@ -1,14 +1,16 @@
 
-import React from 'react';
-import type { JournalEntry, JournalCategory } from '@/lib/types';
+import React, { useState } from 'react';
+import type { ManuscriptDetails, JournalCategory } from '@/lib/types';
 import Image from 'next/image';
-import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Eye, Download, MessageSquareQuote } from 'lucide-react';
 import { Button } from '../ui/button';
 import TiptapRenderer from '../shared/TiptapRenderer';
 import { toPublicUrl } from '@/lib/urlUtils';
+import AuthorInfoView from './AuthorInfoView';
+import { cn } from '@/lib/utils';
+
 
 interface StatItemProps {
   icon: React.ElementType;
@@ -24,16 +26,38 @@ const StatItem: React.FC<StatItemProps> = ({ icon: Icon, label, value }) => (
 );
 
 interface JournalViewProps {
-  entry: JournalEntry;
+  entry: ManuscriptDetails;
   category: JournalCategory;
   onIncrement: (type: 'views' | 'downloads' | 'citations') => void;
 }
 
 const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
+  const [activeTab, setActiveTab] = useState('abstract');
+  
   const copyrightText = `Copyright © ${new Date().getFullYear()} Author(S) Retain The Copyright Of This Article. This Article Is Published Under The Terms Of The University`;
 
   const displayImagePath = toPublicUrl(entry.thumbnailImagePath || category.imagePath);
   const displayImageHint = entry.thumbnailImageHint || category.imageHint;
+
+  const tabs = [
+    { key: 'abstract', label: 'Abstract' },
+    { key: 'pdf', label: 'Full Text PDF' },
+    { key: 'authors', label: 'Authors' },
+    { key: 'articles', label: 'Articles' },
+    { key: 'citations', label: 'Citations' },
+    { key: 'metrics', label: 'Article Metrics' },
+  ];
+
+  const handleTabClick = (key: string) => {
+    if (key === 'pdf') {
+      onIncrement('downloads');
+    } else if (key === 'citations') {
+      onIncrement('citations');
+    } else {
+      setActiveTab(key);
+    }
+  };
+
 
   return (
     <>
@@ -89,42 +113,58 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
         </section>
       </div>
 
-       {/* Action Bar */}
+       {/* Action Bar / Tabs */}
        <div className="my-8 py-3 bg-primary rounded-md">
         <div className="container mx-auto px-2">
             <div className="flex flex-wrap items-center justify-center md:justify-around gap-x-3 gap-y-2">
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('downloads')}>Full Text PDF</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Authors</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Articles</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('citations')}>Citations</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Article Metrics</Button>
+                {tabs.map((tab, index) => (
+                    <React.Fragment key={tab.key}>
+                        <Button
+                             variant={activeTab === tab.key ? "secondary" : "link"}
+                            className={cn(
+                                "font-medium h-auto px-3 py-1.5",
+                                activeTab === tab.key
+                                    ? "text-secondary-foreground"
+                                    : "text-primary-foreground hover:text-accent hover:no-underline",
+                            )}
+                            onClick={() => handleTabClick(tab.key)}
+                        >
+                            {tab.label}
+                        </Button>
+                        {index < tabs.length - 1 && <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />}
+                    </React.Fragment>
+                ))}
             </div>
         </div>
       </div>
 
-      {/* Abstract Section */}
+      {/* Conditionally Rendered Content */}
       <div className="my-8">
-        <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
-        <Separator className="mb-4" />
-        <TiptapRenderer
-          jsonContent={entry.abstract}
-          className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80
-                     prose-headings:font-headline prose-headings:text-primary
-                     prose-strong:text-primary/90"
-        />
-        {entry.keywords && entry.keywords.length > 0 && (
-          <div className="mt-6">
-            <p className="text-sm font-semibold text-primary">
-              Key words:{' '}
-              <span className="font-normal text-foreground/80">
-                {(Array.isArray(entry.keywords) ? entry.keywords.join(', ') : entry.keywords)}
-              </span>
-            </p>
-          </div>
+        {activeTab === 'abstract' && (
+          <>
+            <h2 className="text-xl font-headline font-semibold text-primary mb-3">Abstract</h2>
+            <Separator className="mb-4" />
+            <TiptapRenderer
+              jsonContent={entry.abstract}
+              className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80
+                         prose-headings:font-headline prose-headings:text-primary
+                         prose-strong:text-primary/90"
+            />
+            {entry.keywords && entry.keywords.length > 0 && (
+              <div className="mt-6">
+                <p className="text-sm font-semibold text-primary">
+                  Key words:{' '}
+                  <span className="font-normal text-foreground/80">
+                    {(Array.isArray(entry.keywords) ? entry.keywords.join(', ') : entry.keywords)}
+                  </span>
+                </p>
+              </div>
+            )}
+          </>
+        )}
+        
+        {activeTab === 'authors' && (
+          <AuthorInfoView authorDetails={entry} />
         )}
       </div>
     </>

@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJournalPage } from '@prisma/client';
+import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJournalPage, Manuscript as PrismaManuscript } from '@prisma/client';
 
 export interface JournalCategory extends PrismaJournalCategory {
   publishedArticlesCount?: number;
@@ -14,6 +14,14 @@ export interface JournalPage extends PrismaJournalPage {
 
 export interface PageWithChildren extends PrismaJournalPage {
   children: PageWithChildren[];
+}
+
+export interface ManuscriptDetails extends PrismaManuscript {
+  submittedBy?: {
+    fullName: string | null;
+    email: string | null;
+  } | null;
+  coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[];
 }
 
 export interface JournalEntry {
