@@ -9,7 +9,7 @@ import JournalView from '@/components/journal/JournalView';
 import type { JournalEntry, JournalCategory, PageWithChildren } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Download, MessageSquareQuote } from 'lucide-react';
 import Image from 'next/image';
 import LoadingJournalPage from './loading';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 export default function JournalPage() {
   const params = useParams();
@@ -230,6 +231,23 @@ export default function JournalPage() {
           </div>
         </div>
       </nav>
+      
+      {/* Action Bar */}
+      <div className="py-3 bg-primary">
+        <div className="container mx-auto px-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-around gap-x-3 gap-y-2">
+                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('downloads')}>Full Text PDF</Button>
+                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
+                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Authors</Button>
+                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
+                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Articles</Button>
+                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
+                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('citations')}>Citations</Button>
+                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
+                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Article Metrics</Button>
+            </div>
+        </div>
+      </div>
       
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         <JournalView entry={entry} category={category} onIncrement={handleIncrement} />
