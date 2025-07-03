@@ -232,23 +232,6 @@ export default function JournalPage() {
         </div>
       </nav>
       
-      {/* Action Bar */}
-      <div className="py-3 bg-primary">
-        <div className="container mx-auto px-2">
-            <div className="flex flex-wrap items-center justify-center md:justify-around gap-x-3 gap-y-2">
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('downloads')}>Full Text PDF</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Authors</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Articles</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium" onClick={() => onIncrement('citations')}>Citations</Button>
-                <Separator orientation="vertical" className="h-4 bg-primary-foreground/30 hidden md:block" />
-                <Button variant="link" className="text-primary-foreground hover:text-accent p-0 h-auto font-medium">Article Metrics</Button>
-            </div>
-        </div>
-      </div>
-      
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         <JournalView entry={entry} category={category} onIncrement={handleIncrement} />
          <div className="mt-12 text-center">
