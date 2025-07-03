@@ -17,7 +17,7 @@ const ArticleListItemCard = ({ entry, categoryName, className }: ArticleListItem
   const imageUrl = toPublicUrl(entry.thumbnailImagePath || entry.imagePath) || 'https://placehold.co/200x150.png';
 
   return (
-    <div className={cn("group flex flex-col md:flex-row items-stretch gap-6 p-1 border border-border rounded-lg shadow-sm bg-card hover:shadow-md transition-shadow", className)}>
+    <div className={cn("group flex flex-col md:flex-row items-stretch gap-6 p-3 border border-border rounded-lg shadow-sm bg-card hover:shadow-md transition-shadow", className)}>
       <div className="w-full md:w-1/4 lg:w-1/5 flex-shrink-0 aspect-[4/3] md:aspect-auto relative rounded-md overflow-hidden bg-muted">
         <Image
           src={imageUrl}
