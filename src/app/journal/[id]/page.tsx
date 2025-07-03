@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
@@ -31,6 +31,9 @@ export default function JournalPage() {
   const [pages, setPages] = useState<PageWithChildren[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+  const menuLeaveTimeout = useRef<NodeJS.Timeout | null>(null);
+
 
   const fetchJournalData = useCallback(async () => {
     setIsLoading(true);
@@ -99,6 +102,19 @@ export default function JournalPage() {
     }
   }, [id, isLoading, entry, handleIncrement]);
 
+  const handleMenuEnter = (pageId: string) => {
+    if (menuLeaveTimeout.current) {
+        clearTimeout(menuLeaveTimeout.current);
+        menuLeaveTimeout.current = null;
+    }
+    setOpenDropdownId(pageId);
+  };
+
+  const handleMenuLeave = () => {
+      menuLeaveTimeout.current = setTimeout(() => {
+          setOpenDropdownId(null);
+      }, 200); // 200ms delay to allow moving to dropdown content
+  };
 
   if (isLoading) {
     return <LoadingJournalPage />; 
@@ -169,21 +185,40 @@ export default function JournalPage() {
                 const hasChildren = page.children && page.children.length > 0;
                 if (hasChildren) {
                     return (
-                        <DropdownMenu key={page.id}>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-md text-foreground">
-                                    {page.title}
-                                    <ChevronDown className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {page.children.map(child => (
-                                    <DropdownMenuItem key={child.id} asChild>
-                                        <Link href={`/category/${category.slug}?page=${child.slug}`}>{child.title}</Link>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div
+                            key={page.id}
+                            className="group/menu relative"
+                            onMouseEnter={() => handleMenuEnter(page.id)}
+                            onMouseLeave={handleMenuLeave}
+                        >
+                            <DropdownMenu open={openDropdownId === page.id}>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                    variant="ghost"
+                                    className={cn(
+                                        "flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0",
+                                        openDropdownId === page.id ? 'text-primary' : 'text-foreground hover:text-primary'
+                                    )}
+                                    >
+                                        {page.title}
+                                        <ChevronDown className="w-4 h-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent
+                                    align="start"
+                                    sideOffset={0}
+                                    className="w-auto min-w-[200px] whitespace-nowrap"
+                                    onMouseEnter={() => handleMenuEnter(page.id)}
+                                    onMouseLeave={handleMenuLeave}
+                                >
+                                    {page.children.map(child => (
+                                        <DropdownMenuItem key={child.id} asChild className="cursor-pointer hover:bg-muted focus:bg-muted">
+                                            <Link href={`/category/${category.slug}?page=${child.slug}`}>{child.title}</Link>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     );
                 }
                 return (
