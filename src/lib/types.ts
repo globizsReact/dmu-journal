@@ -20,6 +20,8 @@ export interface ManuscriptDetails extends PrismaManuscript {
   submittedBy?: {
     fullName: string | null;
     email: string | null;
+    department: string | null;
+    instituteName: string | null;
   } | null;
   coAuthors?: { title: string; givenName: string; lastName: string; email: string; affiliation: string; country: string }[];
 }
