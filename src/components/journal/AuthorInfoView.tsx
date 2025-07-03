@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -62,7 +63,7 @@ const AuthorInfoView: React.FC<AuthorInfoViewProps> = ({ authorDetails }) => {
                     {author.isCorresponding && (
                         <Badge variant="secondary" className="border-primary text-primary bg-primary/10 whitespace-nowrap">
                             <Star className="w-3.5 h-3.5 mr-1.5"/>
-                            Corresponding Author
+                            Submitting Author
                         </Badge>
                     )}
                 </div>
