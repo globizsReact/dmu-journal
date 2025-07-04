@@ -50,13 +50,14 @@ const pageNavItems = [
     { label: 'About Us Page', href: '/admin/dashboard/pages/about' },
     { label: 'Landing Page', href: '/admin/dashboard/pages/landing' },
     { label: "Manage FAQ", href: '/admin/dashboard/faq' },
+    { label: 'Footer Settings', href: '/admin/dashboard/pages/footer' },
 ];
 
 export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
   const pathname = usePathname();
   const logoSrc = '/images/logo_black.png';
   
-  const isPagesActive = pathname.startsWith('/admin/dashboard/pages') || pathname.startsWith('/admin/dashboard/faq');
+  const isPagesActive = pageNavItems.some(item => pathname.startsWith(item.href)) || pathname.startsWith('/admin/dashboard/faq');
 
   return (
     <aside className={cn(
