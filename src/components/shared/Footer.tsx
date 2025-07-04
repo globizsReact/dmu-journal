@@ -1,7 +1,9 @@
 
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
-import prisma from '@/lib/prisma';
 
 interface FooterLinkData {
   label: string;
@@ -39,22 +41,6 @@ const defaultContent: FooterContent = {
   contactEmail: "Dmcollege_science@Yahoo.Co.In",
 };
 
-async function getFooterContent(): Promise<FooterContent> {
-  try {
-    const pageData = await prisma.sitePage.findUnique({
-      where: { slug: 'footer-settings' },
-    });
-    if (pageData && typeof pageData.content === 'object' && pageData.content) {
-      // Merge with defaults to ensure all keys are present
-      return { ...defaultContent, ...(pageData.content as Partial<FooterContent>) };
-    }
-    return defaultContent;
-  } catch (error) {
-    console.error("Failed to fetch footer content:", error);
-    return defaultContent; // Return default content on error
-  }
-}
-
 const FooterLink = ({ href, children, target }: { href: string; children: React.ReactNode, target?: string }) => (
   <Link href={href} target={target} rel={target === "_blank" ? "noopener noreferrer" : undefined} className="text-sm text-primary-foreground/80 hover:text-accent transition-colors">
     {children}
@@ -65,8 +51,26 @@ interface FooterProps {
   className?: string;
 }
 
-export default async function Footer({ className }: FooterProps) {
-  const content = await getFooterContent();
+export default function Footer({ className }: FooterProps) {
+  const [content, setContent] = useState<FooterContent>(defaultContent);
+
+  useEffect(() => {
+    const fetchFooterContent = async () => {
+      try {
+        const response = await fetch('/api/public/pages/footer');
+        if (!response.ok) {
+          console.error("Failed to fetch footer content, using defaults.");
+          return;
+        }
+        const data = await response.json();
+        setContent(data);
+      } catch (error) {
+        console.error("Error fetching footer content:", error);
+      }
+    };
+
+    fetchFooterContent();
+  }, []);
 
   return (
     <>
