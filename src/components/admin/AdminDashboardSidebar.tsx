@@ -3,31 +3,18 @@
 
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LogOut, LucideIcon, HelpCircle, Layers, Settings } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LucideIcon, Layers } from 'lucide-react';
 import Image from 'next/image';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 interface AdminDashboardSidebarProps {
   adminName: string;
-  onLogout: () => void;
   onLinkClick?: () => void;
   isMobileSheet?: boolean;
 }
@@ -53,7 +40,7 @@ const pageNavItems = [
     { label: 'Footer Settings', href: '/admin/dashboard/pages/footer' },
 ];
 
-export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
+export default function AdminDashboardSidebar({ adminName, onLinkClick, isMobileSheet = false }: AdminDashboardSidebarProps) {
   const pathname = usePathname();
   const logoSrc = '/images/logo_black.png';
   
@@ -145,32 +132,6 @@ export default function AdminDashboardSidebar({ adminName, onLogout, onLinkClick
       </nav>
       <div className="mt-auto pt-4 border-t border-border">
          <p className="text-xs text-muted-foreground px-3 mb-2 truncate" title={adminName}>Logged in as: {adminName}</p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full flex items-center justify-start gap-3 py-2.5 px-3 rounded-md text-sm font-medium transition-colors",
-                "text-destructive hover:bg-destructive/10"
-              )}
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to log out from the admin panel?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => { onLogout(); onLinkClick?.(); }} className="bg-destructive hover:bg-destructive/90">Logout</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
     </aside>
   );
