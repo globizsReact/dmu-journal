@@ -56,11 +56,15 @@ export async function GET(request: NextRequest) {
   }
   try {
     const page = await prisma.sitePage.findUnique({ where: { slug: PAGE_SLUG } });
+    // If no specific settings are saved in the DB, return the hardcoded defaults
+    // This is useful for the initial setup.
     if (!page || typeof page.content !== 'object' || page.content === null) {
       return NextResponse.json(defaultContent);
     }
-    return NextResponse.json({ ...defaultContent, ...(page.content as object) });
+    // If settings exist, return them directly. The form will handle any missing fields with its own defaults.
+    return NextResponse.json(page.content);
   } catch (error) {
+    console.error("Error fetching footer settings for admin:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
