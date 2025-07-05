@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import Image from 'next/image';
+import { toPublicUrl } from '@/lib/urlUtils';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -269,6 +271,25 @@ export default function ManuscriptDetailsPage() {
         </section>
 
         <Separator />
+        
+        {manuscript.thumbnailImagePath && (
+            <>
+                <section>
+                    <h3 className="text-lg font-semibold text-primary mb-3">Thumbnail Image</h3>
+                    <div className="relative w-full max-w-sm aspect-video rounded-md overflow-hidden border">
+                        <Image
+                            src={toPublicUrl(manuscript.thumbnailImagePath)}
+                            alt="Manuscript thumbnail"
+                            fill
+                            sizes="(max-width: 640px) 100vw, 33vw"
+                            className="object-cover"
+                            data-ai-hint={manuscript.thumbnailImageHint || "journal thumbnail"}
+                        />
+                    </div>
+                </section>
+                <Separator />
+            </>
+        )}
 
         <section>
           <h3 className="text-lg md:text-xl font-headline font-semibold text-primary mb-2">Abstract</h3>
