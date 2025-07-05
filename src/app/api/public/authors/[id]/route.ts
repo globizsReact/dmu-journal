@@ -2,94 +2,107 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getPlainTextFromTiptapJson } from '@/lib/tiptapUtils';
+import type { AuthorProfile, AuthorStats, JournalEntry, ManuscriptData } from '@/lib/types';
+
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  const authorId = parseInt(params.id, 10);
-  if (isNaN(authorId)) {
-    return NextResponse.json({ error: 'Invalid author ID' }, { status: 400 });
-  }
-
   try {
-    const authorData = await prisma.user.findUnique({
-      where: {
-        id: authorId,
-        // Explicitly only find users with the author role for this public page
-        role: 'author',
-      },
+    const authorId = parseInt(params.id, 10);
+    if (isNaN(authorId)) {
+      return NextResponse.json({ error: 'Invalid author ID' }, { status: 400 });
+    }
+
+    const author = await prisma.user.findFirst({
+      where: { id: authorId, role: 'author' },
       select: {
-        // Author profile fields
         id: true,
         fullName: true,
         username: true,
         avatarUrl: true,
         instituteName: true,
         department: true,
-        // Include published manuscripts directly in the query
         submittedManuscripts: {
-          where: {
-            status: 'Published',
-          },
+          where: { status: 'Published' },
           select: {
             id: true,
             articleTitle: true,
-            submittedAt: true,
-            views: true,
-            downloads: true,
             abstract: true,
+            submittedAt: true,
+            journalCategoryId: true,
             journalCategory: {
               select: {
                 name: true,
+                imagePath: true, // Fetch category image for fallback
+                imageHint: true,
               },
             },
+            thumbnailImagePath: true,
+            thumbnailImageHint: true,
+            views: true,
+            downloads: true,
           },
           orderBy: {
             submittedAt: 'desc',
           },
         },
+        _count: {
+          select: {
+            submittedManuscripts: {
+              where: { status: 'Published' },
+            },
+          },
+        },
       },
     });
 
-    if (!authorData) {
+    if (!author) {
       return NextResponse.json({ error: 'Author not found' }, { status: 404 });
     }
 
-    // Separate the author's profile from their manuscripts for clean data structuring
-    const { submittedManuscripts, ...authorProfile } = authorData;
+    const authorProfile: AuthorProfile = {
+      id: author.id,
+      fullName: author.fullName,
+      username: author.username,
+      avatarUrl: author.avatarUrl,
+      instituteName: author.instituteName,
+      department: author.department,
+    };
 
-    // Aggregate stats from the fetched manuscripts in memory
-    const stats = submittedManuscripts.reduce(
-      (acc, ms) => {
-        acc.totalViews += ms.views || 0;
-        acc.totalDownloads += ms.downloads || 0;
-        return acc;
-      },
-      {
-        totalViews: 0,
-        totalDownloads: 0,
-        totalManuscripts: submittedManuscripts.length,
-      }
-    );
+    const totalViews = author.submittedManuscripts.reduce((sum, ms) => sum + (ms.views || 0), 0);
+    const totalDownloads = author.submittedManuscripts.reduce((sum, ms) => sum + (ms.downloads || 0), 0);
 
-    // Process manuscripts to create excerpts for the client
-    const processedManuscripts = submittedManuscripts.map(ms => ({
-      id: ms.id,
-      articleTitle: ms.articleTitle,
-      excerpt: getPlainTextFromTiptapJson(ms.abstract).substring(0, 150) + '...',
-      submittedAt: ms.submittedAt.toISOString(),
-      journalCategory: {
-        name: ms.journalCategory?.name || 'Uncategorized',
+    const stats: AuthorStats = {
+      totalViews,
+      totalDownloads,
+      totalManuscripts: author._count.submittedManuscripts,
+    };
+
+    const manuscripts: ManuscriptData[] = author.submittedManuscripts.map(ms => ({
+      entry: {
+        id: ms.id,
+        title: ms.articleTitle,
+        abstract: ms.abstract,
+        date: ms.submittedAt.toISOString(),
+        categoryId: ms.journalCategoryId,
+        excerpt: getPlainTextFromTiptapJson(ms.abstract).substring(0, 150) + '...',
+        thumbnailImagePath: ms.thumbnailImagePath,
+        thumbnailImageHint: ms.thumbnailImageHint,
+        imagePath: ms.journalCategory?.imagePath, // Fallback image
+        imageHint: ms.journalCategory?.imageHint, // Fallback hint
+        views: ms.views,
+        downloads: ms.downloads,
       },
+      categoryName: ms.journalCategory?.name || 'Unknown',
     }));
-
-    // Return the combined, structured data
+    
     return NextResponse.json({
       author: authorProfile,
       stats,
-      manuscripts: processedManuscripts,
+      manuscripts,
     });
 
   } catch (error: any) {
-    console.error(`Error fetching author details for ID ${authorId}:`, error);
+    console.error('Error fetching author data:', error);
     return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
   }
 }

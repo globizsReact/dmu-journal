@@ -1,6 +1,6 @@
 
 import type { LucideIcon } from 'lucide-react';
-import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJournalPage, Manuscript as PrismaManuscript } from '@prisma/client';
+import type { JournalCategory as PrismaJournalCategory, JournalPage as PrismaJournalPage, Manuscript as PrismaManuscript, User as PrismaUser } from '@prisma/client';
 
 export interface JournalCategory extends PrismaJournalCategory {
   publishedArticlesCount?: number;
@@ -36,15 +36,15 @@ export interface JournalEntry {
   authors?: string[] | { name: string }[];
   coAuthors?: { name: string }[]; 
   doiSuffix?: string; 
-  imagePath?: string; 
-  imageHint?: string; 
+  imagePath?: string | null; 
+  imageHint?: string | null; 
   views?: number;
   downloads?: number;
   citations?: number;
   keywords?: string[] | string;
   articleType?: string;
-  thumbnailImagePath?: string;
-  thumbnailImageHint?: string;
+  thumbnailImagePath?: string | null;
+  thumbnailImageHint?: string | null;
 }
 
 export interface EditorialBoardMember {
@@ -56,4 +56,25 @@ export interface EditorialBoardMember {
   department?: string | null;
   instituteName?: string | null;
   avatarUrl?: string | null;
+}
+
+// --- Types for Author Pages ---
+export interface AuthorProfile {
+  id: number;
+  fullName: string | null;
+  username: string;
+  avatarUrl: string | null;
+  instituteName: string | null;
+  department: string | null;
+}
+
+export interface AuthorStats {
+  totalViews: number;
+  totalDownloads: number;
+  totalManuscripts: number;
+}
+
+export interface ManuscriptData {
+  entry: JournalEntry;
+  categoryName: string;
 }

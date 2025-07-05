@@ -6,46 +6,21 @@ import { useParams } from 'next/navigation';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { ArrowRight, Book, Download, Eye, Loader2, AlertTriangle, University } from 'lucide-react';
+import { Book, Loader2, AlertTriangle, University } from 'lucide-react';
 import { toPublicUrl } from '@/lib/urlUtils';
 import LoadingAuthorDetailPage from './loading';
-import Image from 'next/image';
+import ArticleListItemCard from '@/components/category/ArticleListItemCard';
+import type { AuthorProfile, AuthorStats, ManuscriptData } from '@/lib/types';
 
-interface AuthorProfile {
-  id: number;
-  fullName: string | null;
-  username: string;
-  avatarUrl: string | null;
-  instituteName: string | null;
-  department: string | null;
-}
-
-interface AuthorStats {
-  totalViews: number;
-  totalDownloads: number;
-  totalManuscripts: number;
-}
-
-interface Manuscript {
-  id: string;
-  articleTitle: string;
-  excerpt: string;
-  submittedAt: string;
-  thumbnailImagePath: string | null;
-  thumbnailImageHint: string | null;
-  journalCategory: {
-    name: string;
-  };
-}
 
 interface AuthorData {
   author: AuthorProfile;
   stats: AuthorStats;
-  manuscripts: Manuscript[];
+  manuscripts: ManuscriptData[];
 }
 
 const getInitials = (name: string | null) => {
@@ -159,35 +134,12 @@ export default function AuthorDetailPage() {
             <h2 className="text-3xl font-headline font-bold text-primary mb-6">Published Manuscripts</h2>
             {manuscripts.length > 0 ? (
               <div className="space-y-6">
-                {manuscripts.map((ms) => (
-                   <Card key={ms.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 flex flex-col sm:flex-row gap-6">
-                        <div className="relative w-full sm:w-48 flex-shrink-0 aspect-video sm:aspect-[4/3] rounded-md overflow-hidden bg-muted">
-                            <Image
-                                src={toPublicUrl(ms.thumbnailImagePath) || 'https://placehold.co/200x150.png'}
-                                alt={ms.articleTitle}
-                                fill
-                                sizes="(max-width: 640px) 100vw, 25vw"
-                                className="object-cover"
-                                data-ai-hint={ms.thumbnailImageHint || "journal article"}
-                            />
-                        </div>
-                        <div className="flex-grow flex flex-col">
-                            <CardTitle className="text-xl text-primary hover:text-primary/80 mb-1">
-                                <Link href={`/journal/${ms.id}`}>{ms.articleTitle}</Link>
-                            </CardTitle>
-                            <CardDescription className="text-xs mb-2">
-                                Published in "{ms.journalCategory.name}" on {new Date(ms.submittedAt).toLocaleDateString()}
-                            </CardDescription>
-                            <p className="text-sm text-muted-foreground line-clamp-3 mb-2 flex-grow">{ms.excerpt}</p>
-                            <Button asChild variant="link" className="p-0 mt-auto self-start">
-                                <Link href={`/journal/${ms.id}`} className="inline-flex items-center">
-                                    Read More <ArrowRight className="ml-1 w-4 h-4" />
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                {manuscripts.map((msData) => (
+                  <ArticleListItemCard
+                    key={msData.entry.id}
+                    entry={msData.entry}
+                    categoryName={msData.categoryName}
+                  />
                 ))}
               </div>
             ) : (
