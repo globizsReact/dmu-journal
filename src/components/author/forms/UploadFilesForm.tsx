@@ -141,7 +141,7 @@ export default function UploadFilesForm({ onFinish, onPrevious, isSubmitting }: 
     validationOptions: { maxSize: number, acceptedTypes: string[], isImage: boolean }
   ) => {
       const fileName = fileNames[name];
-      const isUploading = !!isUploading[name];
+      const fileIsCurrentlyUploading = !!isUploading[name];
       const uploadError = uploadErrors[name];
       const hasUrl = !!getValues(name);
 
@@ -150,10 +150,10 @@ export default function UploadFilesForm({ onFinish, onPrevious, isSubmitting }: 
             <div className="flex items-center justify-between">
             <FormLabel className="text-foreground/80">{label} {isRequired && <span className="text-destructive">*</span>}</FormLabel>
             <div className="flex items-center gap-2">
-                <Button type="button" variant="outline" size="sm" asChild disabled={isSubmitting || isUploading}><Label htmlFor={`${name}-input`} className="cursor-pointer">Choose File</Label></Button>
-                <FormControl><Input id={`${name}-input`} type="file" className="hidden" accept={validationOptions.acceptedTypes.join(',')} onChange={(e) => handleFileUpload(e, name, validationOptions)} disabled={isSubmitting || isUploading}/></FormControl>
-                {isUploading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {!isUploading && hasUrl && <CheckCircle className="w-4 h-4 text-green-500" />}
+                <Button type="button" variant="outline" size="sm" asChild disabled={isSubmitting || fileIsCurrentlyUploading}><Label htmlFor={`${name}-input`} className="cursor-pointer">Choose File</Label></Button>
+                <FormControl><Input id={`${name}-input`} type="file" className="hidden" accept={validationOptions.acceptedTypes.join(',')} onChange={(e) => handleFileUpload(e, name, validationOptions)} disabled={isSubmitting || fileIsCurrentlyUploading}/></FormControl>
+                {fileIsCurrentlyUploading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {!fileIsCurrentlyUploading && hasUrl && <CheckCircle className="w-4 h-4 text-green-500" />}
                 {uploadError && <AlertCircle className="w-4 h-4 text-destructive" />}
                 <span className="text-sm text-muted-foreground w-40 truncate">{fileName || 'No File Chosen'}</span>
             </div>
