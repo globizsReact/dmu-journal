@@ -62,9 +62,6 @@ export default function JournalPage() {
 
     setEntry(prev => prev ? { ...prev, [type]: (prev[type] || 0) + 1 } : null);
     
-    if (type === 'downloads') {
-      toast({ title: "Downloading...", description: "Your PDF download will begin shortly (mock)." });
-    }
     if (type === 'citations') {
       toast({ title: "Citation Copied", description: "Citation details copied to clipboard (mock)." });
     }
