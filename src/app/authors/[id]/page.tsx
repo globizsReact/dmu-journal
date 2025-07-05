@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { ArrowRight, Book, Download, Eye, Loader2, AlertTriangle, University } from 'lucide-react';
 import { toPublicUrl } from '@/lib/urlUtils';
 import LoadingAuthorDetailPage from './loading';
+import Image from 'next/image';
 
 interface AuthorProfile {
   id: number;
@@ -34,6 +35,8 @@ interface Manuscript {
   articleTitle: string;
   excerpt: string;
   submittedAt: string;
+  thumbnailImagePath: string | null;
+  thumbnailImageHint: string | null;
   journalCategory: {
     name: string;
   };
@@ -157,24 +160,34 @@ export default function AuthorDetailPage() {
             {manuscripts.length > 0 ? (
               <div className="space-y-6">
                 {manuscripts.map((ms) => (
-                  <Card key={ms.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader>
-                      <CardTitle className="text-xl text-primary hover:text-primary/80">
-                        <Link href={`/journal/${ms.id}`}>{ms.articleTitle}</Link>
-                      </CardTitle>
-                      <CardDescription>
-                        Published in "{ms.journalCategory.name}" on {new Date(ms.submittedAt).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3">{ms.excerpt}</p>
-                      <Button asChild variant="link" className="p-0 mt-2">
-                        <Link href={`/journal/${ms.id}`} className="inline-flex items-center">
-                          Read More <ArrowRight className="ml-1 w-4 h-4" />
-                        </Link>
-                      </Button>
+                   <Card key={ms.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-4 flex flex-col sm:flex-row gap-6">
+                        <div className="relative w-full sm:w-48 flex-shrink-0 aspect-video sm:aspect-[4/3] rounded-md overflow-hidden bg-muted">
+                            <Image
+                                src={toPublicUrl(ms.thumbnailImagePath) || 'https://placehold.co/200x150.png'}
+                                alt={ms.articleTitle}
+                                fill
+                                sizes="(max-width: 640px) 100vw, 25vw"
+                                className="object-cover"
+                                data-ai-hint={ms.thumbnailImageHint || "journal article"}
+                            />
+                        </div>
+                        <div className="flex-grow flex flex-col">
+                            <CardTitle className="text-xl text-primary hover:text-primary/80 mb-1">
+                                <Link href={`/journal/${ms.id}`}>{ms.articleTitle}</Link>
+                            </CardTitle>
+                            <CardDescription className="text-xs mb-2">
+                                Published in "{ms.journalCategory.name}" on {new Date(ms.submittedAt).toLocaleDateString()}
+                            </CardDescription>
+                            <p className="text-sm text-muted-foreground line-clamp-3 mb-2 flex-grow">{ms.excerpt}</p>
+                            <Button asChild variant="link" className="p-0 mt-auto self-start">
+                                <Link href={`/journal/${ms.id}`} className="inline-flex items-center">
+                                    Read More <ArrowRight className="ml-1 w-4 h-4" />
+                                </Link>
+                            </Button>
+                        </div>
                     </CardContent>
-                  </Card>
+                </Card>
                 ))}
               </div>
             ) : (
