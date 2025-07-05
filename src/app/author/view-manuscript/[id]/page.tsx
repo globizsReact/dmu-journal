@@ -7,7 +7,7 @@ import type { Manuscript, JournalCategory } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, ArrowLeft, Mail, Building, FileTextIcon, Sparkles, Tag } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowLeft, Mail, Building, FileTextIcon, Sparkles, Tag, Eye } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -133,6 +133,14 @@ export default function AuthorManuscriptDetailsPage() {
     const category = journalCategories.find(cat => cat.id === journalId);
     return category ? category.name : 'Unknown Journal';
   };
+  
+  const getFileNameFromUrl = (url: string) => {
+    try {
+      return new URL(url).pathname.split('/').pop() || 'file';
+    } catch {
+      return url;
+    }
+  }
 
   const formatDisplayDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return 'N/A';
@@ -229,15 +237,15 @@ export default function AuthorManuscriptDetailsPage() {
             {manuscript.thumbnailImagePath && (
               <>
                 <section>
-                    <h3 className="text-lg font-semibold text-primary mb-3">Thumbnail Preview</h3>
+                    <h3 className="text-lg font-semibold text-primary mb-3">Cover Letter Image</h3>
                     <div className="relative w-full max-w-sm aspect-video rounded-md overflow-hidden border">
                         <Image
                             src={toPublicUrl(manuscript.thumbnailImagePath)}
-                            alt="Manuscript thumbnail preview"
+                            alt="Cover letter image preview"
                             fill
                             sizes="(max-width: 640px) 100vw, 33vw"
                             className="object-cover"
-                            data-ai-hint={manuscript.thumbnailImageHint || "journal thumbnail"}
+                            data-ai-hint={manuscript.thumbnailImageHint || "journal cover letter"}
                         />
                     </div>
                 </section>
@@ -281,11 +289,27 @@ export default function AuthorManuscriptDetailsPage() {
             
             <section>
                 <h3 className="text-lg font-semibold text-primary mb-3">Submitted Files</h3>
-                <ul className="list-disc list-inside space-y-2 text-sm text-foreground/80">
-                    {manuscript.manuscriptFileName && <li><strong className="text-foreground">Manuscript:</strong> {manuscript.manuscriptFileName}</li>}
-                    {manuscript.coverLetterFileName && <li><strong className="text-foreground">Cover Letter:</strong> {manuscript.coverLetterFileName}</li>}
-                    {manuscript.supplementaryFilesName && <li><strong className="text-foreground">Supplementary Files:</strong> {manuscript.supplementaryFilesName}</li>}
-                </ul>
+                <div className="space-y-2 text-sm">
+                  {manuscript.manuscriptFileName && (
+                    <div className="flex justify-between items-center p-2 rounded-md bg-muted/50">
+                      <span><strong className="text-foreground">Manuscript:</strong> {getFileNameFromUrl(manuscript.manuscriptFileName)}</span>
+                       <Button asChild variant="link" className="p-0 h-auto">
+                          <Link href={toPublicUrl(manuscript.manuscriptFileName)} target="_blank" rel="noopener noreferrer">View <Eye className="w-4 h-4 ml-1.5"/></Link>
+                       </Button>
+                    </div>
+                  )}
+                  {manuscript.supplementaryFilesName && (
+                     <div className="flex justify-between items-center p-2 rounded-md bg-muted/50">
+                       <span><strong className="text-foreground">Supplementary:</strong> {getFileNameFromUrl(manuscript.supplementaryFilesName)}</span>
+                       <Button asChild variant="link" className="p-0 h-auto">
+                          <Link href={toPublicUrl(manuscript.supplementaryFilesName)} target="_blank" rel="noopener noreferrer">View <Eye className="w-4 h-4 ml-1.5"/></Link>
+                       </Button>
+                    </div>
+                  )}
+                  {!manuscript.manuscriptFileName && !manuscript.supplementaryFilesName && (
+                    <p className="text-muted-foreground">No document files were submitted.</p>
+                  )}
+                </div>
             </section>
 
         </CardContent>

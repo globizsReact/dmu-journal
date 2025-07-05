@@ -4,18 +4,16 @@ import prisma from '@/lib/prisma';
 import { verifyToken } from '@/lib/authUtils';
 import type { ManuscriptDetailsData } from '@/components/author/forms/ManuscriptDetailsForm';
 import type { AuthorDetailsData } from '@/components/author/forms/AuthorDetailsForm';
-import type { UploadFilesData } from '@/components/author/forms/UploadFilesForm';
 
 // Define the expected shape of the request body
 interface SubmissionPayload {
   manuscriptDetails: ManuscriptDetailsData;
   authorDetails: AuthorDetailsData;
-  files: { // Based on how SubmitManuscriptStepper structures it
-    coverLetterFileName?: string;
-    manuscriptFileName: string;
-    supplementaryFilesName?: string;
-    thumbnailImagePath?: string;
-    thumbnailImageHint?: string;
+  files: {
+    coverLetterImagePath?: string;
+    coverLetterImageHint?: string;
+    manuscriptFileUrl: string;
+    supplementaryFileUrl?: string;
     agreedToTerms: boolean;
   };
 }
@@ -47,8 +45,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid submission data: Missing required sections.' }, { status: 400 });
     }
     
-    if (!files.manuscriptFileName) {
-        console.log('Manuscript Submission API: Missing manuscript file name');
+    if (!files.manuscriptFileUrl) {
+        console.log('Manuscript Submission API: Missing manuscript file URL');
         return NextResponse.json({ error: 'Manuscript file is required.' }, { status: 400 });
     }
     if (!files.agreedToTerms) {
@@ -66,11 +64,14 @@ export async function POST(request: NextRequest) {
         journalCategoryId: manuscriptDetails.journalId,
         isSpecialReview: manuscriptDetails.isSpecialReview || false,
         
-        coverLetterFileName: files.coverLetterFileName,
-        manuscriptFileName: files.manuscriptFileName,
-        supplementaryFilesName: files.supplementaryFilesName,
-        thumbnailImagePath: files.thumbnailImagePath,
-        thumbnailImageHint: files.thumbnailImageHint,
+        // Storing URLs in the ...FileName fields
+        coverLetterFileName: files.coverLetterImagePath, 
+        manuscriptFileName: files.manuscriptFileUrl,
+        supplementaryFilesName: files.supplementaryFileUrl,
+        
+        // Re-using thumbnail fields for the main manuscript image (cover letter)
+        thumbnailImagePath: files.coverLetterImagePath,
+        thumbnailImageHint: files.coverLetterImageHint,
         
         authorAgreement: files.agreedToTerms,
         coAuthors: authorDetails.authors, // Prisma will store this as JSON
@@ -99,10 +100,6 @@ export async function POST(request: NextRequest) {
         console.log('Manuscript Submission API: Prisma unique constraint violation (P2002).');
         return NextResponse.json({ error: 'A record with this identifier already exists.' }, { status: 409 });
     }
-    // Add more specific Prisma error handling if needed
-    // e.g. P2003 for foreign key constraint failure
-    // e.g. P2025 for record not found on related operations (though not directly applicable for create)
-
     return NextResponse.json(
       { error: 'An unexpected error occurred during manuscript submission.', details: error.message },
       { status: 500 }

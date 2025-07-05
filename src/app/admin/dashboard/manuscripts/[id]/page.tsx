@@ -7,7 +7,7 @@ import type { Manuscript, JournalCategory } from '@prisma/client';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, AlertTriangle, CheckCircle, XCircle, ArrowLeft, User, Mail, Building, FileTextIcon, CalendarDays, Sparkles, Tag, FileIcon, BookUp, ShieldOff } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, XCircle, ArrowLeft, User, Mail, Building, FileTextIcon, CalendarDays, Sparkles, Tag, FileIcon, BookUp, ShieldOff, Eye } from 'lucide-react';
 import { format, isValid } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import TiptapRenderer from '@/components/shared/TiptapRenderer';
 import Image from 'next/image';
 import { toPublicUrl } from '@/lib/urlUtils';
+import Link from 'next/link';
 
 interface ManuscriptDetails extends Manuscript {
   submittedBy?: {
@@ -143,6 +144,14 @@ export default function ManuscriptDetailsPage() {
     const category = journalCategories.find(cat => cat.id === journalId);
     return category ? category.name : 'Unknown Journal';
   };
+  
+  const getFileNameFromUrl = (url: string) => {
+    try {
+      return new URL(url).pathname.split('/').pop() || 'file';
+    } catch {
+      return url;
+    }
+  }
 
   const formatDisplayDate = (dateString: string | Date | null | undefined): string => {
     if (!dateString) return 'N/A';
@@ -253,18 +262,30 @@ export default function ManuscriptDetailsPage() {
             </div>
             <div>
               <p className="font-medium text-muted-foreground flex items-center"><FileIcon className="w-4 h-4 mr-2 text-indigo-600" />Manuscript File</p>
-              <p className="truncate">{manuscript.manuscriptFileName || 'N/A'}</p>
+               {manuscript.manuscriptFileName ? (
+                 <Button asChild variant="link" className="p-0 h-auto text-sm text-foreground hover:text-primary">
+                    <Link href={toPublicUrl(manuscript.manuscriptFileName)} target="_blank" rel="noopener noreferrer">
+                      View PDF <Eye className="w-3.5 h-3.5 ml-1.5" />
+                    </Link>
+                  </Button>
+               ) : <p className="truncate">N/A</p>}
             </div>
              {manuscript.coverLetterFileName && (
                 <div>
                     <p className="font-medium text-muted-foreground flex items-center"><FileIcon className="w-4 h-4 mr-2 text-pink-600" />Cover Letter</p>
-                    <p className="truncate">{manuscript.coverLetterFileName}</p>
+                    <p className="truncate">{getFileNameFromUrl(manuscript.coverLetterFileName)}</p>
                 </div>
             )}
             {manuscript.supplementaryFilesName && (
                 <div>
                     <p className="font-medium text-muted-foreground flex items-center"><FileIcon className="w-4 h-4 mr-2 text-teal-600" />Supplementary File</p>
-                    <p className="truncate">{manuscript.supplementaryFilesName}</p>
+                    {manuscript.supplementaryFilesName ? (
+                      <Button asChild variant="link" className="p-0 h-auto text-sm text-foreground hover:text-primary">
+                        <Link href={toPublicUrl(manuscript.supplementaryFilesName)} target="_blank" rel="noopener noreferrer">
+                          View PDF <Eye className="w-3.5 h-3.5 ml-1.5" />
+                        </Link>
+                      </Button>
+                    ) : <p className="truncate">N/A</p>}
                 </div>
             )}
           </div>
@@ -275,7 +296,7 @@ export default function ManuscriptDetailsPage() {
         {manuscript.thumbnailImagePath && (
             <>
                 <section>
-                    <h3 className="text-lg font-semibold text-primary mb-3">Thumbnail Image</h3>
+                    <h3 className="text-lg font-semibold text-primary mb-3">Cover Letter Image</h3>
                     <div className="relative w-full max-w-sm aspect-video rounded-md overflow-hidden border">
                         <Image
                             src={toPublicUrl(manuscript.thumbnailImagePath)}

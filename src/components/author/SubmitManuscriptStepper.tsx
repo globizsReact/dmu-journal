@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 const steps = [
   { id: 1, title: 'Manuscript Information' },
   { id: 2, title: 'Author Details' },
-  { id: 3, title: 'Upload Files & Submit' }, // Updated title
+  { id: 3, title: 'Upload Files & Submit' },
 ];
 
 export default function SubmitManuscriptStepper() {
@@ -33,7 +33,6 @@ export default function SubmitManuscriptStepper() {
       const token = localStorage.getItem('authToken');
       setAuthToken(token);
       if (!token) {
-        // Optionally, redirect or show message if no token, though page access should be guarded
         console.warn("Auth token not found. Submissions will likely fail.");
       }
     }
@@ -75,11 +74,10 @@ export default function SubmitManuscriptStepper() {
       manuscriptDetails: formDataStep1,
       authorDetails: formDataStep2,
       files: {
-        coverLetterFileName: dataStep3.coverLetterFile?.name,
-        manuscriptFileName: dataStep3.manuscriptFile.name,
-        supplementaryFilesName: dataStep3.supplementaryFiles?.name,
-        thumbnailImagePath: dataStep3.thumbnailImagePath,
-        thumbnailImageHint: dataStep3.thumbnailImageHint,
+        coverLetterImagePath: dataStep3.coverLetterImagePath,
+        coverLetterImageHint: dataStep3.coverLetterImageHint,
+        manuscriptFileUrl: dataStep3.manuscriptFileUrl,
+        supplementaryFileUrl: dataStep3.supplementaryFileUrl,
         agreedToTerms: dataStep3.authorAgreement,
       }
     };
@@ -134,8 +132,6 @@ export default function SubmitManuscriptStepper() {
     setCurrentStep(1);
     setFormDataStep1(null);
     setFormDataStep2(null);
-    // The UploadFilesForm will reset its own file inputs and agreement checkbox
-    // when its internal form.reset() is called upon successful submission or if a key is used to re-mount it.
   };
 
   const isStepComplete = (stepId: number): boolean => {
@@ -150,8 +146,6 @@ export default function SubmitManuscriptStepper() {
   if (formDataStep1) maxReachableStep = 2;
   if (formDataStep1 && formDataStep2) maxReachableStep = 3;
   if (currentStep > maxReachableStep && !isSubmitted) {
-     // Allow navigation to current step even if prior data isn't fully "validated" by next click
-     // This is primarily for allowing navigation back and forth.
      maxReachableStep = currentStep;
   }
 
