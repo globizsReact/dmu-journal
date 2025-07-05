@@ -51,6 +51,9 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
   const handleTabClick = (key: string) => {
     if (key === 'pdf') {
       onIncrement('downloads');
+      if (entry.manuscriptFileName) {
+        window.open(toPublicUrl(entry.manuscriptFileName), '_blank');
+      }
     } else if (key === 'citations') {
       onIncrement('citations');
     } else {
@@ -77,7 +80,7 @@ const JournalView = ({ entry, category, onIncrement }: JournalViewProps) => {
 
         {/* Right Main Content - Article Details */}
         <section className="w-full md:flex-1">
-          <div className='flex flex-col sm:flex-row gap-4 items-start sm:items-stretch'>
+          <div className='flex flex-col sm:flex-row gap-4 items-stretch'>
             <div className="w-full sm:w-2/3">
               <h1 className="text-2xl md:text-3xl font-headline font-bold text-primary mb-2">
                 {entry.title}
