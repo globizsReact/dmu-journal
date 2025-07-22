@@ -1,40 +1,17 @@
+
 'use client';
 
 import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import Image from '@tiptap/extension-image';
-import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Heading3, Pilcrow, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Heading3, Pilcrow } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 
 const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
-  const setLink = useCallback(() => {
-    if (!editor) return;
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
-
-    if (url === null) {
-      return; // cancelled
-    }
-    if (url === '') { // empty
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  }, [editor]);
-
-  const addImage = useCallback(() => {
-    const url = window.prompt('Enter image URL');
-    if (url && editor) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
-  }, [editor]);
-
   if (!editor) {
     return null;
   }
@@ -90,15 +67,6 @@ const TiptapToolbar = ({ editor }: { editor: Editor | null }) => {
       <Toggle size="sm" pressed={editor.isActive('orderedList')} onPressedChange={() => editor.chain().focus().toggleOrderedList().run()} aria-label="Ordered list">
         <ListOrdered className="h-4 w-4" />
       </Toggle>
-
-      <Separator orientation="vertical" className="h-6 mx-1" />
-
-      <Toggle size="sm" pressed={editor.isActive('link')} onPressedChange={setLink} aria-label="Link">
-        <LinkIcon className="h-4 w-4" />
-      </Toggle>
-      <Button variant="ghost" size="sm" onClick={addImage} aria-label="Image" className="h-9 px-2.5">
-        <ImageIcon className="h-4 w-4" />
-      </Button>
     </div>
   );
 };
@@ -115,11 +83,6 @@ const TiptapEditor = ({ content, onChange, isSubmitting }: TiptapEditorProps) =>
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
       }),
-      Link.configure({
-        openOnClick: false,
-        autolink: true,
-      }),
-      Image, // Default options
     ],
     editorProps: {
       attributes: {
