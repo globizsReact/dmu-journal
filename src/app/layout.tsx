@@ -2,6 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import TopProgressBar from '@/components/shared/TopProgressBar';
+import { ThemeProvider } from 'next-themes';
 
 export const metadata: Metadata = {
   title: 'DMU Journal', // Updated project title
@@ -23,10 +24,17 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {/* TopProgressBar might still be useful globally, or moved to specific layouts */}
-        <TopProgressBar />
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {/* TopProgressBar might still be useful globally, or moved to specific layouts */}
+          <TopProgressBar />
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );

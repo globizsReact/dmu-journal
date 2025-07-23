@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from 'next/link';
-import { ThemeToggle } from './ThemeToggle';
 
 interface AdminDashboardSidebarProps {
   adminName: string;

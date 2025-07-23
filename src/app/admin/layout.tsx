@@ -30,32 +30,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
-import { ThemeProvider, useTheme } from 'next-themes';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
-const ThemeToggle = () => {
-    const { theme, setTheme } = useTheme();
-
-    return (
-        <div className="flex items-center space-x-2">
-            <Sun className="h-4 w-4" />
-            <Switch
-                id="theme-toggle"
-                checked={theme === 'dark'}
-                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-            />
-            <Moon className="h-4 w-4" />
-        </div>
-    );
-};
-
-
-function AdminLayoutContent({ children }: AdminLayoutProps) {
+export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [isAuthenticatedAdmin, setIsAuthenticatedAdmin] = useState(false);
   const [adminName, setAdminName] = useState("Admin");
@@ -170,7 +150,6 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <span className="text-sm font-medium text-muted-foreground hidden sm:inline">{adminName}</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -225,24 +204,5 @@ function AdminLayoutContent({ children }: AdminLayoutProps) {
         </main>
       </div>
     </div>
-  );
-}
-
-export default function AdminLayout({ children }: AdminLayoutProps) {
-  return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <title>Admin Dashboard - DMU Journal</title>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased text-foreground">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-           <AdminLayoutContent>{children}</AdminLayoutContent>
-           <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
   );
 }
