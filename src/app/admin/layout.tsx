@@ -67,8 +67,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
         if (token && role === 'admin') {
           setIsAuthenticatedAdmin(true);
-          if (name) setAdminName(name);
-          if (avatar) setAdminAvatar(avatar);
+          setAdminName(name || 'Admin');
+          setAdminAvatar(avatar); // Directly set the avatar state, handles null correctly.
         } else {
           setIsAuthenticatedAdmin(false);
         }
@@ -157,7 +157,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     </SheetContent>
                     </Sheet>
                     <h1 className="text-md font-semibold text-primary hidden sm:block">
-                        Hi, {greeting} 👋
+                        {greeting}, {adminName} 👋
                     </h1>
                 </div>
 
