@@ -1,13 +1,16 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { BadgeCheck, Banknote, BookOpen } from 'lucide-react';
+import LoadingMembershipPage from './loading';
+import { toPublicUrl } from '@/lib/urlUtils';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href?: string }) => (
   <Link
@@ -18,33 +21,51 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
   </Link>
 );
 
-const heroImage = "https://images.pexels.com/photos/5905497/pexels-photo-5905497.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
-
 const metadataItems = [
   "Join a community of scholars",
   "Access exclusive resources",
   "Support open access publishing",
 ];
 
-const benefits = [
-    {
-        icon: BookOpen,
-        title: "Access to Publications",
-        description: "Receive complimentary access to all journal issues and archived content.",
-    },
-    {
-        icon: BadgeCheck,
-        title: "Publishing Discounts",
-        description: "Enjoy reduced Article Processing Charges (APCs) on your manuscript submissions.",
-    },
-    {
-        icon: Banknote,
-        title: "Networking Opportunities",
-        description: "Connect with peers and experts in your field through our sponsored events and forums.",
-    }
-]
+interface PageData {
+    title: string;
+    content: any; // JSON from Tiptap
+    coverImagePath?: string | null;
+    coverImageHint?: string | null;
+}
 
 export default function MembershipPage() {
+    const [pageData, setPageData] = useState<PageData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await fetch('/api/public/pages/membership');
+                if (!response.ok) {
+                    throw new Error('Failed to load content. Please try again later.');
+                }
+                const data = await response.json();
+                setPageData(data);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchContent();
+    }, []);
+
+    const heroImage = toPublicUrl(pageData?.coverImagePath) || "https://images.pexels.com/photos/5905497/pexels-photo-5905497.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+
+    if (isLoading) {
+        return <LoadingMembershipPage />;
+    }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -53,11 +74,11 @@ export default function MembershipPage() {
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
           src={heroImage}
-          alt={"Membership background"}
+          alt={pageData?.coverImageHint || "Membership background"}
           fill
           sizes="100vw"
           className="absolute inset-0 z-0 object-cover"
-          data-ai-hint={"library books"}
+          data-ai-hint={pageData?.coverImageHint || "library books"}
           priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
@@ -104,34 +125,24 @@ export default function MembershipPage() {
 
           {/* Right Content Pane */}
           <section className="w-full md:w-3/4 lg:w-4/5">
-            <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-                Become a Member
-            </h2>
-            <div className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 space-y-4">
-                <p>
-                    By becoming a member of the Dhanamanjuri University Journals community, you are joining a network of professionals dedicated to the advancement of research and scholarship. Our membership program is designed to support your work and provide valuable resources.
-                </p>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
-                    {benefits.map(benefit => {
-                        const Icon = benefit.icon;
-                        return (
-                            <div key={benefit.title} className="text-center p-4">
-                                <Icon className="w-12 h-12 text-primary mx-auto mb-3"/>
-                                <h3 className="text-lg font-headline font-semibold text-foreground">{benefit.title}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">{benefit.description}</p>
-                            </div>
-                        )
-                    })}
+             {error && (
+                <div className="text-center py-10 bg-destructive/10 text-destructive rounded-lg px-4">
+                    <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                    <p className="font-semibold">Failed to load content</p>
+                    <p className="text-sm">{error}</p>
                 </div>
-
-                <p>
-                    For more information on membership tiers and how to join, please contact our administrative office through the details provided in our Support Center.
-                </p>
-                 <Button asChild className="mt-4">
-                    <Link href="/support-center">Contact Us</Link>
-                </Button>
-            </div>
+            )}
+            {pageData && (
+                <>
+                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                        {pageData.title}
+                    </h2>
+                     <TiptapRenderer 
+                        jsonContent={pageData.content} 
+                        className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+                    />
+                </>
+            )}
           </section>
         </div>
       </main>

@@ -3,7 +3,7 @@
 
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { LayoutDashboard, FileText, Users, BookIcon, LucideIcon, Layers } from 'lucide-react';
+import { LayoutDashboard, FileText, Users, BookIcon, LucideIcon, Layers, Settings, Moon, Sun } from 'lucide-react';
 import Image from 'next/image';
 import {
   Accordion,
@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Link from 'next/link';
+import { ThemeToggle } from './ThemeToggle';
 
 interface AdminDashboardSidebarProps {
   adminName: string;
@@ -35,6 +36,8 @@ const mainNavItems: NavItem[] = [
 
 const pageNavItems = [
     { label: 'About Us Page', href: '/admin/dashboard/pages/about' },
+    { label: 'Membership Page', href: '/admin/dashboard/pages/membership' },
+    { label: 'Support Center Page', href: '/admin/dashboard/pages/support-center' },
     { label: 'Landing Page', href: '/admin/dashboard/pages/landing' },
     { label: "Manage FAQ", href: '/admin/dashboard/faq' },
     { label: 'Footer Settings', href: '/admin/dashboard/pages/footer' },

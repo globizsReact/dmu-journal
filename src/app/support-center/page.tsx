@@ -1,12 +1,16 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from '@/components/ui/separator';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import LoadingSupportCenterPage from './loading';
+import { toPublicUrl } from '@/lib/urlUtils';
+import TiptapRenderer from '@/components/shared/TiptapRenderer';
+import { AlertTriangle } from 'lucide-react';
 
 const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href?: string }) => (
   <Link
@@ -17,35 +21,51 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
   </Link>
 );
 
-const heroImage = "https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
-
 const metadataItems = [
   "Dedicated Support Team",
   "Technical Assistance",
   "General Inquiries",
 ];
 
-const contactInfo = [
-    {
-        icon: Phone,
-        title: "Phone",
-        value: "+91 123 456 7890",
-        href: "tel:+911234567890",
-    },
-    {
-        icon: Mail,
-        title: "Email",
-        value: "support@dmujournals.ac.in",
-        href: "mailto:support@dmujournals.ac.in",
-    },
-    {
-        icon: MapPin,
-        title: "Address",
-        value: "Dhanamanjuri University, Imphal, Manipur, India",
-    }
-]
+interface PageData {
+    title: string;
+    content: any; // JSON from Tiptap
+    coverImagePath?: string | null;
+    coverImageHint?: string | null;
+}
 
 export default function SupportCenterPage() {
+    const [pageData, setPageData] = useState<PageData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchContent = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const response = await fetch('/api/public/pages/support-center');
+                if (!response.ok) {
+                    throw new Error('Failed to load content. Please try again later.');
+                }
+                const data = await response.json();
+                setPageData(data);
+            } catch (err: any) {
+                setError(err.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchContent();
+    }, []);
+
+    const heroImage = toPublicUrl(pageData?.coverImagePath) || "https://images.pexels.com/photos/3184338/pexels-photo-3184338.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+    
+    if (isLoading) {
+        return <LoadingSupportCenterPage />;
+    }
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -54,11 +74,11 @@ export default function SupportCenterPage() {
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
           src={heroImage}
-          alt={"Support Center background"}
+          alt={pageData?.coverImageHint || "Support Center background"}
           fill
           sizes="100vw"
           className="absolute inset-0 z-0 object-cover"
-          data-ai-hint={"team meeting collaboration"}
+          data-ai-hint={pageData?.coverImageHint || "team meeting collaboration"}
           priority
         />
         <div className="absolute inset-0 bg-black/60 z-10" />
@@ -105,34 +125,24 @@ export default function SupportCenterPage() {
 
           {/* Right Content Pane */}
           <section className="w-full md:w-3/4 lg:w-4/5">
-            <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-                Get In Touch
-            </h2>
-            <div className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 space-y-4">
-                <p>
-                    Our support team is available to assist you with any questions or issues you may have. Whether you need help with a manuscript submission, have a query about your membership, or require technical assistance with the website, we are here to help.
-                </p>
-                <div className="not-prose space-y-6 pt-6">
-                    {contactInfo.map(item => {
-                        const Icon = item.icon;
-                        return (
-                             <div key={item.title} className="flex items-start gap-4">
-                                <div className="p-3 bg-muted rounded-full">
-                                    <Icon className="w-6 h-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-foreground">{item.title}</h3>
-                                    {item.href ? (
-                                         <a href={item.href} className="text-md text-muted-foreground hover:text-primary transition-colors">{item.value}</a>
-                                    ) : (
-                                        <p className="text-md text-muted-foreground">{item.value}</p>
-                                    )}
-                                </div>
-                            </div>
-                        )
-                    })}
+            {error && (
+                <div className="text-center py-10 bg-destructive/10 text-destructive rounded-lg px-4">
+                    <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
+                    <p className="font-semibold">Failed to load content</p>
+                    <p className="text-sm">{error}</p>
                 </div>
-            </div>
+            )}
+            {pageData && (
+                <>
+                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                        {pageData.title}
+                    </h2>
+                     <TiptapRenderer 
+                        jsonContent={pageData.content} 
+                        className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
+                    />
+                </>
+            )}
           </section>
         </div>
       </main>
