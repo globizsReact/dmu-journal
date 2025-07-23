@@ -162,10 +162,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <div className="flex items-center gap-4">
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Avatar className="h-9 w-9 cursor-pointer">
-                        <AvatarImage src={adminAvatar || undefined} alt={adminName} data-ai-hint="placeholder avatar" />
-                        <AvatarFallback>{getInitials(adminName)}</AvatarFallback>
-                        </Avatar>
+                        <Button variant="ghost" className="flex items-center gap-2 relative">
+                            <span className="hidden sm:block font-medium">{adminName}</span>
+                             <Avatar className="h-9 w-9">
+                                <AvatarImage src={adminAvatar || undefined} alt={adminName} data-ai-hint="placeholder avatar" />
+                                <AvatarFallback>{getInitials(adminName)}</AvatarFallback>
+                            </Avatar>
+                        </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-56" align="end" forceMount>
                         <DropdownMenuLabel className="font-normal">
