@@ -56,7 +56,19 @@ const ManagerContent = ({ journalCategoryId, authToken }: { journalCategoryId: s
       const response = await fetch(`/api/admin/journal-pages?journalCategoryId=${journalCategoryId}`, {
         headers: { 'Authorization': `Bearer ${authToken}` },
       });
-      if (!response.ok) throw new Error('Failed to fetch pages');
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('authorName');
+                window.dispatchEvent(new CustomEvent('authChange'));
+            }
+            return;
+        }
+        throw new Error('Failed to fetch pages');
+      }
       const data = await response.json();
       setPages(data);
     } catch (err: any) {
@@ -64,7 +76,7 @@ const ManagerContent = ({ journalCategoryId, authToken }: { journalCategoryId: s
     } finally {
       setIsLoading(false);
     }
-  }, [journalCategoryId, authToken]);
+  }, [journalCategoryId, authToken, toast]);
 
   useEffect(() => {
     if (journalCategoryId && authToken) {

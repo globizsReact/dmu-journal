@@ -47,6 +47,7 @@ export default function JournalCategoryListTable() {
       });
       if (!response.ok) {
         if (response.status === 401 || response.status === 403) {
+            toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
             if (typeof window !== 'undefined') {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userRole');

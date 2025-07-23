@@ -176,7 +176,19 @@ export default function FaqManagement() {
     setError(null);
     try {
       const response = await fetch('/api/public/faq', { headers: { 'Authorization': `Bearer ${token}` } });
-      if (!response.ok) throw new Error('Failed to fetch FAQs');
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('authorName');
+                window.dispatchEvent(new CustomEvent('authChange'));
+            }
+            return;
+        }
+        throw new Error('Failed to fetch FAQs');
+      }
       const data = await response.json();
       setCategories(data.faqData);
       setPageSettings(data.pageSettings);
@@ -185,7 +197,7 @@ export default function FaqManagement() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');

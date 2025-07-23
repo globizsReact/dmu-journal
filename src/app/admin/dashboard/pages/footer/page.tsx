@@ -95,7 +95,19 @@ export default function EditFooterPage() {
       const response = await fetch('/api/admin/pages/footer', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      if (!response.ok) throw new Error('Failed to fetch footer data.');
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+          if (typeof window !== 'undefined') {
+              localStorage.removeItem('authToken');
+              localStorage.removeItem('userRole');
+              localStorage.removeItem('authorName');
+              window.dispatchEvent(new CustomEvent('authChange'));
+          }
+          return;
+        }
+        throw new Error('Failed to fetch footer data.');
+      }
       const data = await response.json();
       form.reset(data);
     } catch (err: any) {
@@ -103,7 +115,7 @@ export default function EditFooterPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [form]);
+  }, [form, toast]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');

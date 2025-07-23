@@ -55,13 +55,6 @@ export default function EditSupportCenterPage() {
     },
   });
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('authToken');
-      setAuthToken(token);
-    }
-  }, []);
-
   const fetchPageContent = useCallback(async (token: string) => {
     setIsLoading(true);
     setError(null);
@@ -70,6 +63,16 @@ export default function EditSupportCenterPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+            toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('authorName');
+                window.dispatchEvent(new CustomEvent('authChange'));
+            }
+            return;
+        }
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch page data.');
       }
@@ -83,13 +86,19 @@ export default function EditSupportCenterPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [form]);
+  }, [form, toast]);
 
   useEffect(() => {
-    if (authToken) {
-      fetchPageContent(authToken);
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      setAuthToken(token);
+      if(token) {
+        fetchPageContent(token);
+      } else {
+        setIsLoading(false);
+      }
     }
-  }, [authToken, fetchPageContent]);
+  }, [fetchPageContent]);
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
