@@ -5,7 +5,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2, Menu as MenuIcon, Settings, LogOut } from 'lucide-react';
+import { Loader2, Menu as MenuIcon, Settings, LogOut, Moon, Sun, User } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -28,15 +28,34 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from 'next/link';
+import { ThemeProvider, useTheme } from 'next-themes';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
-export default function AdminLayout({ children }: AdminLayoutProps) {
+const ThemeToggle = () => {
+    const { theme, setTheme } = useTheme();
+
+    return (
+        <div className="flex items-center space-x-2">
+            <Sun className="h-4 w-4" />
+            <Switch
+                id="theme-toggle"
+                checked={theme === 'dark'}
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+            />
+            <Moon className="h-4 w-4" />
+        </div>
+    );
+};
+
+
+function AdminLayoutContent({ children }: AdminLayoutProps) {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [isAuthenticatedAdmin, setIsAuthenticatedAdmin] = useState(false);
   const [adminName, setAdminName] = useState("Admin");
@@ -102,79 +121,56 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (isLoadingSession) {
     return (
-      <html lang="en">
-        <head>
-            <title>Loading Admin Panel - DMU Journal</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
-        </head>
-        <body className="font-body antialiased bg-muted text-foreground">
-            <div className="flex h-screen items-center justify-center bg-muted">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-            <p className="ml-4 text-lg">Verifying session...</p>
-            </div>
-            <Toaster />
-        </body>
-      </html>
+      <div className="flex h-screen items-center justify-center bg-muted">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4 text-lg">Verifying session...</p>
+      </div>
     );
   }
 
   if (!isAuthenticatedAdmin) {
     return (
-       <html lang="en">
-        <head>
-            <title>Admin Login - DMU Journal</title>
-            <link rel="preconnect" href="https://fonts.googleapis.com" />
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-            <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
-        </head>
-        <body className="font-body antialiased bg-muted text-foreground">
-            <AdminLoginForm onLoginSuccess={handleLoginSuccess} />
-            <Toaster />
-        </body>
-      </html>
+      <>
+        <AdminLoginForm onLoginSuccess={handleLoginSuccess} />
+        <Toaster />
+      </>
     );
   }
 
   return (
-    <html lang="en">
-      <head>
-        <title>Admin Dashboard - DMU Journal</title>
-         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased bg-background text-foreground overflow-hidden">
+    <div className="flex h-screen bg-muted/40">
+      {/* Mobile Sidebar */}
+      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+          <SheetContent side="left" className="p-0 w-64" aria-labelledby="admin-sidebar-title">
+              <SheetTitle className="sr-only" id="admin-sidebar-title">Admin Navigation Menu</SheetTitle>
+              <AdminDashboardSidebar
+                  adminName={adminName}
+                  onLinkClick={() => setIsMobileSheetOpen(false)}
+                  isMobileSheet={true}
+              />
+          </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AdminDashboardSidebar adminName={adminName} />
+      </div>
+
+      <div className="flex flex-1 flex-col overflow-auto">
+        {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="md:hidden">
-              <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-                  <SheetTrigger asChild>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
-                          <MenuIcon className="h-4 w-4" />
-                          <span className="sr-only">Open Menu</span>
-                      </Button>
-                  </SheetTrigger>
-                  <SheetContent
-                    side="left"
-                    className="p-0 w-64"
-                    aria-labelledby="admin-sidebar-title"
-                  >
-                      {/* Visually hidden title for accessibility as required by Radix Dialog (Sheet) */}
-                      <SheetTitle className="sr-only">Admin Navigation Menu</SheetTitle>
-                      <AdminDashboardSidebar
-                          adminName={adminName}
-                          onLinkClick={() => setIsMobileSheetOpen(false)}
-                          isMobileSheet={true}
-                      />
-                  </SheetContent>
-              </Sheet>
-            </div>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="h-8 w-8 md:hidden">
+                    <MenuIcon className="h-4 w-4" />
+                    <span className="sr-only">Open Menu</span>
+                </Button>
+            </SheetTrigger>
              <h1 className="text-md font-semibold text-primary hidden sm:block">Admin Dashboard</h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
             <span className="text-sm font-medium text-muted-foreground hidden sm:inline">{adminName}</span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -223,18 +219,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </header>
 
-        <div className="flex h-[calc(100vh-3.5rem)]">
-          <div className="hidden md:block">
-            <AdminDashboardSidebar
-              adminName={adminName}
-            />
-          </div>
+        {/* Main Content Area */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
 
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto bg-muted">
-            {children}
-          </main>
-        </div>
-        <Toaster />
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <title>Admin Dashboard - DMU Journal</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Poltawski+Nowy:wght@400&display=swap" rel="stylesheet" />
+      </head>
+      <body className="font-body antialiased text-foreground">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+           <AdminLayoutContent>{children}</AdminLayoutContent>
+           <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
