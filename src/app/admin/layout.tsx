@@ -6,7 +6,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
 import { Loader2, Menu as MenuIcon, Settings, LogOut } from 'lucide-react';
-import { Toaster } from "@/components/ui/toaster";
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -125,7 +124,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     return (
       <>
         <AdminLoginForm onLoginSuccess={handleLoginSuccess} />
-        <Toaster />
       </>
     );
   }
@@ -157,12 +155,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     </SheetContent>
                     </Sheet>
                     <h1 className="text-md font-semibold text-primary hidden sm:block">
-                        {greeting}, {adminName} 👋
+                        {greeting} 👋
                     </h1>
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <span className="text-sm font-medium text-muted-foreground hidden sm:inline">{adminName}</span>
                     <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Avatar className="h-9 w-9 cursor-pointer">
