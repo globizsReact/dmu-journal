@@ -61,6 +61,7 @@ export default function AdminLoginForm({ onLoginSuccess }: AdminLoginFormProps) 
           localStorage.setItem('authToken', data.token);
           localStorage.setItem('authorName', data.user.fullName || 'Admin');
           localStorage.setItem('userRole', data.user.role);
+          localStorage.setItem('avatarUrl', data.user.avatarUrl || '');
           window.dispatchEvent(new CustomEvent('authChange')); // Notify layout
         }
         toast({
