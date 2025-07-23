@@ -1,25 +1,13 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, AlertTriangle } from 'lucide-react';
-import TiptapRenderer from '@/components/shared/TiptapRenderer';
-import { toPublicUrl } from '@/lib/urlUtils';
-
-const metadataItems = [
-  "Abbreviation: J. Biophys. Struct. Biol.",
-  "Language: English",
-  "ISSN: 2141-2200",
-  "DOI: 10.5897/JBSB",
-  "Start Year: 2009",
-  "Published Articles: 25",
-];
+import { BadgeCheck, Banknote, BookOpen } from 'lucide-react';
 
 const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href?: string }) => (
   <Link
@@ -30,42 +18,33 @@ const SidebarLink = ({ children, href = "#" }: { children: React.ReactNode; href
   </Link>
 );
 
-interface PageData {
-    title: string;
-    content: any; // JSON from Tiptap
-    coverImagePath?: string | null;
-    coverImageHint?: string | null;
-}
+const heroImage = "https://images.pexels.com/photos/5905497/pexels-photo-5905497.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
 
-export default function AboutUsPage() {
-    const [pageData, setPageData] = useState<PageData | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+const metadataItems = [
+  "Join a community of scholars",
+  "Access exclusive resources",
+  "Support open access publishing",
+];
 
-    useEffect(() => {
-        const fetchContent = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await fetch('/api/public/pages/about');
-                if (!response.ok) {
-                    throw new Error('Failed to load content. Please try again later.');
-                }
-                const data = await response.json();
-                setPageData(data);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+const benefits = [
+    {
+        icon: BookOpen,
+        title: "Access to Publications",
+        description: "Receive complimentary access to all journal issues and archived content.",
+    },
+    {
+        icon: BadgeCheck,
+        title: "Publishing Discounts",
+        description: "Enjoy reduced Article Processing Charges (APCs) on your manuscript submissions.",
+    },
+    {
+        icon: Banknote,
+        title: "Networking Opportunities",
+        description: "Connect with peers and experts in your field through our sponsored events and forums.",
+    }
+]
 
-        fetchContent();
-    }, []);
-
-  const heroImage = toPublicUrl(pageData?.coverImagePath) || "https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
-
-
+export default function MembershipPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -74,23 +53,22 @@ export default function AboutUsPage() {
       <section className="relative h-[300px] md:h-[350px] text-primary-foreground">
         <Image
           src={heroImage}
-          alt={pageData?.coverImageHint || "About Us Background"}
+          alt={"Membership background"}
           fill
           sizes="100vw"
           className="absolute inset-0 z-0 object-cover"
-          data-ai-hint={pageData?.coverImageHint || "university campus"}
+          data-ai-hint={"library books"}
           priority
         />
-        <div className="absolute inset-0 bg-black/50 z-10" />
+        <div className="absolute inset-0 bg-black/60 z-10" />
         <div className="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
           <h1 className="text-4xl md:text-5xl font-headline font-bold mb-4">
-            About Us
+            Membership
           </h1>
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm md:text-base">
             {metadataItems.map((item, index) => (
               <span key={index} className="opacity-90">
                 {item}
-                {index < metadataItems.length - 1 && <span className="mx-1 hidden md:inline">|</span>}
               </span>
             ))}
           </div>
@@ -126,29 +104,34 @@ export default function AboutUsPage() {
 
           {/* Right Content Pane */}
           <section className="w-full md:w-3/4 lg:w-4/5">
-            {isLoading && (
-                 <div className="flex items-center justify-center py-20">
-                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                 </div>
-            )}
-            {error && (
-                <div className="text-center py-10 bg-destructive/10 text-destructive rounded-lg px-4">
-                    <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
-                    <p className="font-semibold">Failed to load content</p>
-                    <p className="text-sm">{error}</p>
+            <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
+                Become a Member
+            </h2>
+            <div className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80 space-y-4">
+                <p>
+                    By becoming a member of the Dhanamanjuri University Journals community, you are joining a network of professionals dedicated to the advancement of research and scholarship. Our membership program is designed to support your work and provide valuable resources.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8">
+                    {benefits.map(benefit => {
+                        const Icon = benefit.icon;
+                        return (
+                            <div key={benefit.title} className="text-center p-4">
+                                <Icon className="w-12 h-12 text-primary mx-auto mb-3"/>
+                                <h3 className="text-lg font-headline font-semibold text-foreground">{benefit.title}</h3>
+                                <p className="text-sm text-muted-foreground mt-1">{benefit.description}</p>
+                            </div>
+                        )
+                    })}
                 </div>
-            )}
-            {!isLoading && !error && pageData && (
-                <>
-                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-primary mb-6">
-                        {pageData.title}
-                    </h2>
-                    <TiptapRenderer 
-                        jsonContent={pageData.content} 
-                        className="prose prose-sm sm:prose-base max-w-none font-body text-foreground/80"
-                    />
-                </>
-            )}
+
+                <p>
+                    For more information on membership tiers and how to join, please contact our administrative office through the details provided in our Support Center.
+                </p>
+                 <Button asChild className="mt-4">
+                    <Link href="/support-center">Contact Us</Link>
+                </Button>
+            </div>
           </section>
         </div>
       </main>

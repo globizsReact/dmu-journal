@@ -7,9 +7,17 @@
   packages = [
     pkgs.nodejs_20
     pkgs.zulu
+    pkgs.openssl # <--- ADD THIS LINE for Prisma's OpenSSL dependency
   ];
   # Sets environment variables in the workspace
-  env = {};
+  env = {
+    # --- ADD YOUR DATABASE_URL HERE ---
+    # Replace "your_mysql_connection_string_here" with your actual DATABASE_URL.
+    # Example: "mysql://user:password@host:port/database"
+    DATABASE_URL = "your_mysql_connection_string_here";
+    # If you are using a shadow database for migrations (less common for db push, but good to know)
+    # SHADOW_DATABASE_URL = "your_shadow_db_connection_string_here";
+  };
   # This adds a file watcher to startup the firebase emulators. The emulators will only start if
   # a firebase.json file is written into the user's directory
   services.firebase.emulators = {
