@@ -5,7 +5,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2, Menu as MenuIcon, Settings, LogOut } from 'lucide-react';
+import { Loader2, Menu as MenuIcon, Settings, LogOut, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -135,7 +135,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </div>
 
       <div className="flex flex-1 flex-col overflow-auto">
-        <header className="flex items-center justify-between p-4 md:p-6 lg:p-8">
+        <header className="flex items-center justify-between p-4 md:px-6 lg:px-8">
             <div className="flex items-center gap-3">
                 <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
                 <SheetTrigger asChild>
@@ -167,6 +167,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                             <AvatarImage src={adminAvatar || undefined} alt={adminName} data-ai-hint="placeholder avatar" />
                             <AvatarFallback>{getInitials(adminName)}</AvatarFallback>
                         </Avatar>
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
