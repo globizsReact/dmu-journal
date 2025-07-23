@@ -120,19 +120,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="flex h-screen bg-muted/40">
-      {/* Mobile Sidebar */}
-      <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
-          <SheetContent side="left" className="p-0 w-64" aria-labelledby="admin-sidebar-title">
-              <SheetTitle className="sr-only" id="admin-sidebar-title">Admin Navigation Menu</SheetTitle>
-              <AdminDashboardSidebar
-                  adminName={adminName}
-                  onLinkClick={() => setIsMobileSheetOpen(false)}
-                  isMobileSheet={true}
-              />
-          </SheetContent>
-      </Sheet>
-
-      {/* Desktop Sidebar */}
       <div className="hidden md:block">
         <AdminDashboardSidebar adminName={adminName} />
       </div>
@@ -141,12 +128,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Top Header */}
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b bg-card px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 md:hidden">
-                    <MenuIcon className="h-4 w-4" />
-                    <span className="sr-only">Open Menu</span>
-                </Button>
-            </SheetTrigger>
+             {/* Mobile Sidebar Trigger - Moved inside Sheet */}
+            <Sheet open={isMobileSheetOpen} onOpenChange={setIsMobileSheetOpen}>
+              <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" className="h-8 w-8 md:hidden">
+                      <MenuIcon className="h-4 w-4" />
+                      <span className="sr-only">Open Menu</span>
+                  </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="p-0 w-64" aria-labelledby="admin-sidebar-title">
+                  <SheetTitle className="sr-only" id="admin-sidebar-title">Admin Navigation Menu</SheetTitle>
+                  <AdminDashboardSidebar
+                      adminName={adminName}
+                      onLinkClick={() => setIsMobileSheetOpen(false)}
+                      isMobileSheet={true}
+                  />
+              </SheetContent>
+            </Sheet>
              <h1 className="text-md font-semibold text-primary hidden sm:block">Admin Dashboard</h1>
           </div>
 
