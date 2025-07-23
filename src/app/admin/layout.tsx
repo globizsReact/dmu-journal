@@ -5,7 +5,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import AdminDashboardSidebar from '@/components/admin/AdminDashboardSidebar';
 import AdminLoginForm from '@/components/admin/AdminLoginForm';
-import { Loader2, Menu as MenuIcon, Settings, LogOut, Moon, Sun, User } from 'lucide-react';
+import { Loader2, Menu as MenuIcon, Settings, LogOut } from 'lucide-react';
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
@@ -42,8 +42,20 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [adminName, setAdminName] = useState("Admin");
   const [adminAvatar, setAdminAvatar] = useState<string | null>(null);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const [greeting, setGreeting] = useState("Good Morning");
   const router = useRouter();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) {
+      setGreeting("Good Morning");
+    } else if (hour < 18) {
+      setGreeting("Good Afternoon");
+    } else {
+      setGreeting("Good Evening");
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -144,7 +156,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         />
                     </SheetContent>
                     </Sheet>
-                    <h1 className="text-md font-semibold text-primary hidden sm:block">Admin Dashboard</h1>
+                    <h1 className="text-md font-semibold text-primary hidden sm:block">
+                        Hi, {greeting} 👋
+                    </h1>
                 </div>
 
                 <div className="flex items-center gap-4">
